@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Col, Row } from "react-grid-system";
-import { Button } from "@blueprintjs/core";
 
 import FixedContainer from "./FixedContainer";
+import SignInOutButton from "./SignInOutButton";
 
 import styles from "../styles/Header.module.css";
 
@@ -51,9 +51,7 @@ export default function Header({ tab, subBarLinks, subBarActiveKey }: Props) {
                                         </li>
                                     </ul>
                                     <div>
-                                        <Button intent="success" outlined>
-                                            Sign in / Register
-                                        </Button>
+                                        <SignInOutButton />
                                     </div>
                                 </Row>
                             </div>
