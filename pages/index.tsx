@@ -1,8 +1,5 @@
-import {
-    FixedContainer,
-    Header,
-    HtmlHead,
-} from "@ecocommons-australia/ui-library";
+import { FixedContainer, HtmlHead } from "@ecocommons-australia/ui-library";
+import Header from "../components/Header";
 
 export default function Index() {
     return (
