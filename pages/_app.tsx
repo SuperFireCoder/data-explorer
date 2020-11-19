@@ -33,10 +33,7 @@ function MyApp({ Component, pageProps, cookies }: Props) {
 }
 
 function parseCookies(req?: IncomingMessage) {
-    if (!req || !req.headers) {
-        return {};
-    }
-    return cookie.parse(req.headers.cookie || "");
+    return cookie.parse(req?.headers?.cookie || "");
 }
 
 MyApp.getInitialProps = async (context: AppContext) => {
