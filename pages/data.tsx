@@ -1,5 +1,5 @@
-import Header from "../components/Header";
-import HtmlHead from "../components/HtmlHead";
+import { Header, HtmlHead } from "@ecocommons-australia/ui-library";
+import SignInOutButton from "../components/SignInOutButton";
 
 const subBarLinks = [
     { key: "explore", href: "/data", label: "Explore data" },
@@ -12,9 +12,10 @@ export default function Data() {
         <>
             <HtmlHead title={["Data and Visualisations", "Explore data"]} />
             <Header
-                tab="data"
+                activeTab="data"
                 subBarLinks={subBarLinks}
                 subBarActiveKey="explore"
+                signInOutButton={<SignInOutButton />}
             />
         </>
     );

@@ -1,6 +1,8 @@
-import FixedContainer from "../components/FixedContainer";
-import Header from "../components/Header";
-import HtmlHead from "../components/HtmlHead";
+import {
+    FixedContainer,
+    Header,
+    HtmlHead,
+} from "@ecocommons-australia/ui-library";
 
 export default function NotFound() {
     return (
