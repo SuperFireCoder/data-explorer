@@ -7,7 +7,7 @@ import { SSRKeycloakProvider, SSRCookies } from "@react-keycloak/ssr";
 import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 import "@blueprintjs/core/lib/css/blueprint.css";
 
-import "../styles/globals.css";
+import "@ecocommons-australia/ui-library/src/styles/globals.css";
 
 /** react-keycloak configuration */
 const keycloakConfig = {
