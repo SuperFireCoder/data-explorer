@@ -7,7 +7,7 @@ const subBarLinks = [
     { key: "import", href: "/data/import", label: "Import data" },
 ];
 
-export default function Data() {
+export default function DataPage() {
     return (
         <>
             <HtmlHead title={["Data and Visualisations", "Explore data"]} />

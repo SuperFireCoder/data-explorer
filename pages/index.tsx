@@ -1,18 +1,17 @@
 import { FixedContainer, HtmlHead } from "@ecocommons-australia/ui-library";
-import { useKeycloak } from "@react-keycloak/ssr";
 
 import Header from "../components/Header";
-import { KeycloakInstance } from "../interfaces/Keycloak";
+import { useKeycloakInfo } from "../util/keycloak";
 
-export default function Index() {
-    const { keycloak } = useKeycloak<KeycloakInstance>();
+export default function IndexPage() {
+    const { keycloak } = useKeycloakInfo();
 
     return (
         <>
             <HtmlHead />
             <Header />
             <FixedContainer>
-                <h1>
+                <h1 data-testid="welcome-user">
                     Welcome
                     {keycloak?.tokenParsed && `, ${keycloak.tokenParsed.name}`}
                 </h1>
