@@ -3,9 +3,15 @@ import IndexPage from "../../pages/index";
 import * as keycloakUtil from "../../util/keycloak";
 
 // Mock Keycloak
+const defaultKeycloakInfo = {
+    keycloak: {
+        authenticated: false,
+    },
+    initialized: false,
+};
+
 jest.mock("../../util/keycloak", () => ({
-    // Default is to provide empty user information
-    useKeycloakInfo: jest.fn(() => ({ keycloak: {}, initialized: false })),
+    useKeycloakInfo: jest.fn(() => defaultKeycloakInfo),
 }));
 
 describe("IndexPage", () => {
@@ -22,13 +28,16 @@ describe("IndexPage", () => {
 
     it("renders welcome with user's name when signed in", () => {
         // Pretend we've got a user signed in
-        const kcMock = keycloakUtil.useKeycloakInfo.mockImplementation(() => ({
+        const signedInKeycloakInfo = {
             keycloak: {
                 tokenParsed: {
                     name: "Test user",
                 },
             },
-        }));
+        };
+        const kcMock = keycloakUtil.useKeycloakInfo.mockImplementation(
+            () => signedInKeycloakInfo
+        );
 
         const indexPage = render(<IndexPage />);
         expect(indexPage.queryByTestId("welcome-user")?.textContent).toBe(
