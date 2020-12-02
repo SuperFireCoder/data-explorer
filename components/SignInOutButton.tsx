@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { KeycloakInstance } from "keycloak-js";
 import { Button } from "@blueprintjs/core";
-import { useKeycloak } from "@react-keycloak/ssr";
+
+import { useKeycloakInfo } from "../util/keycloak";
 
 export default function SignInOutButton() {
     const router = useRouter();
-    const { keycloak, initialized } = useKeycloak<KeycloakInstance>();
+    const { keycloak, initialized } = useKeycloakInfo();
 
     // NOTE: In some circumstances this button appears wrong, which James
     // suspects is due to sudden changes in client (when Keycloak finds out

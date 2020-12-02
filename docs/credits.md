@@ -1,11 +1,8 @@
 
-| [Main](README.md) | [Installation](installation.md) | [Quick Start](quick_start.md)  | [Testing](testing.md) | [Dependencies](dependencies.md) | Credits |
+| [Main](README.md) | [Installation](installation.md)  | [Running &amp; Building](running-building.md) | [Testing](testing.md) | [Dependencies](dependencies.md) | Credits |
 |------|-------|-------|--------|--------|------|
 
 ## Credits
-
-This is a template only. Replace the following lines with your own content.
-
 
 This project is part of the EcoCommons Australia Program which is a partnership of institutions: 
 - Australian Research Data Commons (ARDC), 
