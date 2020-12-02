@@ -9,7 +9,7 @@ import { LinkContext } from "@ecocommons-australia/ui-library";
 import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 import "@blueprintjs/core/lib/css/blueprint.css";
 
-import "@ecocommons-australia/ui-library/src/styles/globals.css";
+import "@ecocommons-australia/ui-library/src/styles/global.css";
 
 /** react-keycloak configuration */
 const keycloakConfig = {
