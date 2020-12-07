@@ -45,7 +45,7 @@ publish latest image:
       - master
       - tags
 
-publish latest tag:
+publish tagged image:
   stage: publish
   script:
     - IMAGE_TAG=${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}
@@ -56,4 +56,4 @@ publish latest tag:
   only:
     # i.e. && condition
     - tags
-    # - master
+    - master
