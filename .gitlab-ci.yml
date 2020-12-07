@@ -41,7 +41,9 @@ publish latest image:
     - docker push ${IMAGE_LATEST}
   only:
     refs:
-      - 10-gitlab-ci
+      # i.e. || condition
+      - master
+      - tags
 
 publish latest tag:
   stage: publish
@@ -52,4 +54,6 @@ publish latest tag:
     - docker tag ${IMAGE_SHORT_SHA} ${IMAGE_TAG}
     - docker push ${IMAGE_TAG}
   only:
+    # i.e. && condition
     - tags
+    # - master
