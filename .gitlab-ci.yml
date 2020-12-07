@@ -1,0 +1,56 @@
+image: docker:19
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+  IMAGE_LATEST: ${CI_REGISTRY_IMAGE}:latest
+  IMAGE_SHORT_SHA: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
+
+stages:
+  - test
+  - build
+  - cleanup
+  - publish
+
+before_script:
+  - echo "${CI_JOB_TOKEN}" | docker login -u "${CI_REGISTRY_USER}" "${CI_REGISTRY}" --password-stdin
+
+unit test:
+  stage: test
+  script:
+    - docker build --tag testimage .
+    - docker run testimage npm run test
+
+build image:
+  stage: build
+  script:
+    - echo "building ${IMAGE_SHORT_SHA}"
+    - docker pull ${IMAGE_SHORT_SHA} || true
+    - docker build --tag ${IMAGE_SHORT_SHA} .
+    - docker push ${IMAGE_SHORT_SHA}
+
+publish latest image:
+  stage: publish
+  script:
+    - echo "publishing ${IMAGE_LATEST}"
+    - docker pull ${IMAGE_SHORT_SHA} || true
+    - docker tag ${IMAGE_SHORT_SHA} ${IMAGE_LATEST}
+    - docker push ${IMAGE_LATEST}
+  only:
+    refs:
+      - 10-gitlab-ci
+
+publish latest tag:
+  stage: publish
+  script:
+    - IMAGE_TAG=${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}
+    - echo "publishing ${IMAGE_TAG}"
+    - docker pull ${IMAGE_SHORT_SHA} || true
+    - docker tag ${IMAGE_SHORT_SHA} ${IMAGE_TAG}
+    - docker push ${IMAGE_TAG}
+  only:
+    refs:
+      - tags
