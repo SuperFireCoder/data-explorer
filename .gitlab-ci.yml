@@ -54,6 +54,4 @@ publish tagged image:
     - docker tag ${IMAGE_SHORT_SHA} ${IMAGE_TAG}
     - docker push ${IMAGE_TAG}
   only:
-    # i.e. && condition
     - tags
-    - master
