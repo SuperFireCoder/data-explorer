@@ -52,5 +52,4 @@ publish latest tag:
     - docker tag ${IMAGE_SHORT_SHA} ${IMAGE_TAG}
     - docker push ${IMAGE_TAG}
   only:
-    refs:
-      - tags
+    - tags
