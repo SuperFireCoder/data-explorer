@@ -1,0 +1,28 @@
+version: '3.7'
+
+networks:
+  backend:
+
+services:
+  nginx:
+    image: nginx:1.19
+    restart: unless-stopped
+    ports:
+      - ${APPLICATION_PORT}:80
+    volumes:
+      - ./deployment/nginx/dev.conf.d:/etc/nginx/conf.d
+    networks:
+      backend:
+
+  app:
+    build:
+      context: .
+    command: npm run dev
+    restart: unless-stopped
+    volumes:
+      - ./tests:/srv/app/tests
+      - ./pages:/srv/app/pages
+      - ./components:/srv/app/components
+      - ./util:/srv/app/util
+    networks:
+      backend:
