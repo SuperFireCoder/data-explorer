@@ -30,6 +30,11 @@ build image:
     - docker pull ${IMAGE_SHORT_SHA} || true
     - docker build --tag ${IMAGE_SHORT_SHA} .
     - docker push ${IMAGE_SHORT_SHA}
+  only:
+    refs:
+      # i.e. || condition
+      - master
+      - tags
 
 publish latest image:
   stage: publish
