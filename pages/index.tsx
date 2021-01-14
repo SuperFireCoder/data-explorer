@@ -1,9 +1,15 @@
 import { FixedContainer, HtmlHead } from "@ecocommons-australia/ui-library";
 import { Col, Row } from "react-grid-system";
 import DatasetCard from "../components/DatasetCard";
+import bodybuilder from "bodybuilder";
+import axios from "axios";
 
 import Header from "../components/Header";
+import Pagination from "../components/Pagination";
 import { DatasetType } from "../interfaces/DatasetType";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { EsDataset } from "../interfaces/EsDataset";
+import { useRouter } from "next/router";
 
 const subBarLinks = [
     { key: "explore", href: "/data", label: "Explore data" },
@@ -19,26 +25,85 @@ const subBarLinks = [
     },
 ];
 
-const sampleDatasets = [
-    {
-        id: "123",
-        title: "Dataset 123",
-        description: "Vivamus eget nisl ac nisi fermentum faucibus. Nullam ullamcorper enim et ex fringilla interdum. Quisque at orci iaculis, vehicula ex ut, convallis lorem. Suspendisse potenti. Morbi efficitur ut lacus quis consectetur. Duis dignissim scelerisque urna, at tempor est dignissim eu. Maecenas euismod tincidunt mauris, mattis bibendum turpis suscipit nec. Mauris semper enim a risus auctor tristique nec elementum nisl. Interdum et malesuada fames ac ante ipsum primis in faucibus. Suspendisse lobortis orci vel sem tempor dictum. Integer et lacus nulla. Vestibulum feugiat, augue sed fringilla vehicula, purus nulla semper dui, vitae gravida leo ipsum ac turpis. Donec nec dolor egestas, tincidunt metus id, condimentum dolor. Nunc gravida diam sapien, at tincidunt lorem hendrerit iaculis. Nunc quis tempus purus, in malesuada sem. Ut dignissim tincidunt neque, quis iaculis orci scelerisque eu.",
-        type: {
-            type: "biological",
-            subtype: "occurrence",
-        } as DatasetType,
-        lastUpdated: new Date("2020-12-01"),
-    },
-    {
-        id: "456",
-        title: "Dataset 456",
-        description: "This is a dataset 456\n2nd line\nLorem ipsum dolor sit amet, consectetur adipiscing elit. In efficitur interdum libero sit amet ultricies. Etiam rhoncus odio id condimentum sollicitudin. Maecenas lacus nisl, interdum et libero quis, pretium imperdiet risus. Ut pharetra dui sed orci accumsan, at congue leo condimentum. Etiam gravida in lectus sed egestas. Fusce finibus rhoncus arcu at dignissim. Pellentesque nec nisi nulla. Nulla scelerisque interdum dignissim.",
-        lastUpdated: new Date("2020-10-11"),
-    },
-];
+interface QueryParameters {
+    /** Results per page */
+    pageSize?: string;
+    /** Start result index of page */
+    pageStart?: string;
+}
 
 export default function IndexPage() {
+    const router = useRouter();
+
+    const [results, setResults] = useState<any>(undefined);
+
+    const pageSettings = useMemo(() => {
+        const {
+            pageSize = "10",
+            pageStart = "0",
+        } = router.query as QueryParameters;
+
+        return {
+            pageSize: parseInt(pageSize, 10) || 10,
+            pageStart: parseInt(pageStart, 10) || 0,
+        };
+    }, [router.query]);
+
+    const totalNumberOfResults = useMemo(() => {
+        if (results === undefined) {
+            return 0;
+        }
+
+        return results.hits.total.value;
+    }, [results, pageSettings]);
+
+    const currentPageIndex = useMemo(() => {
+        return Math.floor(pageSettings.pageStart / pageSettings.pageSize);
+    }, [pageSettings]);
+
+    const maxPages = useMemo(() => {
+        return Math.ceil(totalNumberOfResults / pageSettings.pageSize);
+    }, [totalNumberOfResults, pageSettings]);
+
+    const onPageSelect = useCallback(
+        (pageIndex: number) => {
+            router.push({
+                query: {
+                    ...router.query,
+                    pageSize: pageSettings.pageSize,
+                    pageStart: pageIndex * pageSettings.pageSize,
+                },
+            });
+        },
+        [router.query, pageSettings]
+    );
+
+    useEffect(
+        function executeEsQuery() {
+            const { pageSize, pageStart } = pageSettings;
+            const query = bodybuilder()
+                .query("match_all")
+                .size(pageSize)
+                .from(pageStart)
+                .build();
+
+            axios
+                .post("http://localhost:8000/api/es/search/dataset", query)
+                .then((res) => {
+                    setResults(res.data);
+                })
+                .catch((e) => {
+                    console.error(e);
+                    alert(e.toString());
+                });
+
+            // No cleanup required here
+
+            // TODO: Cancel existing request if still running
+        },
+        [router.query, pageSettings]
+    );
+
     return (
         <>
             <HtmlHead title={["Data and Visualisations", "Explore data"]} />
@@ -48,19 +113,49 @@ export default function IndexPage() {
                 subBarActiveKey="explore"
             />
             <FixedContainer>
+                <Row style={{ marginTop: "1rem" }} align="center">
+                    <Col className="bp3-ui-text bp3-text-disabled">
+                        {totalNumberOfResults} result
+                        {totalNumberOfResults !== 1 && "s"}
+                    </Col>
+                    <Col style={{ textAlign: "right" }}>
+                        <Pagination
+                            currentIndex={currentPageIndex}
+                            max={maxPages}
+                            onSelect={onPageSelect}
+                        />
+                    </Col>
+                </Row>
                 <Row style={{ marginTop: "1rem" }}>
                     <Col>
-                        {sampleDatasets.map(
-                            ({ id, title, description, type, lastUpdated }) => (
-                                <DatasetCard
-                                    key={id}
-                                    title={title}
-                                    description={description}
-                                    type={type}
-                                    lastUpdated={lastUpdated}
-                                />
-                            )
-                        )}
+                        {results &&
+                            results.hits.hits.map(
+                                ({ _id, _source }: EsDataset) => (
+                                    <DatasetCard
+                                        key={_id}
+                                        title={_source.title}
+                                        description={_source.description}
+                                        type={
+                                            {
+                                                type:
+                                                    _source.scientific_type[0],
+                                                subtype:
+                                                    _source.scientific_type[1],
+                                            } as any
+                                        }
+                                        // lastUpdated={lastUpdated}
+                                    />
+                                )
+                            )}
+                    </Col>
+                </Row>
+                <Row style={{ marginTop: "1rem" }}>
+                    <Col style={{ textAlign: "right" }}>
+                        <Pagination
+                            currentIndex={currentPageIndex}
+                            max={maxPages}
+                            onSelect={onPageSelect}
+                        />
                     </Col>
                 </Row>
             </FixedContainer>
