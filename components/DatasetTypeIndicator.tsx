@@ -3,6 +3,7 @@ import { DatasetType } from "../interfaces/DatasetType";
 import styles from "./DatasetTypeIndicator.module.css";
 
 export interface Props {
+    /** Dataset type object */
     type: DatasetType;
 }
 

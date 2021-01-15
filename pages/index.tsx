@@ -1,15 +1,17 @@
 import { FixedContainer, HtmlHead } from "@ecocommons-australia/ui-library";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { SearchResponse } from "elasticsearch";
+import { useRouter } from "next/router";
 import { Col, Row } from "react-grid-system";
-import DatasetCard from "../components/DatasetCard";
 import bodybuilder from "bodybuilder";
 import axios from "axios";
 
 import Header from "../components/Header";
+import DatasetCard from "../components/DatasetCard";
 import Pagination from "../components/Pagination";
-import { DatasetType } from "../interfaces/DatasetType";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { EsDataset } from "../interfaces/EsDataset";
-import { useRouter } from "next/router";
+import { DatasetType } from "../interfaces/DatasetType";
+import { getDataExplorerBackendServerUrl } from "../util/env";
 
 const subBarLinks = [
     { key: "explore", href: "/data", label: "Explore data" },
@@ -35,9 +37,15 @@ interface QueryParameters {
 export default function IndexPage() {
     const router = useRouter();
 
-    const [results, setResults] = useState<any>(undefined);
+    /** Elasticsearch search response result data */
+    const [results, setResults] = useState<
+        SearchResponse<EsDataset> | undefined
+    >(undefined);
 
-    const pageSettings = useMemo(() => {
+    /**
+     * Extracts the current page parameters from the URL query parameter values.
+     */
+    const pageParameters = useMemo(() => {
         const {
             pageSize = "10",
             pageStart = "0",
@@ -50,37 +58,54 @@ export default function IndexPage() {
     }, [router.query]);
 
     const totalNumberOfResults = useMemo(() => {
+        // We'll say that there are 0 results if no data is available
         if (results === undefined) {
             return 0;
         }
 
-        return results.hits.total.value;
-    }, [results, pageSettings]);
+        const total = results.hits.total;
 
-    const currentPageIndex = useMemo(() => {
-        return Math.floor(pageSettings.pageStart / pageSettings.pageSize);
-    }, [pageSettings]);
+        // Older Elasticsearch had number for `total`?
+        if (typeof total === "number") {
+            return total;
+        } else {
+            return (total as any).value as number;
+        }
+    }, [results, pageParameters]);
 
-    const maxPages = useMemo(() => {
-        return Math.ceil(totalNumberOfResults / pageSettings.pageSize);
-    }, [totalNumberOfResults, pageSettings]);
+    const currentPageIndex = useMemo(
+        () => Math.floor(pageParameters.pageStart / pageParameters.pageSize),
+        [pageParameters]
+    );
 
+    const maxPages = useMemo(
+        () => Math.ceil(totalNumberOfResults / pageParameters.pageSize),
+        [totalNumberOfResults, pageParameters]
+    );
+
+    /**
+     * Handler to change page query parameter values via URL query parameters.
+     */
     const onPageSelect = useCallback(
         (pageIndex: number) => {
             router.push({
                 query: {
                     ...router.query,
-                    pageSize: pageSettings.pageSize,
-                    pageStart: pageIndex * pageSettings.pageSize,
+                    pageSize: pageParameters.pageSize,
+                    pageStart: pageIndex * pageParameters.pageSize,
                 },
             });
         },
-        [router.query, pageSettings]
+        [router.query, pageParameters]
     );
 
+    /**
+     * An effect to automatically execute new Elasticsearch query upon page
+     * parameter change, such as page increment or page size change.
+     */
     useEffect(
         function executeEsQuery() {
-            const { pageSize, pageStart } = pageSettings;
+            const { pageSize, pageStart } = pageParameters;
             const query = bodybuilder()
                 .query("match_all")
                 .size(pageSize)
@@ -88,7 +113,10 @@ export default function IndexPage() {
                 .build();
 
             axios
-                .post("http://localhost:8000/api/es/search/dataset", query)
+                .post<SearchResponse<EsDataset>>(
+                    `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
+                    query
+                )
                 .then((res) => {
                     setResults(res.data);
                 })
@@ -101,7 +129,7 @@ export default function IndexPage() {
 
             // TODO: Cancel existing request if still running
         },
-        [router.query, pageSettings]
+        [pageParameters]
     );
 
     return (
@@ -129,24 +157,22 @@ export default function IndexPage() {
                 <Row style={{ marginTop: "1rem" }}>
                     <Col>
                         {results &&
-                            results.hits.hits.map(
-                                ({ _id, _source }: EsDataset) => (
-                                    <DatasetCard
-                                        key={_id}
-                                        title={_source.title}
-                                        description={_source.description}
-                                        type={
-                                            {
-                                                type:
-                                                    _source.scientific_type[0],
-                                                subtype:
-                                                    _source.scientific_type[1],
-                                            } as any
-                                        }
-                                        // lastUpdated={lastUpdated}
-                                    />
-                                )
-                            )}
+                            results.hits.hits.map(({ _id, _source }) => (
+                                <DatasetCard
+                                    key={_id}
+                                    title={_source.title}
+                                    description={_source.description}
+                                    type={
+                                        // TODO: Clarify values for "scientific_type"
+                                        ({
+                                            type: _source.scientific_type[0],
+                                            subtype: _source.scientific_type[1],
+                                        } as unknown) as DatasetType
+                                    }
+                                    // TODO: Add modification date into ES index
+                                    // lastUpdated={lastUpdated}
+                                />
+                            ))}
                     </Col>
                 </Row>
                 <Row style={{ marginTop: "1rem" }}>
