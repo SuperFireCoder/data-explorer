@@ -12,6 +12,7 @@ import Pagination from "../components/Pagination";
 import { EsDataset } from "../interfaces/EsDataset";
 import { DatasetType } from "../interfaces/DatasetType";
 import { getDataExplorerBackendServerUrl } from "../util/env";
+import { useKeycloakInfo } from "../util/keycloak";
 
 const subBarLinks = [
     { key: "explore", href: "/data", label: "Explore data" },
@@ -35,7 +36,10 @@ interface QueryParameters {
 }
 
 export default function IndexPage() {
+    const { keycloak } = useKeycloakInfo();
     const router = useRouter();
+
+    const keycloakToken = keycloak?.token;
 
     /** Elasticsearch search response result data */
     const [results, setResults] = useState<
@@ -112,10 +116,20 @@ export default function IndexPage() {
                 .from(pageStart)
                 .build();
 
+            // `Authorization` header depends on whether token is available
+            const headers: Record<string, string> = {};
+
+            if (keycloakToken && keycloakToken.length > 0) {
+                headers["Authorization"] = `Bearer ${keycloakToken}`;
+            }
+
+            const esQueryCancelToken = axios.CancelToken.source();
+
             axios
                 .post<SearchResponse<EsDataset>>(
                     `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
-                    query
+                    query,
+                    { headers, cancelToken: esQueryCancelToken.token }
                 )
                 .then((res) => {
                     setResults(res.data);
@@ -125,11 +139,12 @@ export default function IndexPage() {
                     alert(e.toString());
                 });
 
-            // No cleanup required here
-
-            // TODO: Cancel existing request if still running
+            return function stopOngoingEsQuery() {
+                // Cancel the ES query if it is still running
+                esQueryCancelToken.cancel();
+            };
         },
-        [pageParameters]
+        [pageParameters, keycloakToken]
     );
 
     return (
