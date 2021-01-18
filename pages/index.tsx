@@ -157,11 +157,17 @@ export default function IndexPage() {
             />
             <FixedContainer>
                 <Row style={{ marginTop: "1rem" }} align="center">
-                    <Col className="bp3-ui-text bp3-text-disabled">
+                    <Col
+                        className="bp3-ui-text bp3-text-disabled"
+                        data-testid="results-count"
+                    >
                         {totalNumberOfResults} result
                         {totalNumberOfResults !== 1 && "s"}
                     </Col>
-                    <Col style={{ textAlign: "right" }}>
+                    <Col
+                        style={{ textAlign: "right" }}
+                        data-testid="pagination-buttons"
+                    >
                         <Pagination
                             currentIndex={currentPageIndex}
                             max={maxPages}
@@ -174,6 +180,7 @@ export default function IndexPage() {
                         {results &&
                             results.hits.hits.map(({ _id, _source }) => (
                                 <DatasetCard
+                                    data-testid="dataset-card"
                                     key={_id}
                                     title={_source.title}
                                     description={_source.description}

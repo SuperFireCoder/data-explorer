@@ -18,6 +18,7 @@ export default function Pagination({ currentIndex, max, onSelect }: Props) {
             <Button
                 onClick={onSelect ? () => onSelect(i) : undefined}
                 intent={i === currentIndex ? "primary" : "none"}
+                data-testid="pagination-button"
             >
                 {i + 1}
             </Button>
