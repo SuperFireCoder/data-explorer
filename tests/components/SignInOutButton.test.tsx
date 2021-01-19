@@ -15,6 +15,13 @@ jest.mock("../../util/keycloak", () => ({
     useKeycloakInfo: jest.fn(() => defaultKeycloakInfo),
 }));
 
+afterEach(() => {
+    // Reset mocks
+    keycloakUtil.useKeycloakInfo
+        .mockReset()
+        .mockImplementation(() => defaultKeycloakInfo);
+});
+
 describe("SignInOutButton", () => {
     it("renders correct state when signed out", () => {
         const button = render(<SignInOutButton />);
@@ -29,14 +36,12 @@ describe("SignInOutButton", () => {
             },
             initialized: true,
         };
-        const kcMock = keycloakUtil.useKeycloakInfo.mockImplementation(
+
+        jest.spyOn(keycloakUtil, "useKeycloakInfo").mockImplementation(
             () => signInKeycloakInfo
         );
 
         const button = render(<SignInOutButton />);
         expect(button.container.textContent).toBe("Sign out");
-
-        // Restore mock
-        kcMock.mockRestore();
     });
 });

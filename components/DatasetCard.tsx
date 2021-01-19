@@ -47,7 +47,10 @@ export default function DatasetCard({
                         </p>
                     )}
                     {lastUpdated && (
-                        <div className="bp3-text-small bp3-text-disabled">
+                        <div
+                            className="bp3-text-small bp3-text-disabled"
+                            data-testid="last-updated-date"
+                        >
                             Updated: {getDDMMMYYYY(lastUpdated)}
                         </div>
                     )}

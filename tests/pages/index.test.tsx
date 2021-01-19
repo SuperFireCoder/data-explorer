@@ -1,10 +1,4 @@
-import {
-    render,
-    waitFor,
-    screen,
-    act,
-    findAllByTestId,
-} from "@testing-library/react";
+import { render, screen, act, findAllByTestId } from "@testing-library/react";
 import IndexPage from "../../pages/index";
 import mockAxios from "jest-mock-axios";
 
@@ -36,7 +30,13 @@ jest.mock("next/router", () => ({
 }));
 
 afterEach(() => {
-    // Reset axios mock
+    // Reset mocks
+    keycloakUtil.useKeycloakInfo
+        .mockReset()
+        .mockImplementation(() => defaultKeycloakInfo);
+    nextRouter.useRouter
+        .mockReset()
+        .mockImplementation(() => defaultNextUseRouter);
     mockAxios.reset();
 });
 
@@ -108,7 +108,7 @@ describe("IndexPage", () => {
             },
         };
 
-        const routerMock = nextRouter.useRouter.mockImplementation(
+        jest.spyOn(nextRouter, "useRouter").mockImplementation(
             () => thisPageRouter
         );
 
@@ -148,7 +148,29 @@ describe("IndexPage", () => {
         expect(paginationButtons[2].className).not.toMatch(
             "bp3-intent-primary"
         );
+    });
 
-        routerMock.mockRestore();
+    it("provides Authorization header with current session's token when signed in", async () => {
+        // Mock keycloak
+        const keycloakInfo = {
+            ...defaultKeycloakInfo,
+            keycloak: {
+                authenticated: true,
+                token: "TEST_KEYCLOAK_TOKEN_USUALLY_BASE64_ENCODED",
+            },
+        };
+
+        jest.spyOn(keycloakUtil, "useKeycloakInfo").mockImplementation(
+            () => keycloakInfo
+        );
+
+        render(<IndexPage />);
+
+        expect(mockAxios.post).toHaveBeenCalledTimes(1);
+
+        expect(mockAxios.post.mock.calls[0][2]).toHaveProperty(
+            ["headers", "Authorization"],
+            "Bearer TEST_KEYCLOAK_TOKEN_USUALLY_BASE64_ENCODED"
+        );
     });
 });
