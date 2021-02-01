@@ -1,14 +1,18 @@
 # set this ARG globally across builds
 ARG NODE_ENV=development
 
-# build with "devDependencies" (needed for TS)
-FROM node:12 as builder
+# base image with common settings
+FROM node:12 as base
 
 WORKDIR /srv/app
 
 COPY package*.json ./
 
 RUN npm config set @ecocommons-australia:registry https://gitlab.com/api/v4/packages/npm/
+
+# build builder stage with "devDependencies" (needed for TS)
+FROM base as builder
+
 RUN npm ci
 
 COPY . .
@@ -18,17 +22,16 @@ ENV NODE_ENV=$NODE_ENV
 
 RUN npm run build
 
-# second stage uses app with only "dependencies" installed
-FROM node:12
+# release stage uses app with only "dependencies" installed if NODE_ENV=production
+FROM base as release
 
 ENV NODE_ENV=$NODE_ENV
 
 WORKDIR /srv/app
 
 COPY --from=builder /srv/app/.next ./.next
-COPY package*.json ./
 
-RUN npm config set @ecocommons-australia:registry https://gitlab.com/api/v4/packages/npm/
+# install node modules again (dependent on NODE_ENV)
 RUN npm ci
 
 EXPOSE 3000
