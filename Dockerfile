@@ -7,6 +7,7 @@ FROM node:12 as base
 WORKDIR /srv/app
 
 COPY package*.json ./
+COPY . .
 
 RUN npm config set @ecocommons-australia:registry https://gitlab.com/api/v4/packages/npm/
 
@@ -14,8 +15,6 @@ RUN npm config set @ecocommons-australia:registry https://gitlab.com/api/v4/pack
 FROM base as builder
 
 RUN npm ci
-
-COPY . .
 
 # set ENV here as build will fail without TS dependencies
 ENV NODE_ENV=$NODE_ENV

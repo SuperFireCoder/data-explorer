@@ -21,7 +21,7 @@ unit test:
   stage: test
   script:
     - docker build --tag testimage .
-    - docker run -v :/srv/app/node_modules -v $(pwd):/srv/app testimage npm run test
+    - docker run testimage npm run test
 
 build image:
   stage: build
