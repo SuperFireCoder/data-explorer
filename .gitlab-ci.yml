@@ -27,7 +27,7 @@ build image:
   stage: build
   script:
     - echo "building ${IMAGE_SHORT_SHA}"
-    - cat ${dot_env_dot_production_ecocommons_dev} > .env.production
+    - cat ${DOT_ENV_DOT_LOCAL_ECOCOMMONS_DEV} > .env.local
     - docker pull ${IMAGE_SHORT_SHA} || true
     - docker build --tag ${IMAGE_SHORT_SHA} --build-arg NODE_ENV=production .
     - docker push ${IMAGE_SHORT_SHA}
