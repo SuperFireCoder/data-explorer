@@ -3,6 +3,10 @@ module.exports = {
     setupFilesAfterEnv: ["<rootDir>/setupTests.js"],
     transform: {
         "^.+\\.(js|jsx|ts|tsx)$": "<rootDir>/node_modules/babel-jest",
-        "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+        ".+\\.(css|styl|less|sass|scss)$": "jest-css-modules-transform",
     },
+    coveragePathIgnorePatterns: [
+        "/node_modules/",
+        ".+\\.(css|styl|less|sass|scss)$",
+    ],
 };

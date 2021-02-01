@@ -1,0 +1,15 @@
+.datasetCard + .datasetCard {
+    margin-top: 1rem;
+}
+
+.description {
+    white-space: pre-wrap;
+
+    /* Limit description display to no more than 3 lines */
+    /* https://stackoverflow.com/a/13924997 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
