@@ -1,10 +1,13 @@
 # set this ARG globally across builds
 ARG NODE_ENV=development
+ARG BUILD_DIR=/srv/app
 
 # base image with common settings
 FROM node:12 as base
 
-WORKDIR /srv/app
+ARG BUILD_DIR
+
+WORKDIR $BUILD_DIR
 
 COPY package*.json ./
 COPY . .
@@ -32,9 +35,11 @@ RUN npm run build
 FROM base as release
 
 ARG NODE_ENV
+ARG BUILD_DIR
+
 ENV NODE_ENV=$NODE_ENV
 
-COPY --from=builder-nextjs /srv/app/.next ./.next
+COPY --from=builder-nextjs $BUILD_DIR/.next ./.next
 
 # install node modules again (dependent on NODE_ENV)
 RUN npm ci
