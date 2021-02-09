@@ -17,6 +17,9 @@ services:
   app:
     build:
       context: .
+      args:
+        NODE_ENV: development
+        BUILD_DIR: /srv/app
     command: npm run dev
     restart: unless-stopped
     volumes:

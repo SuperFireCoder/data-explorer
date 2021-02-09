@@ -1,4 +1,4 @@
-# set this ARG globally across builds
+# set these ARG globally across builds
 ARG NODE_ENV=development
 ARG BUILD_DIR=/srv/app
 
@@ -15,21 +15,16 @@ COPY . .
 RUN npm config set @ecocommons-australia:registry https://gitlab.com/api/v4/packages/npm/
 
 # build builder-* stages with "devDependencies" (needed for TS)
-FROM base as builder-node_modules
+FROM base as builder
 
 # need TS dependencies for build
-ENV NODE_ENV=development
 RUN npm ci
 
-# use devDependencies from previous stage to build production version
-FROM base as builder-nextjs
-
-# set ARG here as build will fail without TS dependencies
-ARG NODE_ENV
-
-COPY --from=builder-node_modules /srv/app/node_modules ./node_modules
-
 RUN npm run build
+
+# set ARG here as build will fail without TS dependencies if NODE_ENV=production
+ARG NODE_ENV
+RUN npm ci
 
 # release stage uses app with only "dependencies" installed if NODE_ENV=production
 FROM base as release
@@ -39,11 +34,12 @@ ARG BUILD_DIR
 
 ENV NODE_ENV=$NODE_ENV
 
-COPY --from=builder-nextjs $BUILD_DIR/.next ./.next
-
-# install node modules again (dependent on NODE_ENV)
-RUN npm ci
+COPY --from=builder $BUILD_DIR/.next ./.next
+COPY --from=builder $BUILD_DIR/node_modules ./node_modules
 
 EXPOSE 3000
+
+RUN chown -R node:node ./ 
+USER node
 
 CMD npm run start
