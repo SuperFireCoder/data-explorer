@@ -185,11 +185,17 @@ export default function IndexPage() {
                                     title={_source.title}
                                     description={_source.description}
                                     type={
-                                        // TODO: Clarify values for "scientific_type"
-                                        ({
-                                            type: _source.scientific_type[0],
-                                            subtype: _source.scientific_type[1],
-                                        } as unknown) as DatasetType
+                                        _source.status === "SUCCESS"
+                                            ? // TODO: Clarify values for "scientific_type"
+                                              (({
+                                                  type:
+                                                      _source
+                                                          .scientific_type[0],
+                                                  subtype:
+                                                      _source
+                                                          .scientific_type[1],
+                                              } as unknown) as DatasetType)
+                                            : undefined
                                     }
                                     // TODO: Add modification date into ES index
                                     // lastUpdated={lastUpdated}
