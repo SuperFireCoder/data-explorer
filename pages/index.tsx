@@ -182,6 +182,7 @@ export default function IndexPage() {
                                 <DatasetCard
                                     data-testid="dataset-card"
                                     key={_id}
+                                    datasetId={_id}
                                     title={_source.title}
                                     description={_source.description}
                                     type={
