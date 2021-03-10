@@ -19,8 +19,6 @@ export default function MetadataView({ datasetId }: Props) {
             const cancellationToken = axios.CancelToken.source();
 
             (async () => {
-                const datasetId = "d5431552-5c7c-11eb-9e92-0242c0a8d005";
-
                 const { data } = await axios.get(
                     `${getDataExplorerBackendServerUrl()}/api/dataset/${datasetId}`,
                     {

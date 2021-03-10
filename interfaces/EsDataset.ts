@@ -17,4 +17,5 @@ export interface EsDataset {
     emsc: unknown;
     scientific_type: readonly string[];
     status: string;
+    uuid: string;
 }
