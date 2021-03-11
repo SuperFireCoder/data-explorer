@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { H4, H6, Icon } from "@blueprintjs/core";
+import { H4, H6, Icon, Pre } from "@blueprintjs/core";
 
 import { useKeycloakInfo } from "../util/keycloak";
 import { getDataExplorerBackendServerUrl } from "../util/env";
@@ -85,6 +85,18 @@ export default function MetadataView({ datasetId }: Props) {
                 "Scientific name": bccvlMetadata.scientificName?.join(" "),
                 // Raster
                 Resolution: bccvlMetadata.resolution,
+                Layers: data.rangeAlternates["dmgr:tiff"] && (
+                    <ul>
+                        {Object.entries(data.rangeAlternates["dmgr:tiff"]).map(
+                            ([layer, data]) => (
+                                <li key={layer}>
+                                    <H6>{layer}</H6>
+                                    <Pre>{JSON.stringify(data, null, 2)}</Pre>
+                                </li>
+                            )
+                        )}
+                    </ul>
+                ),
                 // Dataset
                 "Year range":
                     bccvlMetadata.year_range &&
