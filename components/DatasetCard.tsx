@@ -1,19 +1,11 @@
-import {
-    Button,
-    ButtonGroup,
-    Card,
-    Drawer,
-    Classes,
-    H3,
-    Position,
-} from "@blueprintjs/core";
+import { Button, ButtonGroup, Card, H3 } from "@blueprintjs/core";
 import classnames from "classnames";
 import { Col, Row } from "react-grid-system";
-import { ReactNode, useState } from "react";
+import { ReactNode, useCallback, useState } from "react";
 import { DatasetType } from "../interfaces/DatasetType";
 import { getDDMMMYYYY } from "../util/date";
 import DatasetTypeIndicator from "./DatasetTypeIndicator";
-import MetadataView from "./MetadataView";
+import MetadataDrawer from "./MetadataDrawer";
 
 import styles from "./DatasetCard.module.css";
 
@@ -37,7 +29,19 @@ export default function DatasetCard({
     type,
     lastUpdated,
 }: Props) {
-    const [metadataOpen, setMetadataOpen] = useState<boolean>(false);
+    const [metadataDrawerOpen, setMetadataDrawerOpen] = useState<boolean>(
+        false
+    );
+
+    const openMetadataDrawer = useCallback(
+        () => setMetadataDrawerOpen(true),
+        []
+    );
+
+    const closeMetadataDrawer = useCallback(
+        () => setMetadataDrawerOpen(false),
+        []
+    );
 
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
@@ -78,7 +82,7 @@ export default function DatasetCard({
                             <Button
                                 icon="info-sign"
                                 intent="primary"
-                                onClick={() => setMetadataOpen(true)}
+                                onClick={openMetadataDrawer}
                             >
                                 Info
                             </Button>
@@ -89,27 +93,12 @@ export default function DatasetCard({
                     </Col>
                 </Row>
             </Card>
-            <Drawer
-                icon="info-sign"
-                onClose={() => setMetadataOpen(false)}
-                title={title}
-                autoFocus
-                canEscapeKeyClose
-                canOutsideClickClose
-                enforceFocus
-                hasBackdrop
-                isOpen={metadataOpen}
-                position={Position.RIGHT}
-                size="50%"
-                usePortal
-            >
-                <div className={Classes.DRAWER_BODY}>
-                    <div className={Classes.DIALOG_BODY}>
-                        <MetadataView datasetId={datasetId} />
-                    </div>
-                </div>
-                {/* <div className={Classes.DRAWER_FOOTER}>Footer</div> */}
-            </Drawer>
+            <MetadataDrawer
+                drawerTitle={title}
+                datasetId={datasetId}
+                isOpen={metadataDrawerOpen}
+                onClose={closeMetadataDrawer}
+            />
         </>
     );
 }
