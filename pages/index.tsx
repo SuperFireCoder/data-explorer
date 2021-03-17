@@ -135,7 +135,13 @@ export default function IndexPage() {
                     setResults(res.data);
                 })
                 .catch((e) => {
+                    // Ignore cancellation events
+                    if (axios.isCancel(e)) {
+                        return;
+                    }
+
                     console.error(e);
+
                     alert(e.toString());
                 });
 
