@@ -1,10 +1,22 @@
-import { FixedContainer, HtmlHead } from "@ecocommons-australia/ui-library";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+    FixedContainer,
+    HtmlHead,
+    Col,
+    Row,
+} from "@ecocommons-australia/ui-library";
+import {
+    FormEvent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import { SearchResponse } from "elasticsearch";
 import { useRouter } from "next/router";
-import { Col, Row } from "react-grid-system";
 import bodybuilder from "bodybuilder";
 import axios from "axios";
+import { InputGroup, Button } from "@blueprintjs/core";
 
 import Header from "../components/Header";
 import DatasetCard from "../components/DatasetCard";
@@ -33,11 +45,14 @@ interface QueryParameters {
     pageSize?: string;
     /** Start result index of page */
     pageStart?: string;
+    /** Search query string */
+    searchQuery?: string;
 }
 
 export default function IndexPage() {
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
+    const searchRef = useRef<HTMLInputElement | null>(null);
 
     const keycloakToken = keycloak?.token;
 
@@ -53,11 +68,13 @@ export default function IndexPage() {
         const {
             pageSize = "10",
             pageStart = "0",
+            searchQuery = "",
         } = router.query as QueryParameters;
 
         return {
             pageSize: parseInt(pageSize, 10) || 10,
             pageStart: parseInt(pageStart, 10) || 0,
+            searchQuery,
         };
     }, [router.query]);
 
@@ -103,18 +120,48 @@ export default function IndexPage() {
         [router.query, pageParameters]
     );
 
+    const handleQueryFormSubmit = useCallback(
+        (e: FormEvent) => {
+            e.preventDefault();
+
+            // Get the search box value
+            const searchQuery = searchRef.current?.value?.trim() || "";
+
+            router.push({
+                query: {
+                    ...router.query,
+                    searchQuery,
+                    // New queries must start at page 0
+                    pageStart: 0,
+                },
+            });
+        },
+        [router.query]
+    );
+
     /**
      * An effect to automatically execute new Elasticsearch query upon page
      * parameter change, such as page increment or page size change.
      */
     useEffect(
         function executeEsQuery() {
-            const { pageSize, pageStart } = pageParameters;
-            const query = bodybuilder()
-                .query("match_all")
-                .size(pageSize)
-                .from(pageStart)
-                .build();
+            const { pageSize, pageStart, searchQuery } = pageParameters;
+
+            // Start building Elasticsearch query
+            let queryBuilder = bodybuilder().size(pageSize).from(pageStart);
+
+            if (searchQuery.length === 0) {
+                // If search box is empty, attempt to fetch all
+                queryBuilder = queryBuilder.query("match_all");
+            } else {
+                // The search box value is used for a query against title
+                // and description
+                queryBuilder = queryBuilder
+                    .orQuery("match", "title", searchQuery)
+                    .orQuery("match", "description", searchQuery);
+            }
+
+            const query = queryBuilder.build();
 
             // `Authorization` header depends on whether token is available
             const headers: Record<string, string> = {};
@@ -162,7 +209,34 @@ export default function IndexPage() {
                 subBarActiveKey="explore"
             />
             <FixedContainer>
-                <Row style={{ marginTop: "1rem" }} align="center">
+                <Row>
+                    <Col>
+                        <form onSubmit={handleQueryFormSubmit}>
+                            <InputGroup
+                                type="search"
+                                leftIcon="search"
+                                rightElement={
+                                    <Button
+                                        type="submit"
+                                        data-testid="search-submit-button"
+                                        small
+                                        style={{
+                                            borderRadius: "30px",
+                                            padding: "0 0.8rem",
+                                        }}
+                                    >
+                                        Search
+                                    </Button>
+                                }
+                                id="dataset-search"
+                                inputRef={searchRef}
+                                placeholder="Search datasets..."
+                                defaultValue={pageParameters.searchQuery}
+                            />
+                        </form>
+                    </Col>
+                </Row>
+                <Row align="center">
                     <Col
                         className="bp3-ui-text bp3-text-disabled"
                         data-testid="results-count"
@@ -181,7 +255,7 @@ export default function IndexPage() {
                         />
                     </Col>
                 </Row>
-                <Row style={{ marginTop: "1rem" }}>
+                <Row>
                     <Col>
                         {results &&
                             results.hits.hits.map(({ _id, _source }) => (
