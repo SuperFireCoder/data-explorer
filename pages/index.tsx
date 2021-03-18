@@ -260,9 +260,15 @@ export default function IndexPage() {
                 isEmptyQuery = false;
 
                 // Add all selected GCM facet values
+                let innerQuery = bodybuilder();
+
                 facetGcm.forEach(
-                    (x) =>
-                        (queryBuilder = queryBuilder.orQuery("match", "gcm", x))
+                    (x) => (innerQuery = innerQuery.orQuery("match", "gcm", x))
+                );
+
+                queryBuilder = queryBuilder.query(
+                    "bool",
+                    (innerQuery.build() as any).query.bool
                 );
             }
 
@@ -271,9 +277,14 @@ export default function IndexPage() {
 
                 // The search box value is used for a query against title
                 // and description
-                queryBuilder = queryBuilder
+                const innerQuery = bodybuilder()
                     .orQuery("match", "title", searchQuery)
                     .orQuery("match", "description", searchQuery);
+
+                queryBuilder = queryBuilder.query(
+                    "bool",
+                    (innerQuery.build() as any).query.bool
+                );
             }
 
             // If query empty, attempt to fetch all
