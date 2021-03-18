@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@blueprintjs/core": "3.35.0",
+    "@blueprintjs/select": "3.15.8",
     "@ecocommons-australia/ui-library": "1.0.6",
     "@react-keycloak/ssr": "3.3.0",
     "axios": "0.21.1",

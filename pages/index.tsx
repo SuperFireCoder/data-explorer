@@ -16,7 +16,8 @@ import { SearchResponse } from "elasticsearch";
 import { useRouter } from "next/router";
 import bodybuilder from "bodybuilder";
 import axios from "axios";
-import { InputGroup, Button } from "@blueprintjs/core";
+import { InputGroup, Button, MenuItem } from "@blueprintjs/core";
+import { ItemRenderer, MultiSelect } from "@blueprintjs/select";
 import { ParsedUrlQueryInput } from "querystring";
 
 import Header from "../components/Header";
@@ -48,6 +49,15 @@ interface QueryParameters {
     pageStart?: string;
     /** Search query string */
     searchQuery?: string;
+
+    facetYearMin?: string;
+    facetYearMax?: string;
+    facetTimeDomain?: string | string[];
+    facetSpatialDomain?: string | string[];
+    facetResolution?: string | string[];
+    facetGcm?: string | string[];
+    facetDomain?: string | string[];
+    facetScientificType?: string | string[];
 }
 
 function stripEmptyStringQueryParams(
@@ -74,6 +84,8 @@ export default function IndexPage() {
         SearchResponse<EsDataset> | undefined
     >(undefined);
 
+    const [selectedFacetGcm, setSelectedFacetGcm] = useState<string[]>([]);
+
     /**
      * Extracts the current page parameters from the URL query parameter values.
      */
@@ -82,12 +94,14 @@ export default function IndexPage() {
             pageSize = "10",
             pageStart = "0",
             searchQuery = "",
+            facetGcm = [],
         } = router.query as QueryParameters;
 
         return {
             pageSize: parseInt(pageSize, 10) || 10,
             pageStart: parseInt(pageStart, 10) || 0,
             searchQuery,
+            facetGcm: typeof facetGcm === "string" ? [facetGcm] : facetGcm,
         };
     }, [router.query]);
 
@@ -152,11 +166,61 @@ export default function IndexPage() {
             setQueryParams({
                 searchQuery,
 
+                facetGcm: selectedFacetGcm.length > 0 ? selectedFacetGcm : "",
+
                 // New queries must start at page 0
                 pageStart: "0",
             });
         },
-        [setQueryParams]
+        [setQueryParams, selectedFacetGcm]
+    );
+
+    const renderStringValueMenuItem = useCallback<ItemRenderer<string>>(
+        (stringValue, { modifiers, handleClick }) => {
+            // Filter out items which don't match the query in the box
+            if (!modifiers.matchesPredicate) {
+                return null;
+            }
+
+            return (
+                <MenuItem
+                    active={modifiers.active}
+                    key={stringValue}
+                    label={stringValue}
+                    onClick={handleClick}
+                    text={stringValue}
+                    // Keep select menu list open after selection
+                    shouldDismissPopover={false}
+                />
+            );
+        },
+        []
+    );
+
+    const renderStringTag = useCallback((string) => string, []);
+
+    const handleItemSelect = useCallback((selectedGcm: string) => {
+        setSelectedFacetGcm((gcm) => {
+            // If already present, remove
+            if (gcm.includes(selectedGcm)) {
+                const gcmCopy = [...gcm];
+                gcmCopy.splice(gcm.indexOf(selectedGcm), 1);
+                return gcmCopy;
+            }
+
+            // Otherwise append
+            return [...gcm, selectedGcm];
+        });
+    }, []);
+
+    const handleTagRemove = useCallback(
+        (_tag, i) =>
+            setSelectedFacetGcm((gcm) => {
+                const gcmCopy = [...gcm];
+                gcmCopy.splice(i, 1);
+                return gcmCopy;
+            }),
+        []
     );
 
     /**
@@ -165,20 +229,56 @@ export default function IndexPage() {
      */
     useEffect(
         function executeEsQuery() {
-            const { pageSize, pageStart, searchQuery } = pageParameters;
+            const {
+                pageSize,
+                pageStart,
+                searchQuery,
+                facetGcm,
+            } = pageParameters;
 
             // Start building Elasticsearch query
-            let queryBuilder = bodybuilder().size(pageSize).from(pageStart);
+            let queryBuilder = bodybuilder()
+                .size(pageSize)
+                .from(pageStart)
+                // Facets are built up using aggregations
+                //
+                // For `year`, get the min and max values for the UI to
+                // construct a range slide
+                .aggregation("min", "year", "facetYearMin")
+                .aggregation("max", "year", "facetYearMax")
+                // All other aggregations are buckets of simple string values
+                .aggregation("terms", "time_domain", "facetTimeDomain")
+                .aggregation("terms", "spatial_domain", "facetSpatialDomain")
+                .aggregation("terms", "resolution", "facetResolution")
+                .aggregation("terms", "gcm", "facetGcm")
+                .aggregation("terms", "domain", "facetDomain")
+                .aggregation("terms", "scientific_type", "facetScientificType");
 
-            if (searchQuery.length === 0) {
-                // If search box is empty, attempt to fetch all
-                queryBuilder = queryBuilder.query("match_all");
-            } else {
+            let isEmptyQuery = true;
+
+            if (facetGcm.length > 0) {
+                isEmptyQuery = false;
+
+                // Add all selected GCM facet values
+                facetGcm.forEach(
+                    (x) =>
+                        (queryBuilder = queryBuilder.orQuery("match", "gcm", x))
+                );
+            }
+
+            if (searchQuery.length !== 0) {
+                isEmptyQuery = false;
+
                 // The search box value is used for a query against title
                 // and description
                 queryBuilder = queryBuilder
                     .orQuery("match", "title", searchQuery)
                     .orQuery("match", "description", searchQuery);
+            }
+
+            // If query empty, attempt to fetch all
+            if (isEmptyQuery) {
+                queryBuilder = queryBuilder.query("match_all");
             }
 
             const query = queryBuilder.build();
@@ -235,24 +335,33 @@ export default function IndexPage() {
                             <InputGroup
                                 type="search"
                                 leftIcon="search"
-                                rightElement={
-                            <Button
-                                type="submit"
-                                data-testid="search-submit-button"
-                                        small
-                                        style={{
-                                            borderRadius: "30px",
-                                            padding: "0 0.8rem",
-                                        }}
-                            >
-                                Search
-                            </Button>
-                                }
                                 id="dataset-search"
                                 inputRef={searchRef}
                                 placeholder="Search datasets..."
                                 defaultValue={pageParameters.searchQuery}
                             />
+                            <h4>GCM</h4>
+                            <MultiSelect<string>
+                                items={
+                                    results?.aggregations?.facetGcm?.buckets?.map(
+                                        (x: any) => x.key
+                                    ) || []
+                                }
+                                itemRenderer={renderStringValueMenuItem}
+                                onItemSelect={handleItemSelect}
+                                tagRenderer={renderStringTag}
+                                tagInputProps={{
+                                    onRemove: handleTagRemove,
+                                }}
+                                selectedItems={selectedFacetGcm}
+                                resetOnSelect
+                            />
+                            <Button
+                                type="submit"
+                                data-testid="search-submit-button"
+                            >
+                                Search
+                            </Button>
                         </form>
                     </Col>
                 </Row>
