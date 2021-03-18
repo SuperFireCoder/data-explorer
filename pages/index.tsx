@@ -184,8 +184,8 @@ export default function IndexPage() {
 
             return (
                 <MenuItem
-                    active={modifiers.active}
                     key={stringValue}
+                    active={modifiers.active}
                     label={stringValue}
                     onClick={handleClick}
                     text={stringValue}
@@ -201,6 +201,8 @@ export default function IndexPage() {
 
     const handleItemSelect = useCallback((selectedGcm: string) => {
         setSelectedFacetGcm((gcm) => {
+            console.log(selectedGcm);
+
             // If already present, remove
             if (gcm.includes(selectedGcm)) {
                 const gcmCopy = [...gcm];
@@ -351,6 +353,19 @@ export default function IndexPage() {
                                 placeholder="Search datasets..."
                                 defaultValue={pageParameters.searchQuery}
                             />
+                            <Button
+                                type="submit"
+                                data-testid="search-submit-button"
+                            >
+                                Search
+                            </Button>
+                        </form>
+
+                        <form
+                            onSubmit={(e) => {
+                                e.stopPropagation(), e.preventDefault();
+                            }}
+                        >
                             <h4>GCM</h4>
                             <MultiSelect<string>
                                 items={
@@ -365,14 +380,15 @@ export default function IndexPage() {
                                     onRemove: handleTagRemove,
                                 }}
                                 selectedItems={selectedFacetGcm}
+                                noResults={
+                                    <MenuItem
+                                        disabled
+                                        text="No options available"
+                                    />
+                                }
                                 resetOnSelect
+                                fill
                             />
-                            <Button
-                                type="submit"
-                                data-testid="search-submit-button"
-                            >
-                                Search
-                            </Button>
                         </form>
                     </Col>
                 </Row>
