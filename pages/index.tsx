@@ -17,7 +17,7 @@ import { useRouter } from "next/router";
 import bodybuilder from "bodybuilder";
 import axios from "axios";
 import { InputGroup, Button, MenuItem } from "@blueprintjs/core";
-import { ItemRenderer, MultiSelect } from "@blueprintjs/select";
+import { ItemPredicate, ItemRenderer, MultiSelect } from "@blueprintjs/select";
 import { ParsedUrlQueryInput } from "querystring";
 
 import Header from "../components/Header";
@@ -185,8 +185,12 @@ export default function IndexPage() {
             return (
                 <MenuItem
                     key={stringValue}
+                    icon={
+                        selectedFacetGcm.includes(stringValue)
+                            ? "tick"
+                            : "blank"
+                    }
                     active={modifiers.active}
-                    label={stringValue}
                     onClick={handleClick}
                     text={stringValue}
                     // Keep select menu list open after selection
@@ -194,7 +198,7 @@ export default function IndexPage() {
                 />
             );
         },
-        []
+        [selectedFacetGcm]
     );
 
     const renderStringTag = useCallback((string) => string, []);
@@ -222,6 +226,14 @@ export default function IndexPage() {
                 gcmCopy.splice(i, 1);
                 return gcmCopy;
             }),
+        []
+    );
+
+    const menuItemPredicateFilter = useCallback<ItemPredicate<string>>(
+        (query, item, _index, exactMatch) =>
+            exactMatch
+                ? item === query
+                : item.toLowerCase().indexOf(query.toLowerCase()) >= 0,
         []
     );
 
@@ -374,6 +386,7 @@ export default function IndexPage() {
                                     ) || []
                                 }
                                 itemRenderer={renderStringValueMenuItem}
+                                itemPredicate={menuItemPredicateFilter}
                                 onItemSelect={handleItemSelect}
                                 tagRenderer={renderStringTag}
                                 tagInputProps={{
@@ -386,7 +399,8 @@ export default function IndexPage() {
                                         text="No options available"
                                     />
                                 }
-                                resetOnSelect
+                                resetOnSelect={false}
+                                resetOnQuery={false}
                                 fill
                             />
                         </form>
