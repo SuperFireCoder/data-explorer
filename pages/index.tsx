@@ -17,6 +17,7 @@ import { useRouter } from "next/router";
 import bodybuilder from "bodybuilder";
 import axios from "axios";
 import { InputGroup, Button } from "@blueprintjs/core";
+import { ParsedUrlQueryInput } from "querystring";
 
 import Header from "../components/Header";
 import DatasetCard from "../components/DatasetCard";
@@ -47,6 +48,18 @@ interface QueryParameters {
     pageStart?: string;
     /** Search query string */
     searchQuery?: string;
+}
+
+function stripEmptyStringQueryParams(
+    queryParams: ParsedUrlQueryInput
+): ParsedUrlQueryInput {
+    // Create a new object from page params such that empty string values are
+    // dropped
+    return Object.fromEntries(
+        Object.entries(queryParams).filter(
+            ([_k, v]) => typeof v !== "string" || v.length !== 0
+        )
+    );
 }
 
 export default function IndexPage() {
@@ -104,20 +117,29 @@ export default function IndexPage() {
         [totalNumberOfResults, pageParameters]
     );
 
+    const setQueryParams = useCallback(
+        (newParams: QueryParameters) => {
+            router.push({
+                query: stripEmptyStringQueryParams({
+                    ...router.query,
+                    ...newParams,
+                }),
+            });
+        },
+        [router.query]
+    );
+
     /**
      * Handler to change page query parameter values via URL query parameters.
      */
     const onPageSelect = useCallback(
         (pageIndex: number) => {
-            router.push({
-                query: {
-                    ...router.query,
-                    pageSize: pageParameters.pageSize,
-                    pageStart: pageIndex * pageParameters.pageSize,
-                },
+            setQueryParams({
+                pageSize: `${pageParameters.pageSize}`,
+                pageStart: `${pageIndex * pageParameters.pageSize}`,
             });
         },
-        [router.query, pageParameters]
+        [setQueryParams, pageParameters]
     );
 
     const handleQueryFormSubmit = useCallback(
@@ -127,16 +149,14 @@ export default function IndexPage() {
             // Get the search box value
             const searchQuery = searchRef.current?.value?.trim() || "";
 
-            router.push({
-                query: {
-                    ...router.query,
-                    searchQuery,
-                    // New queries must start at page 0
-                    pageStart: 0,
-                },
+            setQueryParams({
+                searchQuery,
+
+                // New queries must start at page 0
+                pageStart: "0",
             });
         },
-        [router.query]
+        [setQueryParams]
     );
 
     /**
@@ -216,17 +236,17 @@ export default function IndexPage() {
                                 type="search"
                                 leftIcon="search"
                                 rightElement={
-                                    <Button
-                                        type="submit"
-                                        data-testid="search-submit-button"
+                            <Button
+                                type="submit"
+                                data-testid="search-submit-button"
                                         small
                                         style={{
                                             borderRadius: "30px",
                                             padding: "0 0.8rem",
                                         }}
-                                    >
-                                        Search
-                                    </Button>
+                            >
+                                Search
+                            </Button>
                                 }
                                 id="dataset-search"
                                 inputRef={searchRef}
