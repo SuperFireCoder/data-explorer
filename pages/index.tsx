@@ -14,17 +14,18 @@ import {
 } from "react";
 import { SearchResponse } from "elasticsearch";
 import { useRouter } from "next/router";
-import bodybuilder from "bodybuilder";
+import bodybuilder, { Bodybuilder } from "bodybuilder";
 import axios from "axios";
-import { InputGroup, Button, MenuItem } from "@blueprintjs/core";
-import { ItemPredicate, ItemRenderer, MultiSelect } from "@blueprintjs/select";
+import { InputGroup, Button, H6 } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 
 import Header from "../components/Header";
 import DatasetCard from "../components/DatasetCard";
 import Pagination from "../components/Pagination";
+import FacetMultiSelectFacetState from "../components/FacetMultiSelectFacetState";
 import { EsDataset } from "../interfaces/EsDataset";
 import { DatasetType } from "../interfaces/DatasetType";
+import { useFacetState } from "../hooks/FacetState";
 import { getDataExplorerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
 
@@ -72,6 +73,49 @@ function stripEmptyStringQueryParams(
     );
 }
 
+function normaliseFacetPageParam(facet: string | string[]) {
+    return typeof facet === "string" ? [facet] : facet;
+}
+
+/**
+ * Adds term aggregation based facets to given bodybuilder query instance, and
+ * a carrying boolean flag that indicates whether the query is "empty" (that is,
+ * whether the query has had filters applied such as prior facets or some string
+ * query.)
+ *
+ * @param queryBuilder
+ * @param isEmptyQuery
+ * @param facetEsTerm String identifier for the term used in Elasticsearch query
+ * @param facetValues
+ *
+ * @returns Array of [new bodyBuilder query instance, `isEmptyQuery` boolean]
+ */
+function addTermAggregationFacetStateToQuery(
+    queryBuilder: Bodybuilder,
+    isEmptyQuery: boolean,
+    facetEsTerm: string,
+    facetValues: readonly string[]
+): [Bodybuilder, boolean] {
+    // If nothing selected for this facet, return state untouched
+    if (facetValues.length === 0) {
+        return [queryBuilder, isEmptyQuery];
+    }
+
+    // Add all selected facet values
+    let innerQuery = bodybuilder();
+
+    facetValues.forEach(
+        (x) => (innerQuery = innerQuery.orQuery("match", facetEsTerm, x))
+    );
+
+    const newQueryBuilder = queryBuilder.query(
+        "bool",
+        (innerQuery.build() as any).query.bool
+    );
+
+    return [newQueryBuilder, false];
+}
+
 export default function IndexPage() {
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
@@ -84,7 +128,25 @@ export default function IndexPage() {
         SearchResponse<EsDataset> | undefined
     >(undefined);
 
-    const [selectedFacetGcm, setSelectedFacetGcm] = useState<string[]>([]);
+    // Facets
+    const facetStateTimeDomain = useFacetState(
+        results?.aggregations?.facetTimeDomain?.buckets
+    );
+    const facetStateSpatialDomain = useFacetState(
+        results?.aggregations?.facetSpatialDomain?.buckets
+    );
+    const facetStateResolution = useFacetState(
+        results?.aggregations?.facetResolution?.buckets
+    );
+    const facetStateScientificType = useFacetState(
+        results?.aggregations?.facetScientificType?.buckets
+    );
+    const facetStateDomain = useFacetState(
+        results?.aggregations?.facetDomain?.buckets
+    );
+    const facetStateGcm = useFacetState(
+        results?.aggregations?.facetGcm?.buckets
+    );
 
     /**
      * Extracts the current page parameters from the URL query parameter values.
@@ -94,14 +156,29 @@ export default function IndexPage() {
             pageSize = "10",
             pageStart = "0",
             searchQuery = "",
+            facetTimeDomain = [],
+            facetSpatialDomain = [],
+            facetResolution = [],
+            facetScientificType = [],
+            facetDomain = [],
             facetGcm = [],
         } = router.query as QueryParameters;
 
         return {
+            // Pagination
             pageSize: parseInt(pageSize, 10) || 10,
             pageStart: parseInt(pageStart, 10) || 0,
+
+            // String search query
             searchQuery,
-            facetGcm: typeof facetGcm === "string" ? [facetGcm] : facetGcm,
+
+            // Facets
+            facetTimeDomain: normaliseFacetPageParam(facetTimeDomain),
+            facetSpatialDomain: normaliseFacetPageParam(facetSpatialDomain),
+            facetResolution: normaliseFacetPageParam(facetResolution),
+            facetScientificType: normaliseFacetPageParam(facetScientificType),
+            facetDomain: normaliseFacetPageParam(facetDomain),
+            facetGcm: normaliseFacetPageParam(facetGcm),
         };
     }, [router.query]);
 
@@ -164,77 +241,32 @@ export default function IndexPage() {
             const searchQuery = searchRef.current?.value?.trim() || "";
 
             setQueryParams({
+                // String search query
                 searchQuery,
 
-                facetGcm: selectedFacetGcm.length > 0 ? selectedFacetGcm : "",
+                // Facets
+                facetTimeDomain: facetStateTimeDomain.getQueryParams(),
+                facetSpatialDomain: facetStateSpatialDomain.getQueryParams(),
+                facetResolution: facetStateResolution.getQueryParams(),
+                facetScientificType: facetStateScientificType.getQueryParams(),
+                facetDomain: facetStateDomain.getQueryParams(),
+                facetGcm: facetStateGcm.getQueryParams(),
 
                 // New queries must start at page 0
                 pageStart: "0",
             });
         },
-        [setQueryParams, selectedFacetGcm]
-    );
+        [
+            setQueryParams,
 
-    const renderStringValueMenuItem = useCallback<ItemRenderer<string>>(
-        (stringValue, { modifiers, handleClick }) => {
-            // Filter out items which don't match the query in the box
-            if (!modifiers.matchesPredicate) {
-                return null;
-            }
-
-            return (
-                <MenuItem
-                    key={stringValue}
-                    icon={
-                        selectedFacetGcm.includes(stringValue)
-                            ? "tick"
-                            : "blank"
-                    }
-                    active={modifiers.active}
-                    onClick={handleClick}
-                    text={stringValue}
-                    // Keep select menu list open after selection
-                    shouldDismissPopover={false}
-                />
-            );
-        },
-        [selectedFacetGcm]
-    );
-
-    const renderStringTag = useCallback((string) => string, []);
-
-    const handleItemSelect = useCallback((selectedGcm: string) => {
-        setSelectedFacetGcm((gcm) => {
-            console.log(selectedGcm);
-
-            // If already present, remove
-            if (gcm.includes(selectedGcm)) {
-                const gcmCopy = [...gcm];
-                gcmCopy.splice(gcm.indexOf(selectedGcm), 1);
-                return gcmCopy;
-            }
-
-            // Otherwise append
-            return [...gcm, selectedGcm];
-        });
-    }, []);
-
-    const handleTagRemove = useCallback(
-        (_tag, i) =>
-            setSelectedFacetGcm((gcm) => {
-                const gcmCopy = [...gcm];
-                gcmCopy.splice(i, 1);
-                return gcmCopy;
-            }),
-        []
-    );
-
-    const menuItemPredicateFilter = useCallback<ItemPredicate<string>>(
-        (query, item, _index, exactMatch) =>
-            exactMatch
-                ? item === query
-                : item.toLowerCase().indexOf(query.toLowerCase()) >= 0,
-        []
+            // If the facet selection changes, this callback needs updating
+            facetStateTimeDomain.selectedItems,
+            facetStateSpatialDomain.selectedItems,
+            facetStateResolution.selectedItems,
+            facetStateScientificType.selectedItems,
+            facetStateDomain.selectedItems,
+            facetStateGcm.selectedItems,
+        ]
     );
 
     /**
@@ -247,6 +279,11 @@ export default function IndexPage() {
                 pageSize,
                 pageStart,
                 searchQuery,
+                facetTimeDomain,
+                facetSpatialDomain,
+                facetResolution,
+                facetScientificType,
+                facetDomain,
                 facetGcm,
             } = pageParameters;
 
@@ -264,27 +301,49 @@ export default function IndexPage() {
                 .aggregation("terms", "time_domain", "facetTimeDomain")
                 .aggregation("terms", "spatial_domain", "facetSpatialDomain")
                 .aggregation("terms", "resolution", "facetResolution")
-                .aggregation("terms", "gcm", "facetGcm")
+                .aggregation("terms", "scientific_type", "facetScientificType")
                 .aggregation("terms", "domain", "facetDomain")
-                .aggregation("terms", "scientific_type", "facetScientificType");
+                .aggregation("terms", "gcm", "facetGcm");
 
             let isEmptyQuery = true;
 
-            if (facetGcm.length > 0) {
-                isEmptyQuery = false;
-
-                // Add all selected GCM facet values
-                let innerQuery = bodybuilder();
-
-                facetGcm.forEach(
-                    (x) => (innerQuery = innerQuery.orQuery("match", "gcm", x))
-                );
-
-                queryBuilder = queryBuilder.query(
-                    "bool",
-                    (innerQuery.build() as any).query.bool
-                );
-            }
+            // Add facets
+            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+                queryBuilder,
+                isEmptyQuery,
+                "time_domain",
+                facetTimeDomain
+            );
+            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+                queryBuilder,
+                isEmptyQuery,
+                "spatial_domain",
+                facetSpatialDomain
+            );
+            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+                queryBuilder,
+                isEmptyQuery,
+                "resolution",
+                facetResolution
+            );
+            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+                queryBuilder,
+                isEmptyQuery,
+                "scientific_type",
+                facetScientificType
+            );
+            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+                queryBuilder,
+                isEmptyQuery,
+                "domain",
+                facetDomain
+            );
+            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+                queryBuilder,
+                isEmptyQuery,
+                "gcm",
+                facetGcm
+            );
 
             if (searchQuery.length !== 0) {
                 isEmptyQuery = false;
@@ -378,30 +437,35 @@ export default function IndexPage() {
                                 e.stopPropagation(), e.preventDefault();
                             }}
                         >
-                            <h4>GCM</h4>
-                            <MultiSelect<string>
-                                items={
-                                    results?.aggregations?.facetGcm?.buckets?.map(
-                                        (x: any) => x.key
-                                    ) || []
-                                }
-                                itemRenderer={renderStringValueMenuItem}
-                                itemPredicate={menuItemPredicateFilter}
-                                onItemSelect={handleItemSelect}
-                                tagRenderer={renderStringTag}
-                                tagInputProps={{
-                                    onRemove: handleTagRemove,
-                                }}
-                                selectedItems={selectedFacetGcm}
-                                noResults={
-                                    <MenuItem
-                                        disabled
-                                        text="No options available"
-                                    />
-                                }
-                                resetOnSelect={false}
-                                resetOnQuery={false}
-                                fill
+                            <H6>Time domain</H6>
+                            <FacetMultiSelectFacetState
+                                facetState={facetStateTimeDomain}
+                                placeholder="Filter by time domain..."
+                            />
+                            <H6>Spatial domain</H6>
+                            <FacetMultiSelectFacetState
+                                facetState={facetStateSpatialDomain}
+                                placeholder="Filter by spatial domain..."
+                            />
+                            <H6>Resolution</H6>
+                            <FacetMultiSelectFacetState
+                                facetState={facetStateResolution}
+                                placeholder="Filter by resolution..."
+                            />
+                            <H6>Scientific type</H6>
+                            <FacetMultiSelectFacetState
+                                facetState={facetStateScientificType}
+                                placeholder="Filter by scientific type..."
+                            />
+                            <H6>Domain</H6>
+                            <FacetMultiSelectFacetState
+                                facetState={facetStateDomain}
+                                placeholder="Filter by domain..."
+                            />
+                            <H6>GCM</H6>
+                            <FacetMultiSelectFacetState
+                                facetState={facetStateGcm}
+                                placeholder="Filter by GCM..."
                             />
                         </form>
                     </Col>
