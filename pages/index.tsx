@@ -166,8 +166,8 @@ export default function IndexPage() {
             searchQuery,
 
             // Facets
-            facetYearMin: parseInt(facetYearMin, 10) || "",
-            facetYearMax: parseInt(facetYearMax, 10) || "",
+            facetYearMin: parseInt(facetYearMin, 10),   // Value may be NaN
+            facetYearMax: parseInt(facetYearMax, 10),   // Value may be NaN
             facetTimeDomain: normaliseFacetPageParam(facetTimeDomain),
             facetSpatialDomain: normaliseFacetPageParam(facetSpatialDomain),
             facetResolution: normaliseFacetPageParam(facetResolution),
@@ -327,7 +327,7 @@ export default function IndexPage() {
     const handleYearAllYearsSwitchChange = useCallback<
         FormEventHandler<HTMLInputElement>
     >(
-        (e) => {
+        () => {
             // Switching all years -> valued years: set min and max bounds
             if (yearsQueryIsAllYears) {
                 setYearMin(yearsQueryMinBound);
@@ -433,17 +433,17 @@ export default function IndexPage() {
             );
 
             // Year range
-            if (yearMin.length !== 0 || yearMax.length !== 0) {
+            if (!Number.isNaN(facetYearMin) || !Number.isNaN(facetYearMax)) {
                 isEmptyQuery = false;
 
                 const yearRangeQuery: Record<string, number> = {};
 
-                if (yearMin.length !== 0) {
-                    yearRangeQuery["gte"] = parseInt(yearMin, 10);
+                if (!Number.isNaN(facetYearMin)) {
+                    yearRangeQuery["gte"] = facetYearMin;
                 }
 
-                if (yearMax.length !== 0) {
-                    yearRangeQuery["lte"] = parseInt(yearMax, 10);
+                if (!Number.isNaN(facetYearMax)) {
+                    yearRangeQuery["lte"] = facetYearMax;
                 }
 
                 queryBuilder = queryBuilder.query(
@@ -673,7 +673,7 @@ export default function IndexPage() {
                                             : "none"
                                     }
                                 >
-                                    Apply filters &amp; search
+                                    Search &amp; apply filters
                                 </Button>
                             </Col>
                         </Row>
