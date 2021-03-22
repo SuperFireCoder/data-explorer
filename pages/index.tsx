@@ -7,6 +7,7 @@ import {
 import {
     ChangeEventHandler,
     FormEvent,
+    FormEventHandler,
     useCallback,
     useEffect,
     useMemo,
@@ -16,7 +17,7 @@ import { SearchResponse } from "elasticsearch";
 import { useRouter } from "next/router";
 import bodybuilder, { Bodybuilder } from "bodybuilder";
 import axios from "axios";
-import { InputGroup, Button, H6 } from "@blueprintjs/core";
+import { InputGroup, Button, H6, Switch } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 
 import Header from "../components/Header";
@@ -146,6 +147,8 @@ export default function IndexPage() {
             pageSize = "10",
             pageStart = "0",
             searchQuery = "",
+            facetYearMin = "",
+            facetYearMax = "",
             facetTimeDomain = [],
             facetSpatialDomain = [],
             facetResolution = [],
@@ -163,6 +166,8 @@ export default function IndexPage() {
             searchQuery,
 
             // Facets
+            facetYearMin: parseInt(facetYearMin, 10) || "",
+            facetYearMax: parseInt(facetYearMax, 10) || "",
             facetTimeDomain: normaliseFacetPageParam(facetTimeDomain),
             facetSpatialDomain: normaliseFacetPageParam(facetSpatialDomain),
             facetResolution: normaliseFacetPageParam(facetResolution),
@@ -181,6 +186,8 @@ export default function IndexPage() {
     // TODO: Implement some way of feeding the default state into the facets
     // from values contained in `pageParameters` so that they update the UI on
     // first load
+    const [yearMin, setYearMin] = useState<string>("");
+    const [yearMax, setYearMax] = useState<string>("");
     const facetStateTimeDomain = useFacetState(
         results?.aggregations?.facetTimeDomain?.buckets
     );
@@ -226,6 +233,21 @@ export default function IndexPage() {
         [totalNumberOfResults, pageParameters]
     );
 
+    const yearsQueryIsAllYears = useMemo(
+        () => yearMin === "" && yearMax === "",
+        [yearMin, yearMax]
+    );
+
+    const yearsQueryMinBound = useMemo(
+        () => results?.aggregations?.facetYearMin?.value || 0,
+        [results]
+    );
+
+    const yearsQueryMaxBound = useMemo(
+        () => results?.aggregations?.facetYearMax?.value || 0,
+        [results]
+    );
+
     const setQueryParams = useCallback(
         (newParams: QueryParameters) => {
             router.push({
@@ -265,6 +287,8 @@ export default function IndexPage() {
                 searchQuery,
 
                 // Facets
+                facetYearMin: yearMin.toString(),
+                facetYearMax: yearMax.toString(),
                 facetTimeDomain: facetStateTimeDomain.getQueryParams(),
                 facetSpatialDomain: facetStateSpatialDomain.getQueryParams(),
                 facetResolution: facetStateResolution.getQueryParams(),
@@ -283,6 +307,8 @@ export default function IndexPage() {
             searchQuery,
 
             // If the facet selection changes, this callback needs updating
+            yearMin,
+            yearMax,
             facetStateTimeDomain.selectedItems,
             facetStateSpatialDomain.selectedItems,
             facetStateResolution.selectedItems,
@@ -298,6 +324,36 @@ export default function IndexPage() {
         setSearchQuery(e.currentTarget.value);
     }, []);
 
+    const handleYearAllYearsSwitchChange = useCallback<
+        FormEventHandler<HTMLInputElement>
+    >(
+        (e) => {
+            // Switching all years -> valued years: set min and max bounds
+            if (yearsQueryIsAllYears) {
+                setYearMin(yearsQueryMinBound);
+                setYearMax(yearsQueryMaxBound);
+                return;
+            }
+
+            // Switching valued years -> all years, set min and max blank
+            setYearMin("");
+            setYearMax("");
+        },
+        [yearsQueryIsAllYears, yearsQueryMinBound, yearsQueryMaxBound]
+    );
+
+    const handleYearMinInputChange = useCallback<
+        FormEventHandler<HTMLInputElement>
+    >((e) => {
+        setYearMin(e.currentTarget.value.trim());
+    }, []);
+
+    const handleYearMaxInputChange = useCallback<
+        FormEventHandler<HTMLInputElement>
+    >((e) => {
+        setYearMax(e.currentTarget.value.trim());
+    }, []);
+
     /**
      * An effect to automatically execute new Elasticsearch query upon page
      * parameter change, such as page increment or page size change.
@@ -308,6 +364,8 @@ export default function IndexPage() {
                 pageSize,
                 pageStart,
                 searchQuery,
+                facetYearMin,
+                facetYearMax,
                 facetTimeDomain,
                 facetSpatialDomain,
                 facetResolution,
@@ -374,6 +432,28 @@ export default function IndexPage() {
                 facetGcm
             );
 
+            // Year range
+            if (yearMin.length !== 0 || yearMax.length !== 0) {
+                isEmptyQuery = false;
+
+                const yearRangeQuery: Record<string, number> = {};
+
+                if (yearMin.length !== 0) {
+                    yearRangeQuery["gte"] = parseInt(yearMin, 10);
+                }
+
+                if (yearMax.length !== 0) {
+                    yearRangeQuery["lte"] = parseInt(yearMax, 10);
+                }
+
+                queryBuilder = queryBuilder.query(
+                    "range",
+                    "year",
+                    yearRangeQuery
+                );
+            }
+
+            // String search query
             if (searchQuery.length !== 0) {
                 isEmptyQuery = false;
 
@@ -446,6 +526,8 @@ export default function IndexPage() {
             searchQuery,
 
             // Facet selection changes
+            yearMin,
+            yearMax,
             facetStateTimeDomain.selectedItemKeyHash,
             facetStateSpatialDomain.selectedItemKeyHash,
             facetStateResolution.selectedItemKeyHash,
@@ -485,6 +567,54 @@ export default function IndexPage() {
                                 e.stopPropagation(), e.preventDefault();
                             }}
                         >
+                            <Row>
+                                <Col>
+                                    <Row disableDefaultMargins>
+                                        <Col xs={6}>
+                                            <H6>Year</H6>
+                                        </Col>
+                                        <Col
+                                            xs={6}
+                                            style={{ textAlign: "right" }}
+                                        >
+                                            <Switch
+                                                checked={yearsQueryIsAllYears}
+                                                onChange={
+                                                    handleYearAllYearsSwitchChange
+                                                }
+                                                innerLabel="Range"
+                                                innerLabelChecked="All"
+                                                style={{ marginRight: "-10px" }}
+                                            />
+                                        </Col>
+                                    </Row>
+                                    {!yearsQueryIsAllYears && (
+                                        <Row
+                                            disableDefaultMargins
+                                            gutterWidth={2}
+                                        >
+                                            <Col xs={6}>
+                                                <InputGroup
+                                                    type="number"
+                                                    value={yearMin}
+                                                    onChange={
+                                                        handleYearMinInputChange
+                                                    }
+                                                />
+                                            </Col>
+                                            <Col xs={6}>
+                                                <InputGroup
+                                                    type="number"
+                                                    value={yearMax}
+                                                    onChange={
+                                                        handleYearMaxInputChange
+                                                    }
+                                                />
+                                            </Col>
+                                        </Row>
+                                    )}
+                                </Col>
+                            </Row>
                             {[
                                 {
                                     title: "Time domain",
