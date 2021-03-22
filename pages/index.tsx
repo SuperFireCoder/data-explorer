@@ -119,6 +119,11 @@ function addTermAggregationFacetStateToQuery(
     return [newQueryBuilder, false];
 }
 
+function suppressEvent(e: Event | FormEvent | MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
 export default function IndexPage() {
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
@@ -166,8 +171,8 @@ export default function IndexPage() {
             searchQuery,
 
             // Facets
-            facetYearMin: parseInt(facetYearMin, 10),   // Value may be NaN
-            facetYearMax: parseInt(facetYearMax, 10),   // Value may be NaN
+            facetYearMin: parseInt(facetYearMin, 10), // Value may be NaN
+            facetYearMax: parseInt(facetYearMax, 10), // Value may be NaN
             facetTimeDomain: normaliseFacetPageParam(facetTimeDomain),
             facetSpatialDomain: normaliseFacetPageParam(facetSpatialDomain),
             facetResolution: normaliseFacetPageParam(facetResolution),
@@ -326,21 +331,18 @@ export default function IndexPage() {
 
     const handleYearAllYearsSwitchChange = useCallback<
         FormEventHandler<HTMLInputElement>
-    >(
-        () => {
-            // Switching all years -> valued years: set min and max bounds
-            if (yearsQueryIsAllYears) {
-                setYearMin(yearsQueryMinBound);
-                setYearMax(yearsQueryMaxBound);
-                return;
-            }
+    >(() => {
+        // Switching all years -> valued years: set min and max bounds
+        if (yearsQueryIsAllYears) {
+            setYearMin(yearsQueryMinBound);
+            setYearMax(yearsQueryMaxBound);
+            return;
+        }
 
-            // Switching valued years -> all years, set min and max blank
-            setYearMin("");
-            setYearMax("");
-        },
-        [yearsQueryIsAllYears, yearsQueryMinBound, yearsQueryMaxBound]
-    );
+        // Switching valued years -> all years, set min and max blank
+        setYearMin("");
+        setYearMax("");
+    }, [yearsQueryIsAllYears, yearsQueryMinBound, yearsQueryMaxBound]);
 
     const handleYearMinInputChange = useCallback<
         FormEventHandler<HTMLInputElement>
@@ -562,11 +564,7 @@ export default function IndexPage() {
                                 </Col>
                             </Row>
                         </form>
-                        <form
-                            onSubmit={(e) => {
-                                e.stopPropagation(), e.preventDefault();
-                            }}
-                        >
+                        <form onSubmit={suppressEvent}>
                             <Row>
                                 <Col>
                                     <Row disableDefaultMargins>
@@ -731,7 +729,7 @@ export default function IndexPage() {
                                     )}
                             </Col>
                         </Row>
-                        <Row style={{ marginTop: "1rem" }}>
+                        <Row>
                             <Col style={{ textAlign: "right" }}>
                                 <Pagination
                                     currentIndex={currentPageIndex}
