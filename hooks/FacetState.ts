@@ -11,6 +11,11 @@ export function useFacetState<T extends EsAggregationBucket>(
 
     const memoedItems = useMemo(() => rawItems || [], [rawItems]);
 
+    const selectedItemKeyHash = useMemo(
+        () => selectedItems.reduce((c, x) => c + x.key, ""),
+        [selectedItems]
+    );
+
     const handleItemSelect = useCallback((newItem: T) => {
         setSelectedItems((prevSelectedItems) => {
             // If already present, remove
@@ -72,6 +77,7 @@ export function useFacetState<T extends EsAggregationBucket>(
     return {
         items: memoedItems,
         selectedItems,
+        selectedItemKeyHash,
         getQueryParams,
         setSelectedItems,
         handleItemSelect,

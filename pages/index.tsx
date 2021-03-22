@@ -5,11 +5,11 @@ import {
     Row,
 } from "@ecocommons-australia/ui-library";
 import {
+    ChangeEventHandler,
     FormEvent,
     useCallback,
     useEffect,
     useMemo,
-    useRef,
     useState,
 } from "react";
 import { SearchResponse } from "elasticsearch";
@@ -73,7 +73,9 @@ function stripEmptyStringQueryParams(
     );
 }
 
-function normaliseFacetPageParam(facet: string | string[]) {
+function normaliseFacetPageParam(
+    facet: string | readonly string[]
+): readonly string[] {
     return typeof facet === "string" ? [facet] : facet;
 }
 
@@ -119,7 +121,6 @@ function addTermAggregationFacetStateToQuery(
 export default function IndexPage() {
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
-    const searchRef = useRef<HTMLInputElement | null>(null);
 
     const keycloakToken = keycloak?.token;
 
@@ -128,25 +129,14 @@ export default function IndexPage() {
         SearchResponse<EsDataset> | undefined
     >(undefined);
 
-    // Facets
-    const facetStateTimeDomain = useFacetState(
-        results?.aggregations?.facetTimeDomain?.buckets
-    );
-    const facetStateSpatialDomain = useFacetState(
-        results?.aggregations?.facetSpatialDomain?.buckets
-    );
-    const facetStateResolution = useFacetState(
-        results?.aggregations?.facetResolution?.buckets
-    );
-    const facetStateScientificType = useFacetState(
-        results?.aggregations?.facetScientificType?.buckets
-    );
-    const facetStateDomain = useFacetState(
-        results?.aggregations?.facetDomain?.buckets
-    );
-    const facetStateGcm = useFacetState(
-        results?.aggregations?.facetGcm?.buckets
-    );
+    /**
+     * Flag indicating that the user has changed the state of the search form,
+     * but has not executed the query
+     */
+    const [
+        searchQueryNotYetExecuted,
+        setSearchQueryNotYetExecuted,
+    ] = useState<boolean>(false);
 
     /**
      * Extracts the current page parameters from the URL query parameter values.
@@ -181,6 +171,34 @@ export default function IndexPage() {
             facetGcm: normaliseFacetPageParam(facetGcm),
         };
     }, [router.query]);
+
+    // String search query value
+    const [searchQuery, setSearchQuery] = useState<string>(
+        pageParameters.searchQuery
+    );
+
+    // Facets
+    // TODO: Implement some way of feeding the default state into the facets
+    // from values contained in `pageParameters` so that they update the UI on
+    // first load
+    const facetStateTimeDomain = useFacetState(
+        results?.aggregations?.facetTimeDomain?.buckets
+    );
+    const facetStateSpatialDomain = useFacetState(
+        results?.aggregations?.facetSpatialDomain?.buckets
+    );
+    const facetStateResolution = useFacetState(
+        results?.aggregations?.facetResolution?.buckets
+    );
+    const facetStateScientificType = useFacetState(
+        results?.aggregations?.facetScientificType?.buckets
+    );
+    const facetStateDomain = useFacetState(
+        results?.aggregations?.facetDomain?.buckets
+    );
+    const facetStateGcm = useFacetState(
+        results?.aggregations?.facetGcm?.buckets
+    );
 
     const totalNumberOfResults = useMemo(() => {
         // We'll say that there are 0 results if no data is available
@@ -234,12 +252,14 @@ export default function IndexPage() {
     );
 
     const handleQueryFormSubmit = useCallback(
-        (e: FormEvent) => {
+        (e: FormEvent | MouseEvent) => {
             e.preventDefault();
 
-            // Get the search box value
-            const searchQuery = searchRef.current?.value?.trim() || "";
+            // Clear the "not yet executed" flag
+            setSearchQueryNotYetExecuted(false);
 
+            // Set query params of the page - this will trigger the effect to
+            // launch the API call
             setQueryParams({
                 // String search query
                 searchQuery,
@@ -259,6 +279,9 @@ export default function IndexPage() {
         [
             setQueryParams,
 
+            // String search query change
+            searchQuery,
+
             // If the facet selection changes, this callback needs updating
             facetStateTimeDomain.selectedItems,
             facetStateSpatialDomain.selectedItems,
@@ -268,6 +291,12 @@ export default function IndexPage() {
             facetStateGcm.selectedItems,
         ]
     );
+
+    const handleSearchQueryInputChange = useCallback<
+        ChangeEventHandler<HTMLInputElement>
+    >((e) => {
+        setSearchQuery(e.currentTarget.value);
+    }, []);
 
     /**
      * An effect to automatically execute new Elasticsearch query upon page
@@ -404,6 +433,28 @@ export default function IndexPage() {
         [pageParameters, keycloakToken]
     );
 
+    useEffect(
+        function updateSearchQueryNotYetExecutedState() {
+            // If any of the monitored objects changes, this effect runs and will
+            // set the "not yet executed" flag to `true`
+            //
+            // No `if` statement is required since we rely on React to do this
+            setSearchQueryNotYetExecuted(true);
+        },
+        [
+            // String search query changes
+            searchQuery,
+
+            // Facet selection changes
+            facetStateTimeDomain.selectedItemKeyHash,
+            facetStateSpatialDomain.selectedItemKeyHash,
+            facetStateResolution.selectedItemKeyHash,
+            facetStateScientificType.selectedItemKeyHash,
+            facetStateDomain.selectedItemKeyHash,
+            facetStateGcm.selectedItemKeyHash,
+        ]
+    );
+
     return (
         <>
             <HtmlHead title={["Data and Visualisations", "Explore data"]} />
@@ -414,117 +465,151 @@ export default function IndexPage() {
             />
             <FixedContainer>
                 <Row>
-                    <Col>
+                    <Col xs={2}>
                         <form onSubmit={handleQueryFormSubmit}>
-                            <InputGroup
-                                type="search"
-                                leftIcon="search"
-                                id="dataset-search"
-                                inputRef={searchRef}
-                                placeholder="Search datasets..."
-                                defaultValue={pageParameters.searchQuery}
-                            />
-                            <Button
-                                type="submit"
-                                data-testid="search-submit-button"
-                            >
-                                Search
-                            </Button>
+                            <Row disableDefaultMargins>
+                                <Col>
+                                    <InputGroup
+                                        type="search"
+                                        leftIcon="search"
+                                        id="dataset-search"
+                                        placeholder="Search datasets..."
+                                        value={searchQuery}
+                                        onChange={handleSearchQueryInputChange}
+                                    />
+                                </Col>
+                            </Row>
                         </form>
-
                         <form
                             onSubmit={(e) => {
                                 e.stopPropagation(), e.preventDefault();
                             }}
                         >
-                            <H6>Time domain</H6>
-                            <FacetMultiSelectFacetState
-                                facetState={facetStateTimeDomain}
-                                placeholder="Filter by time domain..."
-                            />
-                            <H6>Spatial domain</H6>
-                            <FacetMultiSelectFacetState
-                                facetState={facetStateSpatialDomain}
-                                placeholder="Filter by spatial domain..."
-                            />
-                            <H6>Resolution</H6>
-                            <FacetMultiSelectFacetState
-                                facetState={facetStateResolution}
-                                placeholder="Filter by resolution..."
-                            />
-                            <H6>Scientific type</H6>
-                            <FacetMultiSelectFacetState
-                                facetState={facetStateScientificType}
-                                placeholder="Filter by scientific type..."
-                            />
-                            <H6>Domain</H6>
-                            <FacetMultiSelectFacetState
-                                facetState={facetStateDomain}
-                                placeholder="Filter by domain..."
-                            />
-                            <H6>GCM</H6>
-                            <FacetMultiSelectFacetState
-                                facetState={facetStateGcm}
-                                placeholder="Filter by GCM..."
-                            />
-                        </form>
-                    </Col>
-                </Row>
-                <Row align="center">
-                    <Col
-                        className="bp3-ui-text bp3-text-disabled"
-                        data-testid="results-count"
-                    >
-                        {totalNumberOfResults} result
-                        {totalNumberOfResults !== 1 && "s"}
-                    </Col>
-                    <Col
-                        style={{ textAlign: "right" }}
-                        data-testid="pagination-buttons"
-                    >
-                        <Pagination
-                            currentIndex={currentPageIndex}
-                            max={maxPages}
-                            onSelect={onPageSelect}
-                        />
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
-                        {results &&
-                            results.hits.hits.map(({ _id, _source }) => (
-                                <DatasetCard
-                                    data-testid="dataset-card"
-                                    key={_id}
-                                    datasetId={_source.uuid}
-                                    title={_source.title}
-                                    description={_source.description}
-                                    type={
-                                        _source.status === "SUCCESS"
-                                            ? // TODO: Clarify values for "scientific_type"
-                                              (({
-                                                  type:
-                                                      _source
-                                                          .scientific_type[0],
-                                                  subtype:
-                                                      _source
-                                                          .scientific_type[1],
-                                              } as unknown) as DatasetType)
-                                            : undefined
-                                    }
-                                    // TODO: Add modification date into ES index
-                                    // lastUpdated={lastUpdated}
-                                />
+                            {[
+                                {
+                                    title: "Time domain",
+                                    facetState: facetStateTimeDomain,
+                                    placeholder: "Filter by time domain...",
+                                },
+                                {
+                                    title: "Spatial domain",
+                                    facetState: facetStateSpatialDomain,
+                                    placeholder: "Filter by spatial domain...",
+                                },
+                                {
+                                    title: "Resolution",
+                                    facetState: facetStateResolution,
+                                    placeholder: "Filter by resolution...",
+                                },
+                                {
+                                    title: "Scientific type",
+                                    facetState: facetStateScientificType,
+                                    placeholder: "Filter by scientific type...",
+                                },
+                                {
+                                    title: "Domain",
+                                    facetState: facetStateDomain,
+                                    placeholder: "Filter by domain...",
+                                },
+                                {
+                                    title: "GCM",
+                                    facetState: facetStateGcm,
+                                    placeholder: "Filter by GCM...",
+                                },
+                            ].map(({ title, facetState, placeholder }) => (
+                                <Row key={title}>
+                                    <Col>
+                                        <H6>{title}</H6>
+                                        <FacetMultiSelectFacetState
+                                            facetState={facetState}
+                                            placeholder={placeholder}
+                                        />
+                                    </Col>
+                                </Row>
                             ))}
+                        </form>
+                        <Row>
+                            <Col>
+                                <Button
+                                    data-testid="search-submit-button"
+                                    onClick={handleQueryFormSubmit}
+                                    fill
+                                    // If search form modified and not yet executed,
+                                    // highlight via "success", otherwise just mute
+                                    // its importance by using "none"
+                                    intent={
+                                        searchQueryNotYetExecuted
+                                            ? "success"
+                                            : "none"
+                                    }
+                                >
+                                    Apply filters &amp; search
+                                </Button>
+                            </Col>
+                        </Row>
                     </Col>
-                </Row>
-                <Row style={{ marginTop: "1rem" }}>
-                    <Col style={{ textAlign: "right" }}>
-                        <Pagination
-                            currentIndex={currentPageIndex}
-                            max={maxPages}
-                            onSelect={onPageSelect}
-                        />
+                    <Col xs={10}>
+                        <Row disableDefaultMargins align="center">
+                            <Col
+                                className="bp3-ui-text bp3-text-disabled"
+                                data-testid="results-count"
+                            >
+                                {totalNumberOfResults} result
+                                {totalNumberOfResults !== 1 && "s"}
+                            </Col>
+                            <Col
+                                style={{ textAlign: "right" }}
+                                data-testid="pagination-buttons"
+                            >
+                                <Pagination
+                                    currentIndex={currentPageIndex}
+                                    max={maxPages}
+                                    onSelect={onPageSelect}
+                                />
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                {results &&
+                                    results.hits.hits.map(
+                                        ({ _id, _source }) => (
+                                            <DatasetCard
+                                                data-testid="dataset-card"
+                                                key={_id}
+                                                datasetId={_source.uuid}
+                                                title={_source.title}
+                                                description={
+                                                    _source.description
+                                                }
+                                                type={
+                                                    _source.status === "SUCCESS"
+                                                        ? // TODO: Clarify values for "scientific_type"
+                                                          (({
+                                                              type:
+                                                                  _source
+                                                                      .scientific_type[0],
+                                                              subtype:
+                                                                  _source
+                                                                      .scientific_type[1],
+                                                          } as unknown) as DatasetType)
+                                                        : undefined
+                                                }
+                                                // TODO: Add modification date into ES index
+                                                // lastUpdated={lastUpdated}
+                                            />
+                                        )
+                                    )}
+                            </Col>
+                        </Row>
+                        <Row style={{ marginTop: "1rem" }}>
+                            <Col style={{ textAlign: "right" }}>
+                                <Pagination
+                                    currentIndex={currentPageIndex}
+                                    max={maxPages}
+                                    onSelect={onPageSelect}
+                                />
+                            </Col>
+                        </Row>
                     </Col>
                 </Row>
             </FixedContainer>
