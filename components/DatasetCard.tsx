@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Card, H3 } from "@blueprintjs/core";
+import { Button, ButtonGroup, Card, H5 } from "@blueprintjs/core";
 import classnames from "classnames";
 import { Col, Row } from "react-grid-system";
 import { ReactNode, useCallback, useState } from "react";
@@ -51,7 +51,7 @@ export default function DatasetCard({
             <Card className={styles.datasetCard}>
                 <Row justify="between">
                     <Col>
-                        <H3>{title}</H3>
+                        <H5>{title}</H5>
                         <p
                             className={classnames(
                                 styles.description,
