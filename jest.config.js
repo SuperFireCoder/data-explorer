@@ -1,3 +1,6 @@
+// Packages with ES modules that need to be transpiled to be runnable within Node
+const esModules = ["ol"].join("|");
+
 module.exports = {
     testPathIgnorePatterns: ["<rootDir>/.next/", "<rootDir>/node_modules/"],
     setupFilesAfterEnv: ["<rootDir>/setupTests.js"],
@@ -9,4 +12,5 @@ module.exports = {
         "/node_modules/",
         ".+\\.(css|styl|less|sass|scss)$",
     ],
+    transformIgnorePatterns: [`/node_modules/(?!${esModules})`],
 };
