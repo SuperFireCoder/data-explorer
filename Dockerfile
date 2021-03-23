@@ -13,6 +13,7 @@ COPY package*.json ./
 COPY . .
 
 RUN npm config set @ecocommons-australia:registry https://gitlab.com/api/v4/packages/npm/
+RUN npm config set '//gitlab.com/api/v4/packages/npm/:_authToken' $NPM_AUTHTOKEN
 
 # build builder-* stages with "devDependencies" (needed for TS)
 FROM base as builder
