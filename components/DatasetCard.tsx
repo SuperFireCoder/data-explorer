@@ -6,6 +6,7 @@ import { DatasetType } from "../interfaces/DatasetType";
 import { getDDMMMYYYY } from "../util/date";
 import DatasetTypeIndicator from "./DatasetTypeIndicator";
 import MetadataDrawer from "./MetadataDrawer";
+import VisualiserDrawer from "./VisualiserDrawer";
 
 import styles from "./DatasetCard.module.css";
 
@@ -43,6 +44,20 @@ export default function DatasetCard({
         []
     );
 
+    const [visualiserDrawerOpen, setVisualiserDrawerOpen] = useState<boolean>(
+        false
+    );
+
+    const openVisualiserDrawer = useCallback(
+        () => setVisualiserDrawerOpen(true),
+        []
+    );
+
+    const closerVisualiserDrawer = useCallback(
+        () => setVisualiserDrawerOpen(false),
+        []
+    );
+
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
     // for users of browsers not supporting the `line-clamp` CSS property
@@ -76,9 +91,14 @@ export default function DatasetCard({
                     </Col>
                     <Col style={{ flexGrow: 0 }}>
                         <ButtonGroup vertical alignText="left">
-                            <Button icon="document-open" intent="success">
+                            <Button
+                                icon="document-open"
+                                intent="success"
+                                onClick={openVisualiserDrawer}
+                            >
                                 View
                             </Button>
+
                             <Button
                                 icon="info-sign"
                                 intent="primary"
@@ -98,6 +118,12 @@ export default function DatasetCard({
                 datasetId={datasetId}
                 isOpen={metadataDrawerOpen}
                 onClose={closeMetadataDrawer}
+            />
+            <VisualiserDrawer
+                drawerTitle={title}
+                datasetId={datasetId}
+                isOpen={visualiserDrawerOpen}
+                onClose={closerVisualiserDrawer}
             />
         </>
     );

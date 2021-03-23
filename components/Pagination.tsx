@@ -16,6 +16,7 @@ export default function Pagination({ currentIndex, max, onSelect }: Props) {
     for (let i = 0; i < max; i++) {
         pageButtons.push(
             <Button
+                key={i}
                 onClick={onSelect ? () => onSelect(i) : undefined}
                 intent={i === currentIndex ? "primary" : "none"}
                 data-testid="pagination-button"

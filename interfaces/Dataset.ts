@@ -159,6 +159,7 @@ export interface DmgrTiffLayerData {
     shape: number[];
     "dmgr:datatype": string;
     url: string;
+    tempurl: string;
 }
 
 export interface Dataset {
