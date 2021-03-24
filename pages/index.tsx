@@ -27,19 +27,22 @@ import FacetMultiSelectFacetState from "../components/FacetMultiSelectFacetState
 import { EsDataset } from "../interfaces/EsDataset";
 import { DatasetType } from "../interfaces/DatasetType";
 import { useFacetState } from "../hooks/FacetState";
-import { getDataExplorerBackendServerUrl } from "../util/env";
+import {
+    getDataExplorerBackendServerUrl,
+    getDataExplorerSubbarImportData,
+} from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
 
 const subBarLinks = [
-    { key: "explore", href: "/data", label: "Explore data" },
+    { key: "explore", href: "/", label: "Explore data" },
     {
         key: "my-data",
-        href: "https://example.com/data/my-data",
+        href: "#",
         label: "My data and results",
     },
     {
         key: "import",
-        href: "https://example.com/data/import",
+        href: getDataExplorerSubbarImportData() || "#",
         label: "Import data",
     },
 ];

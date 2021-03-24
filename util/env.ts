@@ -2,6 +2,12 @@ export function getDataExplorerBackendServerUrl() {
     return process.env.NEXT_PUBLIC_DATA_EXPLORER_BACKEND_SERVER_URL as string;
 }
 
+export function getDataExplorerSubbarImportData() {
+    return process.env.NEXT_PUBLIC_DATA_EXPLORER_SUBBAR_IMPORT_DATA as
+        | string
+        | undefined;
+}
+
 export function getKeycloakAuthParameters() {
     return {
         url: process.env.NEXT_PUBLIC_KEYCLOAK_AUTH_URL as string,
