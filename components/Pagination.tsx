@@ -55,7 +55,7 @@ export default function Pagination({ currentIndex, max, onSelect }: Props) {
 
         // Add padding where the upper bound around the current index is lower
         // than the last page
-        if (upperLocalBound < (max - 2)) {
+        if (upperLocalBound < max - 2) {
             indicesToRender.push(null);
         }
 
@@ -63,17 +63,18 @@ export default function Pagination({ currentIndex, max, onSelect }: Props) {
         indicesToRender.push(max - 1);
 
         // Generate the buttons
-        indicesToRender.forEach((i) =>
+        indicesToRender.forEach((i, pos) =>
             i !== null
                 ? pageButtons.push(
                       <PageButton
+                          key={pos}
                           i={i}
                           currentIndex={currentIndex}
                           onSelect={onSelect}
                       />
                   )
                 : pageButtons.push(
-                      <Button disabled intent="none">
+                      <Button key={pos} disabled intent="none">
                           ...
                       </Button>
                   )
@@ -82,6 +83,7 @@ export default function Pagination({ currentIndex, max, onSelect }: Props) {
         for (let i = 0; i < max; i++) {
             pageButtons.push(
                 <PageButton
+                    key={i}
                     i={i}
                     currentIndex={currentIndex}
                     onSelect={onSelect}
