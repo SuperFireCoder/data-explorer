@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MetadataView renders metadata from server 1`] = `
+<div
+  data-testid="metadata-view"
+>
+  <ul>
+    <li>
+      <b>
+        Scientific name
+      </b>
+      <p>
+        Panthera leo
+      </p>
+    </li>
+    <li>
+      <b>
+        Resolution
+      </b>
+      <p>
+        Really fine
+      </p>
+    </li>
+    <li>
+      <b>
+        Domain
+      </b>
+      <p>
+        The mighty jungle
+      </p>
+    </li>
+    <li>
+      <b>
+        Genre
+      </b>
+      <p>
+        Mbube
+      </p>
+    </li>
+    <li>
+      <b>
+        Categories
+      </b>
+      <p>
+        biological occurrence
+      </p>
+    </li>
+    <li>
+      <b>
+        DOI
+      </b>
+      <p>
+        10.0000/0000000000
+      </p>
+    </li>
+    <li>
+      <b>
+        Attributions
+      </b>
+      <div>
+        <ul>
+          <li>
+            <b>
+              Citation
+            </b>
+            <p>
+              The Lion Sleeps Tonight
+            </p>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <li>
+      <b>
+        License
+      </b>
+      <p>
+        Public Domain
+      </p>
+    </li>
+  </ul>
+</div>
+`;
