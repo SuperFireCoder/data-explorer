@@ -90,7 +90,7 @@ export default function MetadataView({ datasetId }: Props) {
                         {Object.entries(data.rangeAlternates["dmgr:tiff"]).map(
                             ([layer, data]) => (
                                 <li key={layer}>
-                                    <H6>{layer}</H6>
+                                    <b>{layer}</b>
                                     <Pre>{JSON.stringify(data, null, 2)}</Pre>
                                 </li>
                             )
@@ -110,7 +110,7 @@ export default function MetadataView({ datasetId }: Props) {
                     <ul>
                         {bccvlMetadata.attributions.map(({ type, value }) => (
                             <li key={type + value}>
-                                <H6>{type}</H6>
+                                <b>{type}</b>
                                 <p>{value}</p>
                             </li>
                         ))}
@@ -126,15 +126,19 @@ export default function MetadataView({ datasetId }: Props) {
             };
 
             return (
-                <div>
+                <div data-testid="metadata-view">
                     {description && <p>{description}</p>}
                     <ul>
                         {Object.entries(displayedMetadata).map(
                             ([field, value]) =>
                                 value && (
                                     <li key={field}>
-                                        <H6>{field}</H6>
-                                        <p>{value}</p>
+                                        <b>{field}</b>
+                                        {typeof value === "string" ? (
+                                            <p>{value}</p>
+                                        ) : (
+                                            <div>{value}</div>
+                                        )}
                                     </li>
                                 )
                         )}

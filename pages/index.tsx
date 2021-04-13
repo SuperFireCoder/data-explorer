@@ -557,6 +557,7 @@ export default function IndexPage() {
                             <Row disableDefaultMargins>
                                 <Col>
                                     <InputGroup
+                                        data-testid="search-field"
                                         type="search"
                                         leftIcon="search"
                                         id="dataset-search"
@@ -567,7 +568,7 @@ export default function IndexPage() {
                                 </Col>
                             </Row>
                         </form>
-                        <form onSubmit={suppressEvent}>
+                        <form onSubmit={suppressEvent} data-testid="facet-fields">
                             <Row>
                                 <Col>
                                     <Row disableDefaultMargins>

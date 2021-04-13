@@ -76,7 +76,7 @@ export default function DatasetCard({
                             {description}
                         </p>
                         {type && (
-                            <p className="bp3-text-small">
+                            <p className="bp3-text-small" data-testid="type">
                                 <DatasetTypeIndicator type={type} />
                             </p>
                         )}
@@ -93,6 +93,7 @@ export default function DatasetCard({
                         <ButtonGroup vertical alignText="left">
                             <Button
                                 icon="document-open"
+                                data-testid="view-button"
                                 intent="success"
                                 onClick={openVisualiserDrawer}
                             >
@@ -101,6 +102,7 @@ export default function DatasetCard({
 
                             <Button
                                 icon="info-sign"
+                                data-testid="info-button"
                                 intent="primary"
                                 onClick={openMetadataDrawer}
                             >

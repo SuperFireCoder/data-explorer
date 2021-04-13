@@ -29,7 +29,10 @@ export default function VisualiserDrawer({
             size="100%"
             usePortal
         >
-            <div className={Classes.DRAWER_BODY}>
+            <div
+                className={Classes.DRAWER_BODY}
+                data-testid="visualiser-drawer"
+            >
                 <VisualiserView datasetId={datasetId} />
             </div>
             {/* <div className={Classes.DRAWER_FOOTER}>Footer</div> */}
