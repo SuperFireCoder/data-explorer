@@ -43,6 +43,7 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
     const tagInputProps = useMemo(
         () => ({
             onRemove: onItemRemoveByTag,
+            dataTestid: "facet-multi-select-tag-input",
         }),
         [onItemRemoveByTag]
     );
