@@ -30,7 +30,7 @@ For a quick local development instance, you simply start the Next.js server:
 npm run dev
 ```
 
-To sop the server:
+To stop the server:
 
 ```bash
 npm stop
