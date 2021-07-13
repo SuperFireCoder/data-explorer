@@ -53,6 +53,3 @@ deployment and other considerations: https://nextjs.org/docs/deployment.
 The provided `dev` npm script is set to open up a port for debugging. More info
 can be found at https://nextjs.org/docs/advanced-features/debugging.
 
-### Docker Compose
-
-(Coming soon)
