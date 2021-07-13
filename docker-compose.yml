@@ -20,6 +20,7 @@ services:
       args:
         NODE_ENV: development
         BUILD_DIR: /srv/app
+        NPM_AUTHTOKEN: ${NPM_AUTHTOKEN}
     command: npm run dev
     restart: unless-stopped
     volumes:

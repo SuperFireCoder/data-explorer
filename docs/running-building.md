@@ -4,14 +4,41 @@
 
 ## Running &amp; Building
 
-### Local development
+### Running in Docker Container
+
+- Start the docker container services:
+
+```bash
+docker-compose up -d
+
+```
+
+- Goto http://localhost:3000 on a browser.
+
+- To stop the docker-container service:
+
+```bash
+docker-compose down
+
+```
+
+
+### Running in Local Host Environment
 
 For a quick local development instance, you simply start the Next.js server:
 ```bash
 npm run dev
 ```
 
-### Building
+To sop the server:
+
+```bash
+npm stop
+
+```
+
+
+#### Building
 
 To build:
 ```bash
