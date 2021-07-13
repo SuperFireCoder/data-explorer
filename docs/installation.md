@@ -13,9 +13,9 @@ There are 2 methods of running the DataExplorer:
 1. __Clone the project__
 
     ```bash
-    git clone git@gitlab.com:ecocommons-australia/ecocommons-platform/ui-client.git
+    git clone git@gitlab.com:ecocommons-australia/ecocommons-platform/data-explorer-ui.git
     # or
-    git clone https://gitlab.com/ecocommons-australia/ecocommons-platform/ui-client.git
+    git clone https://gitlab.com/ecocommons-australia/ecocommons-platform/data-explorer-ui.git
     ```
 
 2. __Setup the .env file__
@@ -28,9 +28,9 @@ There are 2 methods of running the DataExplorer:
 1. __Clone the project__
 
     ```bash
-    git clone git@gitlab.com:ecocommons-australia/ecocommons-platform/ui-client.git
+    git clone git@gitlab.com:ecocommons-australia/ecocommons-platform/data-explorer-ui.git
     # or
-    git clone https://gitlab.com/ecocommons-australia/ecocommons-platform/ui-client.git
+    git clone https://gitlab.com/ecocommons-australia/ecocommons-platform/data-explorer-ui.git
     ```
 
 2. __Set up alternative NPM registry__
