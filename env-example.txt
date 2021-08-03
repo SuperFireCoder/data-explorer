@@ -1,2 +1,3 @@
 COMPOSE_PROJECT_NAME=ecocommons_data_explorer_ui
 APPLICATION_PORT=3000
+NPM_AUTHTOKEN=<gitlab personal access token with api scope>
