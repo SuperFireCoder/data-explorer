@@ -544,9 +544,9 @@ export default function IndexPage() {
 
     return (
         <>
-            <HtmlHead title={["Data and Visualisations", "Explore data"]} />
+            <HtmlHead title={["Datasets", "Explore data"]} />
             <Header
-                activeTab="data"
+                activeTab="datasets"
                 subBarLinks={subBarLinks}
                 subBarActiveKey="explore"
             />
