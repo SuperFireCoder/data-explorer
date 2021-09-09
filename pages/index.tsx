@@ -36,11 +36,6 @@ import { useKeycloakInfo } from "../util/keycloak";
 const subBarLinks = [
     { key: "explore", href: "/", label: "Explore data" },
     {
-        key: "my-data",
-        href: "#",
-        label: "My data and results",
-    },
-    {
         key: "import",
         href: getDataExplorerSubbarImportData() || "#",
         label: "Import data",
@@ -142,10 +137,8 @@ export default function IndexPage() {
      * Flag indicating that the user has changed the state of the search form,
      * but has not executed the query
      */
-    const [
-        searchQueryNotYetExecuted,
-        setSearchQueryNotYetExecuted,
-    ] = useState<boolean>(false);
+    const [searchQueryNotYetExecuted, setSearchQueryNotYetExecuted] =
+        useState<boolean>(false);
 
     /**
      * Extracts the current page parameters from the URL query parameter values.
@@ -568,7 +561,10 @@ export default function IndexPage() {
                                 </Col>
                             </Row>
                         </form>
-                        <form onSubmit={suppressEvent} data-testid="facet-fields">
+                        <form
+                            onSubmit={suppressEvent}
+                            data-testid="facet-fields"
+                        >
                             <Row>
                                 <Col>
                                     <Row disableDefaultMargins>
@@ -716,14 +712,13 @@ export default function IndexPage() {
                                                 type={
                                                     _source.status === "SUCCESS"
                                                         ? // TODO: Clarify values for "scientific_type"
-                                                          (({
-                                                              type:
-                                                                  _source
-                                                                      .scientific_type[0],
+                                                          ({
+                                                              type: _source
+                                                                  .scientific_type[0],
                                                               subtype:
                                                                   _source
                                                                       .scientific_type[1],
-                                                          } as unknown) as DatasetType)
+                                                          } as unknown as DatasetType)
                                                         : undefined
                                                 }
                                                 // TODO: Add modification date into ES index
