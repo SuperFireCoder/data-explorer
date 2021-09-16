@@ -36,6 +36,7 @@ describe("DatasetCard", () => {
                 datasetId="test-dataset-id"
                 title="Test dataset ID"
                 description=""
+                status="SUCCESS"
             />
         );
 
@@ -55,6 +56,7 @@ describe("DatasetCard", () => {
                 datasetId="test-dataset-id"
                 title="Test dataset ID"
                 description=""
+                status="SUCCESS"
             />
         );
 
@@ -83,6 +85,7 @@ describe("DatasetCard", () => {
                 datasetId="test-dataset-id"
                 title="Test dataset ID"
                 description=""
+                status="SUCCESS"
             />
         );
 
