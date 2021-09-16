@@ -12,6 +12,8 @@ import "@blueprintjs/core/lib/css/blueprint.css";
 
 import "@ecocommons-australia/ui-library/src/styles/global.css";
 
+import "ol/ol.css";
+
 interface Props extends AppProps {
     /** Cookies in request */
     cookies: unknown;

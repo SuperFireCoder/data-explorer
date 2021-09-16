@@ -1,11 +1,20 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { ProgressBar } from "@blueprintjs/core";
+import {
+    MapLayer,
+    Projections,
+    VisualiserGeospatial,
+} from "@ecocommons-australia/visualiser-client-geospatial";
+import { OverlayContentProps } from "@ecocommons-australia/visualiser-client-geospatial/dist/VisualiserGeospatial";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 
-import { useKeycloakInfo } from "../util/keycloak";
 import { getDataExplorerBackendServerUrl } from "../util/env";
 import { Dataset } from "../interfaces/Dataset";
-import { RenderTarget, WrapperContext } from "@ecocommons-australia/visualiser";
-import { WrapperContextData } from "@ecocommons-australia/visualiser/dist/interfaces/WrapperContextData";
+
+import {
+    useEcMapVisualiserRequest,
+    useVisualiserSupport,
+} from "../hooks/Visualiser";
 
 import styles from "./VisualiserView.module.css";
 
@@ -16,106 +25,37 @@ export interface Props {
 // NOTE: This currently only supports geospatial visualisation
 
 export default function VisualiserView({ datasetId }: Props) {
-    const { keycloak } = useKeycloakInfo();
-    const keycloakToken = keycloak?.token;
-
     const [metadata, setMetadata] = useState<
         | { type: "dataset"; data: Dataset }
         | { type: "error"; error: any }
         | undefined
     >(undefined);
 
-    // TODO: Turn the auth object and its effects into a separate hook
-    const { current: authObject } = useRef({
-        isAuthenticated: false,
-        getBearerToken: () => "" as string,
-    });
-
-    useEffect(
-        function syncAuthObjectState() {
-            // Update auth object's values
-
-            if (keycloakToken === undefined) {
-                authObject.isAuthenticated = false;
-                authObject.getBearerToken = () => "";
-
-                return;
-            }
-
-            authObject.isAuthenticated = true;
-            authObject.getBearerToken = () => keycloakToken;
+    const {
+        data: {
+            setCurrentVisibleLayers,
+            setRegisteredDatasetLayers,
+            getBearerTokenFn,
         },
-        [keycloakToken]
+        visualiserProps,
+    } = useVisualiserSupport();
+
+    const { getNewEcMapVisualiserRequest } = useEcMapVisualiserRequest();
+
+    const renderVisualiserOverlayContent = useCallback(
+        (props: OverlayContentProps) => {
+            return (
+                <>
+                    <div className={styles.tileLoadProgressBar}>
+                        {(props.isTileLoading || metadata === undefined) && (
+                            <ProgressBar animate stripes value={1} />
+                        )}
+                    </div>
+                </>
+            );
+        },
+        [metadata]
     );
-
-    const visualiserWrapperContextData = useMemo<WrapperContextData>(() => {
-        async function getObjectStoreTemporaryUrl(tempUrlEndpointUrl: string) {
-            const headers: Record<string, string> = {};
-
-            if (keycloakToken && keycloakToken.length > 0) {
-                headers["Authorization"] = `Bearer ${keycloakToken}`;
-            }
-
-            const { data } = await axios.get(tempUrlEndpointUrl, {
-                headers,
-            });
-
-            return data.url;
-        }
-
-        switch (metadata?.type) {
-            case "dataset": {
-                // Determine if dataset is TIFF or CSV
-                const rangeAlternates = metadata.data.rangeAlternates;
-
-                if (rangeAlternates["dmgr:csv"] !== undefined) {
-                    const tempUrlEndpointUrl =
-                        rangeAlternates["dmgr:csv"].tempurl;
-
-                    return {
-                        availableRenderModes: ["geospatial"],
-                        label: metadata.data["bccvl:metadata"].title,
-                        url: () =>
-                            getObjectStoreTemporaryUrl(tempUrlEndpointUrl),
-                        // FIXME: What should be used for the layer name in CSV
-                        // point data rendering?
-                        geospatialDataLayer: "__POINTDATA__",
-                        geospatialDataType: "point",
-                    };
-                } else if (rangeAlternates["dmgr:tiff"] !== undefined) {
-                    // Get first layer
-                    // TODO: Support multi-layer datasets
-                    const [layerName, layerInfo] = Object.entries(
-                        rangeAlternates["dmgr:tiff"]
-                    )[0];
-
-                    return {
-                        availableRenderModes: ["geospatial"],
-                        // TODO: Support multi-layer datasets
-                        label: metadata.data["bccvl:metadata"].title,
-                        url: () =>
-                            getObjectStoreTemporaryUrl(layerInfo.tempurl),
-                        geospatialDataLayer: layerName,
-                        geospatialDataType: "raster",
-                    };
-                } else {
-                    throw new Error(
-                        "Could not determine appropriate render mode for this type of data"
-                    );
-                }
-            }
-
-            case "error":
-            case undefined:
-            default: {
-                return {
-                    availableRenderModes: [],
-                    label: undefined,
-                    url: undefined,
-                };
-            }
-        }
-    }, [metadata, keycloakToken]);
 
     useEffect(
         function loadMetadata() {
@@ -125,13 +65,13 @@ export default function VisualiserView({ datasetId }: Props) {
                 try {
                     const headers: Record<string, string> = {};
 
+                    const keycloakToken = getBearerTokenFn();
+
                     if (keycloakToken && keycloakToken.length > 0) {
                         headers["Authorization"] = `Bearer ${keycloakToken}`;
                     }
 
-                    const {
-                        data,
-                    } = await axios.get(
+                    const { data } = await axios.get(
                         `${getDataExplorerBackendServerUrl()}/api/dataset/${datasetId}`,
                         { headers }
                     );
@@ -152,30 +92,105 @@ export default function VisualiserView({ datasetId }: Props) {
                 cancellationToken.cancel();
             };
         },
-        [keycloakToken, datasetId]
+        [getBearerTokenFn, datasetId]
     );
 
-    switch (metadata?.type) {
-        case "dataset": {
-            return (
-                <div style={{ height: "100%" }}>
-                    <WrapperContext
-                        data={visualiserWrapperContextData}
-                        auth={authObject}
-                    >
-                        <RenderTarget className={styles.renderTarget} />
-                    </WrapperContext>
-                </div>
+    useEffect(
+        function syncRegisteredLayersWithDataset() {
+            // No dataset = nothing to render
+            if (metadata === undefined || metadata.type !== "dataset") {
+                setRegisteredDatasetLayers([]);
+                setCurrentVisibleLayers([]);
+                return;
+            }
+
+            const layers = Object.keys(metadata.data.parameters).map(
+                (layerName) => {
+                    const tempUrl =
+                        metadata.data.rangeAlternates?.["dmgr:tiff"]?.[
+                            layerName
+                        ]?.tempurl;
+
+                    if (tempUrl === undefined) {
+                        throw new Error(
+                            `Cannot obtain temp URL for "${layerName}"`
+                        );
+                    }
+
+                    return {
+                        datasetId,
+                        label: metadata.data.parameters[layerName]
+                            .observedProperty.label.en,
+                        layerName,
+                        layerUrl: {
+                            __tempUrl: tempUrl,
+                        },
+                    };
+                }
             );
-        }
 
-        case "error": {
-            return <div>An error occurred</div>;
-        }
+            setRegisteredDatasetLayers(
+                layers.map(({ datasetId, label, layerName, layerUrl }) => {
+                    // NOTE: Currently assuming data type from `rangeAlternates`
+                    // property
+                    // FIXME: Have backend pass actual data type of the layer
+                    const dataType =
+                        metadata.data.rangeAlternates["dmgr:tiff"] !== undefined
+                            ? "raster"
+                            : "point";
 
-        case undefined:
-        default: {
-            return <div>Please wait...</div>;
-        }
-    }
+                    const mapRequest = getNewEcMapVisualiserRequest(
+                        layerUrl,
+                        layerName,
+                        dataType
+                    );
+                    mapRequest.getBearerToken = getBearerTokenFn;
+
+                    return {
+                        datasetId,
+                        layerName,
+                        layerUrl,
+                        mapLayer: new MapLayer({
+                            type: "ecocommons-visualiser",
+                            label,
+                            mapRequest,
+                            mapProjection: Projections.DEFAULT_MAP_PROJECTION,
+                        }),
+                    };
+                })
+            );
+
+            // Set current dataset preview to first layer
+            if (layers.length === 0) {
+                setCurrentVisibleLayers([]);
+                return;
+            }
+
+            setCurrentVisibleLayers([
+                {
+                    datasetId: layers[0].datasetId,
+                    layerName: layers[0].layerName,
+                },
+            ]);
+        },
+        [
+            datasetId,
+            metadata,
+            getNewEcMapVisualiserRequest,
+            getBearerTokenFn,
+            setRegisteredDatasetLayers,
+            setCurrentVisibleLayers,
+        ]
+    );
+
+    return (
+        <VisualiserGeospatial
+            {...visualiserProps}
+            className={styles.visualiserContainer}
+            mapClassName={styles.mapContainer}
+            fullscreenControl
+            scaleControl
+            renderOverlayContent={renderVisualiserOverlayContent}
+        />
+    );
 }

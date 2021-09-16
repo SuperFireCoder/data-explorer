@@ -30,9 +30,8 @@ export default function DatasetCard({
     type,
     lastUpdated,
 }: Props) {
-    const [metadataDrawerOpen, setMetadataDrawerOpen] = useState<boolean>(
-        false
-    );
+    const [metadataDrawerOpen, setMetadataDrawerOpen] =
+        useState<boolean>(false);
 
     const openMetadataDrawer = useCallback(
         () => setMetadataDrawerOpen(true),
@@ -44,9 +43,8 @@ export default function DatasetCard({
         []
     );
 
-    const [visualiserDrawerOpen, setVisualiserDrawerOpen] = useState<boolean>(
-        false
-    );
+    const [visualiserDrawerOpen, setVisualiserDrawerOpen] =
+        useState<boolean>(false);
 
     const openVisualiserDrawer = useCallback(
         () => setVisualiserDrawerOpen(true),
@@ -99,7 +97,6 @@ export default function DatasetCard({
                             >
                                 View
                             </Button>
-
                             <Button
                                 icon="info-sign"
                                 data-testid="info-button"
@@ -108,7 +105,7 @@ export default function DatasetCard({
                             >
                                 Info
                             </Button>
-                            <Button icon="download" intent="warning">
+                            <Button icon="download" intent="warning" disabled>
                                 Download
                             </Button>
                         </ButtonGroup>

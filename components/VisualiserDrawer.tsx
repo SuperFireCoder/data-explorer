@@ -1,4 +1,5 @@
 import { Drawer, Classes, Position } from "@blueprintjs/core";
+import { Col, Row } from "@ecocommons-australia/ui-library";
 import VisualiserView from "./VisualiserView";
 
 export interface Props {
@@ -32,10 +33,29 @@ export default function VisualiserDrawer({
             <div
                 className={Classes.DRAWER_BODY}
                 data-testid="visualiser-drawer"
+                style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "stretch",
+                }}
             >
-                <VisualiserView datasetId={datasetId} />
+                <Row
+                    disableDefaultMargins
+                    align="stretch"
+                    gutterWidth={0}
+                    nogutter
+                    nowrap
+                    style={{ flex: 1 }}
+                >
+                    <Col xs={3}></Col>
+                    <Col
+                        xs={9}
+                        style={{ position: "relative", display: "flex" }}
+                    >
+                        <VisualiserView datasetId={datasetId} />
+                    </Col>
+                </Row>
             </div>
-            {/* <div className={Classes.DRAWER_FOOTER}>Footer</div> */}
         </Drawer>
     );
 }

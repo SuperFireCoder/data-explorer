@@ -2,6 +2,7 @@
 const withTM = require("next-transpile-modules")([
     "ol",
     "@ecocommons-australia/visualiser",
+    "@ecocommons-australia/visualiser-client-geospatial",
 ]);
 module.exports = withTM();
 
