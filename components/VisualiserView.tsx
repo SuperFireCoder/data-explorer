@@ -106,10 +106,21 @@ export default function VisualiserView({ datasetId }: Props) {
 
             const layers = Object.keys(metadata.data.parameters).map(
                 (layerName) => {
+                    // NOTE: Currently assuming data type from `rangeAlternates`
+                    // property
+                    // FIXME: Have backend pass actual data type of the layer
+                    const dataType =
+                        metadata.data.rangeAlternates["dmgr:tiff"] !== undefined
+                            ? ("raster" as const)
+                            : ("point" as const);
+
                     const tempUrl =
-                        metadata.data.rangeAlternates?.["dmgr:tiff"]?.[
-                            layerName
-                        ]?.tempurl;
+                        dataType === "raster"
+                            ? metadata.data.rangeAlternates?.["dmgr:tiff"]?.[
+                                  layerName
+                              ]?.tempurl
+                            : metadata.data.rangeAlternates?.["dmgr:csv"]
+                                  ?.tempurl;
 
                     if (tempUrl === undefined) {
                         throw new Error(
@@ -119,6 +130,7 @@ export default function VisualiserView({ datasetId }: Props) {
 
                     return {
                         datasetId,
+                        dataType,
                         label: metadata.data.parameters[layerName]
                             .observedProperty.label.en,
                         layerName,
@@ -130,34 +142,29 @@ export default function VisualiserView({ datasetId }: Props) {
             );
 
             setRegisteredDatasetLayers(
-                layers.map(({ datasetId, label, layerName, layerUrl }) => {
-                    // NOTE: Currently assuming data type from `rangeAlternates`
-                    // property
-                    // FIXME: Have backend pass actual data type of the layer
-                    const dataType =
-                        metadata.data.rangeAlternates["dmgr:tiff"] !== undefined
-                            ? "raster"
-                            : "point";
+                layers.map(
+                    ({ datasetId, dataType, label, layerName, layerUrl }) => {
+                        const mapRequest = getNewEcMapVisualiserRequest(
+                            layerUrl,
+                            layerName,
+                            dataType
+                        );
+                        mapRequest.getBearerToken = getBearerTokenFn;
 
-                    const mapRequest = getNewEcMapVisualiserRequest(
-                        layerUrl,
-                        layerName,
-                        dataType
-                    );
-                    mapRequest.getBearerToken = getBearerTokenFn;
-
-                    return {
-                        datasetId,
-                        layerName,
-                        layerUrl,
-                        mapLayer: new MapLayer({
-                            type: "ecocommons-visualiser",
-                            label,
-                            mapRequest,
-                            mapProjection: Projections.DEFAULT_MAP_PROJECTION,
-                        }),
-                    };
-                })
+                        return {
+                            datasetId,
+                            layerName,
+                            layerUrl,
+                            mapLayer: new MapLayer({
+                                type: "ecocommons-visualiser",
+                                label,
+                                mapRequest,
+                                mapProjection:
+                                    Projections.DEFAULT_MAP_PROJECTION,
+                            }),
+                        };
+                    }
+                )
             );
 
             // Set current dataset preview to first layer
