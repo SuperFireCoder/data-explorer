@@ -23,6 +23,8 @@ export interface Props {
     lastUpdated?: Date;
     /** Status of the dataset import */
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
+    /** Import failure message */
+    failureMessage?: string;
 }
 
 export default function DatasetCard({
@@ -32,6 +34,7 @@ export default function DatasetCard({
     type,
     lastUpdated,
     status,
+    failureMessage,
 }: Props) {
     const [metadataDrawerOpen, setMetadataDrawerOpen] =
         useState<boolean>(false);
@@ -71,7 +74,13 @@ export default function DatasetCard({
             <Card className={styles.datasetCard}>
                 <Row justify="between">
                     <Col>
-                        <H5>{title}</H5>
+                        <H5
+                            className={classnames({
+                                [Classes.TEXT_DISABLED]: status === "FAILED",
+                            })}
+                        >
+                            {title}
+                        </H5>
                         {status === "IMPORTING" && (
                             <p
                                 className={classnames(
@@ -83,14 +92,17 @@ export default function DatasetCard({
                             </p>
                         )}
                         {status === "FAILED" && (
-                            <p
-                                className={classnames(
-                                    styles.description,
-                                    Classes.TEXT_DISABLED
-                                )}
-                            >
-                                Dataset failed to import
-                            </p>
+                            <>
+                                <p
+                                    className={classnames(
+                                        styles.description,
+                                        Classes.TEXT_DISABLED
+                                    )}
+                                >
+                                    {failureMessage ??
+                                        "Dataset failed to import"}
+                                </p>
+                            </>
                         )}
                         <p
                             className={classnames(

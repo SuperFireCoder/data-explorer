@@ -710,6 +710,11 @@ export default function IndexPage() {
                                                     _source.description
                                                 }
                                                 status={_source.status}
+                                                failureMessage={
+                                                    _source.status === "FAILED"
+                                                        ? _source.message
+                                                        : undefined
+                                                }
                                                 type={
                                                     _source.status === "SUCCESS"
                                                         ? // TODO: Clarify values for "scientific_type"
