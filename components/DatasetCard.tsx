@@ -1,7 +1,7 @@
-import { Button, ButtonGroup, Card, H5 } from "@blueprintjs/core";
+import { Button, ButtonGroup, Card, Classes, H5 } from "@blueprintjs/core";
 import classnames from "classnames";
 import { Col, Row } from "react-grid-system";
-import { ReactNode, useCallback, useState } from "react";
+import { ReactNode, useCallback, useMemo, useState } from "react";
 import { DatasetType } from "../interfaces/DatasetType";
 import { getDDMMMYYYY } from "../util/date";
 import DatasetTypeIndicator from "./DatasetTypeIndicator";
@@ -21,6 +21,8 @@ export interface Props {
     type?: DatasetType;
     /** Date the dataset was last updated */
     lastUpdated?: Date;
+    /** Status of the dataset import */
+    status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
 }
 
 export default function DatasetCard({
@@ -29,9 +31,14 @@ export default function DatasetCard({
     description,
     type,
     lastUpdated,
+    status,
 }: Props) {
     const [metadataDrawerOpen, setMetadataDrawerOpen] =
         useState<boolean>(false);
+
+    const disabledDataset = useMemo(() => {
+        return status !== "SUCCESS";
+    }, [status]);
 
     const openMetadataDrawer = useCallback(
         () => setMetadataDrawerOpen(true),
@@ -65,6 +72,26 @@ export default function DatasetCard({
                 <Row justify="between">
                     <Col>
                         <H5>{title}</H5>
+                        {status === "IMPORTING" && (
+                            <p
+                                className={classnames(
+                                    styles.description,
+                                    Classes.TEXT_DISABLED
+                                )}
+                            >
+                                Importing...
+                            </p>
+                        )}
+                        {status === "FAILED" && (
+                            <p
+                                className={classnames(
+                                    styles.description,
+                                    Classes.TEXT_DISABLED
+                                )}
+                            >
+                                Dataset failed to import
+                            </p>
+                        )}
                         <p
                             className={classnames(
                                 styles.description,
@@ -94,6 +121,7 @@ export default function DatasetCard({
                                 data-testid="view-button"
                                 intent="success"
                                 onClick={openVisualiserDrawer}
+                                disabled={disabledDataset}
                             >
                                 View
                             </Button>
@@ -102,10 +130,16 @@ export default function DatasetCard({
                                 data-testid="info-button"
                                 intent="primary"
                                 onClick={openMetadataDrawer}
+                                disabled={disabledDataset}
                             >
                                 Info
                             </Button>
-                            <Button icon="download" intent="warning" disabled>
+                            <Button
+                                icon="download"
+                                intent="warning"
+                                // disabled={disabledDataset}
+                                disabled
+                            >
                                 Download
                             </Button>
                         </ButtonGroup>

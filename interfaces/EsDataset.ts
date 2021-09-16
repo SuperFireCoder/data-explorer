@@ -16,6 +16,6 @@ export interface EsDataset {
     domain: string;
     emsc: unknown;
     scientific_type: readonly string[];
-    status: string;
+    status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
     uuid: string;
 }

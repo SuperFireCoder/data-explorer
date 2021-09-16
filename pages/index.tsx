@@ -709,6 +709,7 @@ export default function IndexPage() {
                                                 description={
                                                     _source.description
                                                 }
+                                                status={_source.status}
                                                 type={
                                                     _source.status === "SUCCESS"
                                                         ? // TODO: Clarify values for "scientific_type"
