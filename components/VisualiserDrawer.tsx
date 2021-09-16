@@ -5,6 +5,8 @@ import {
     ProgressBar,
     RadioGroup,
     Radio,
+    H4,
+    Icon,
 } from "@blueprintjs/core";
 import { Col, Row } from "@ecocommons-australia/ui-library";
 import {
@@ -58,8 +60,8 @@ export default function VisualiserDrawer({
     const { getNewEcMapVisualiserRequest } = useEcMapVisualiserRequest();
 
     const [metadata, setMetadata] = useState<
-        | { type: "dataset"; data: Dataset }
-        | { type: "error"; error: any }
+        | { type: "dataset"; datasetId: string; data: Dataset }
+        | { type: "error"; datasetId: string; error: any }
         | undefined
     >(undefined);
 
@@ -190,6 +192,12 @@ export default function VisualiserDrawer({
 
     useEffect(
         function loadMetadata() {
+            // No need to load metadata when not open, or if it was already
+            // fetched before
+            if (!isOpen || metadata?.datasetId === datasetId) {
+                return;
+            }
+
             const cancellationToken = axios.CancelToken.source();
 
             (async () => {
@@ -207,7 +215,7 @@ export default function VisualiserDrawer({
                         { headers }
                     );
 
-                    setMetadata({ type: "dataset", data });
+                    setMetadata({ type: "dataset", datasetId, data });
                 } catch (e) {
                     // Ignore cancellation
                     if (axios.isCancel(e)) {
@@ -215,7 +223,7 @@ export default function VisualiserDrawer({
                     }
 
                     // Set error state
-                    setMetadata({ type: "error", error: e });
+                    setMetadata({ type: "error", datasetId, error: e });
                 }
             })();
 
@@ -223,7 +231,7 @@ export default function VisualiserDrawer({
                 cancellationToken.cancel();
             };
         },
-        [getBearerTokenFn, datasetId]
+        [getBearerTokenFn, datasetId, isOpen, metadata?.datasetId]
     );
 
     return (
@@ -262,7 +270,23 @@ export default function VisualiserDrawer({
                         {layerInfo === undefined && (
                             <Row>
                                 <Col xs={12}>
-                                    <p>Please wait...</p>
+                                    {metadata?.type === "error" ? (
+                                        <>
+                                            <H4>
+                                                <Icon
+                                                    icon="error"
+                                                    intent="danger"
+                                                />{" "}
+                                                Error
+                                            </H4>
+                                            <p>
+                                                An error occurred when fetching
+                                                this dataset
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <p>Please wait...</p>
+                                    )}
                                 </Col>
                             </Row>
                         )}
