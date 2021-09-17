@@ -32,6 +32,7 @@ import {
     getDataExplorerSubbarImportData,
 } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
+import { Select } from "@blueprintjs/select";
 
 const subBarLinks = [
     { key: "explore", href: "/", label: "Explore data" },
@@ -49,6 +50,9 @@ interface QueryParameters {
     pageStart?: string;
     /** Search query string */
     searchQuery?: string;
+
+    /** Array of users/subjects to filter results by */
+    filterPrincipals?: string | string[];
 
     facetYearMin?: string;
     facetYearMax?: string;
@@ -72,10 +76,10 @@ function stripEmptyStringQueryParams(
     );
 }
 
-function normaliseFacetPageParam(
-    facet: string | readonly string[]
+function normaliseAsReadonlyStringArray(
+    value: string | readonly string[]
 ): readonly string[] {
-    return typeof facet === "string" ? [facet] : facet;
+    return typeof value === "string" ? [value] : value;
 }
 
 /**
@@ -148,6 +152,7 @@ export default function IndexPage() {
             pageSize = "10",
             pageStart = "0",
             searchQuery = "",
+            filterPrincipals = [],
             facetYearMin = "",
             facetYearMax = "",
             facetTimeDomain = [],
@@ -166,15 +171,20 @@ export default function IndexPage() {
             // String search query
             searchQuery,
 
+            // Principals
+            filterPrincipals: normaliseAsReadonlyStringArray(filterPrincipals),
+
             // Facets
             facetYearMin: parseInt(facetYearMin, 10), // Value may be NaN
             facetYearMax: parseInt(facetYearMax, 10), // Value may be NaN
-            facetTimeDomain: normaliseFacetPageParam(facetTimeDomain),
-            facetSpatialDomain: normaliseFacetPageParam(facetSpatialDomain),
-            facetResolution: normaliseFacetPageParam(facetResolution),
-            facetScientificType: normaliseFacetPageParam(facetScientificType),
-            facetDomain: normaliseFacetPageParam(facetDomain),
-            facetGcm: normaliseFacetPageParam(facetGcm),
+            facetTimeDomain: normaliseAsReadonlyStringArray(facetTimeDomain),
+            facetSpatialDomain:
+                normaliseAsReadonlyStringArray(facetSpatialDomain),
+            facetResolution: normaliseAsReadonlyStringArray(facetResolution),
+            facetScientificType:
+                normaliseAsReadonlyStringArray(facetScientificType),
+            facetDomain: normaliseAsReadonlyStringArray(facetDomain),
+            facetGcm: normaliseAsReadonlyStringArray(facetGcm),
         };
     }, [router.query]);
 
@@ -182,6 +192,9 @@ export default function IndexPage() {
     const [searchQuery, setSearchQuery] = useState<string>(
         pageParameters.searchQuery
     );
+
+    // Users/principals to narrow datasets by
+    const [filterPrincipals, setFilterPrincipals] = useState<string[]>([]);
 
     // Facets
     // TODO: Implement some way of feeding the default state into the facets
@@ -287,6 +300,9 @@ export default function IndexPage() {
                 // String search query
                 searchQuery,
 
+                // Users/principals
+                filterPrincipals,
+
                 // Facets
                 facetYearMin: yearMin.toString(),
                 facetYearMax: yearMax.toString(),
@@ -306,6 +322,9 @@ export default function IndexPage() {
 
             // String search query change
             searchQuery,
+
+            // Users/principals
+            filterPrincipals,
 
             // If the facet selection changes, this callback needs updating
             yearMin,
@@ -352,6 +371,25 @@ export default function IndexPage() {
         setYearMax(e.currentTarget.value.trim());
     }, []);
 
+    const handlePrivacySelectChange = useCallback<
+        ChangeEventHandler<HTMLSelectElement>
+    >(
+        (e) => {
+            const value = e.currentTarget.value;
+
+            // If we have the current user's subject ID and they've chosen to
+            // filter by private then set the filtered principals to subject ID
+            if (value === "private" && keycloak?.subject !== undefined) {
+                setFilterPrincipals([keycloak.subject]);
+                return;
+            }
+
+            // Otherwise set blank
+            setFilterPrincipals([]);
+        },
+        [keycloakToken, keycloak]
+    );
+
     /**
      * An effect to automatically execute new Elasticsearch query upon page
      * parameter change, such as page increment or page size change.
@@ -362,6 +400,7 @@ export default function IndexPage() {
                 pageSize,
                 pageStart,
                 searchQuery,
+                filterPrincipals,
                 facetYearMin,
                 facetYearMax,
                 facetTimeDomain,
@@ -467,6 +506,17 @@ export default function IndexPage() {
                 );
             }
 
+            // If users/principals are provided, apply them as a filter
+            if (filterPrincipals.length > 0) {
+                // NOTE: This is a filter, so the `isEmptyQuery` flag does not
+                // need to be set to `false`
+                queryBuilder = queryBuilder.filter(
+                    "terms",
+                    "allowed_principals",
+                    filterPrincipals
+                );
+            }
+
             // If query empty, attempt to fetch all
             if (isEmptyQuery) {
                 queryBuilder = queryBuilder.query("match_all");
@@ -522,6 +572,9 @@ export default function IndexPage() {
         [
             // String search query changes
             searchQuery,
+
+            // Users/principals
+            filterPrincipals,
 
             // Facet selection changes
             yearMin,
@@ -655,6 +708,31 @@ export default function IndexPage() {
                                     </Col>
                                 </Row>
                             ))}
+                            <Row>
+                                <Col>
+                                    <H6>Privacy</H6>
+                                    <select
+                                        value={
+                                            filterPrincipals.length === 1 &&
+                                            keycloak?.subject ===
+                                                filterPrincipals[0]
+                                                ? "private"
+                                                : "all"
+                                        }
+                                        onChange={handlePrivacySelectChange}
+                                    >
+                                        <option value="all">All</option>
+                                        <option
+                                            value="private"
+                                            disabled={
+                                                keycloak?.subject === undefined
+                                            }
+                                        >
+                                            Private
+                                        </option>
+                                    </select>
+                                </Col>
+                            </Row>
                         </form>
                         <Row>
                             <Col>
