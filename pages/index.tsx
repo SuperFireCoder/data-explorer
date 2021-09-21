@@ -17,7 +17,7 @@ import { SearchResponse } from "elasticsearch";
 import { useRouter } from "next/router";
 import bodybuilder, { Bodybuilder } from "bodybuilder";
 import axios from "axios";
-import { InputGroup, Button, H6, Switch } from "@blueprintjs/core";
+import { InputGroup, Button, H6, Switch, FocusStyleManager } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 
 import Header from "../components/Header";
@@ -127,6 +127,9 @@ function suppressEvent(e: Event | FormEvent | MouseEvent) {
 }
 
 export default function IndexPage() {
+    /** Hide the blue outline when mouse down. Only show the switch's blue outline for accessibility when users using keyboard tab. */
+    FocusStyleManager.onlyShowFocusOnTabs();
+
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
 
