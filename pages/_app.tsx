@@ -1,9 +1,11 @@
 import cookie from "cookie";
 import { AppProps, AppContext } from "next/app";
 import Link from "next/link";
+import getConfig from "next/config";
 import { IncomingMessage } from "http";
 import { SSRKeycloakProvider, SSRCookies } from "@react-keycloak/ssr";
 import { LinkContext } from "@ecocommons-australia/ui-library";
+import { ECMapVisualiserRequest } from "@ecocommons-australia/visualiser-client-geospatial";
 import { getKeycloakAuthParameters } from "../util/env";
 
 // Blueprint required CSS
@@ -13,6 +15,14 @@ import "@blueprintjs/core/lib/css/blueprint.css";
 import "@ecocommons-australia/ui-library/src/styles/global.css";
 
 import "ol/ol.css";
+
+const config = getConfig();
+
+// Set the visualiser backend server URL
+ECMapVisualiserRequest.MAP_VISUALISER_BACKEND_SERVER_URL =
+    config.publicRuntimeConfig
+        .NEXT_PUBLIC_VISUALISER_CLIENT_GEOSPATIAL_ECMAPVISUALISERREQUEST_BACKEND_SERVER_URL ??
+    "#";
 
 interface Props extends AppProps {
     /** Cookies in request */
