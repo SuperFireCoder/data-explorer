@@ -2,8 +2,12 @@ import { Button, ButtonGroup, Card, Classes, H5 } from "@blueprintjs/core";
 import classnames from "classnames";
 import { Col, Row } from "react-grid-system";
 import { ReactNode, useCallback, useMemo, useState } from "react";
+import axios from "axios";
+
 import { DatasetType } from "../interfaces/DatasetType";
 import { getDDMMMYYYY } from "../util/date";
+import { useDataManager } from "../hooks/DataManager";
+
 import DatasetTypeIndicator from "./DatasetTypeIndicator";
 import MetadataDrawer from "./MetadataDrawer";
 import VisualiserDrawer from "./VisualiserDrawer";
@@ -36,7 +40,12 @@ export default function DatasetCard({
     status,
     failureMessage,
 }: Props) {
+    const dataManager = useDataManager();
+
     const [metadataDrawerOpen, setMetadataDrawerOpen] =
+        useState<boolean>(false);
+
+    const [downloadInProgress, setDownloadInProgress] =
         useState<boolean>(false);
 
     const disabledDataset = useMemo(() => {
@@ -65,6 +74,33 @@ export default function DatasetCard({
         () => setVisualiserDrawerOpen(false),
         []
     );
+
+    const downloadDataset = useCallback(async () => {
+        if (dataManager === undefined) {
+            throw new Error("Data Manager must be available for download");
+        }
+
+        try {
+            const { promise } = dataManager.getDatasetTemporaryUrl(datasetId);
+
+            setDownloadInProgress(true);
+
+            const { url } = await promise;
+
+            // Go to returned URL to trigger download
+            window.location.href = url;
+        } catch (e) {
+            // Ignore cancellation events
+            if (axios.isCancel(e)) {
+                return;
+            }
+
+            console.error(e);
+            alert(e.toString());
+        } finally {
+            setDownloadInProgress(false);
+        }
+    }, [datasetId, dataManager]);
 
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
@@ -149,8 +185,9 @@ export default function DatasetCard({
                             <Button
                                 icon="download"
                                 intent="warning"
-                                // disabled={disabledDataset}
-                                disabled
+                                onClick={downloadDataset}
+                                loading={downloadInProgress}
+                                disabled={disabledDataset}
                             >
                                 Download
                             </Button>
