@@ -419,15 +419,40 @@ export default function IndexPage() {
                 //
                 // For `year`, get the min and max values for the UI to
                 // construct a range slide
-                .aggregation("min", "year", "facetYearMin")
-                .aggregation("max", "year", "facetYearMax")
+                .aggregation("min", "year", { size: 1000000 }, "facetYearMin")
+                .aggregation("max", "year", { size: 1000000 }, "facetYearMax")
                 // All other aggregations are buckets of simple string values
-                .aggregation("terms", "time_domain", "facetTimeDomain")
-                .aggregation("terms", "spatial_domain", "facetSpatialDomain")
-                .aggregation("terms", "resolution", "facetResolution")
-                .aggregation("terms", "scientific_type", "facetScientificType")
-                .aggregation("terms", "domain", "facetDomain")
-                .aggregation("terms", "gcm", "facetGcm");
+                .aggregation(
+                    "terms",
+                    "time_domain",
+                    { size: 1000000 },
+                    "facetTimeDomain"
+                )
+                .aggregation(
+                    "terms",
+                    "spatial_domain",
+                    { size: 1000000 },
+                    "facetSpatialDomain"
+                )
+                .aggregation(
+                    "terms",
+                    "resolution",
+                    { size: 1000000 },
+                    "facetResolution"
+                )
+                .aggregation(
+                    "terms",
+                    "scientific_type",
+                    { size: 1000000 },
+                    "facetScientificType"
+                )
+                .aggregation(
+                    "terms",
+                    "domain",
+                    { size: 1000000 },
+                    "facetDomain"
+                )
+                .aggregation("terms", "gcm", { size: 1000000 }, "facetGcm");
 
             let isEmptyQuery = true;
 
