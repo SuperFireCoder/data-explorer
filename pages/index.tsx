@@ -61,6 +61,7 @@ interface QueryParameters {
     facetResolution?: string | string[];
     facetGcm?: string | string[];
     facetDomain?: string | string[];
+    facetCollection?: string | string[];
     facetScientificType?: string | string[];
 }
 
@@ -160,6 +161,7 @@ export default function IndexPage() {
             facetResolution = [],
             facetScientificType = [],
             facetDomain = [],
+            facetCollection = [],
             facetGcm = [],
         } = router.query as QueryParameters;
 
@@ -184,6 +186,7 @@ export default function IndexPage() {
             facetScientificType:
                 normaliseAsReadonlyStringArray(facetScientificType),
             facetDomain: normaliseAsReadonlyStringArray(facetDomain),
+            facetCollection: normaliseAsReadonlyStringArray(facetCollection),
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
         };
     }, [router.query]);
@@ -217,6 +220,10 @@ export default function IndexPage() {
     const facetStateDomain = useFacetState(
         results?.aggregations?.facetDomain?.buckets
     );
+    const facetStateCollection = useFacetState(
+        results?.aggregations?.facetCollection?.buckets
+    );
+    
     const facetStateGcm = useFacetState(
         results?.aggregations?.facetGcm?.buckets
     );
@@ -311,6 +318,7 @@ export default function IndexPage() {
                 facetResolution: facetStateResolution.getQueryParams(),
                 facetScientificType: facetStateScientificType.getQueryParams(),
                 facetDomain: facetStateDomain.getQueryParams(),
+                facetCollection: facetStateCollection.getQueryParams(),
                 facetGcm: facetStateGcm.getQueryParams(),
 
                 // New queries must start at page 0
@@ -334,6 +342,7 @@ export default function IndexPage() {
             facetStateResolution.selectedItems,
             facetStateScientificType.selectedItems,
             facetStateDomain.selectedItems,
+            facetStateCollection.selectedItems,
             facetStateGcm.selectedItems,
         ]
     );
@@ -408,6 +417,7 @@ export default function IndexPage() {
                 facetResolution,
                 facetScientificType,
                 facetDomain,
+                facetCollection,
                 facetGcm,
             } = pageParameters;
 
@@ -452,6 +462,12 @@ export default function IndexPage() {
                     { size: 1000000 },
                     "facetDomain"
                 )
+                .aggregation(
+                    "terms",
+                    "collection_names",
+                    { size: 1000000 },
+                    "facetCollection"
+                )
                 .aggregation("terms", "gcm", { size: 1000000 }, "facetGcm");
 
             let isEmptyQuery = true;
@@ -486,6 +502,12 @@ export default function IndexPage() {
                 isEmptyQuery,
                 "domain",
                 facetDomain
+            );
+            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+                queryBuilder,
+                isEmptyQuery,
+                "collection_names",
+                facetCollection
             );
             [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
                 queryBuilder,
@@ -609,6 +631,7 @@ export default function IndexPage() {
             facetStateResolution.selectedItemKeyHash,
             facetStateScientificType.selectedItemKeyHash,
             facetStateDomain.selectedItemKeyHash,
+            facetStateCollection.selectedItemKeyHash,
             facetStateGcm.selectedItemKeyHash,
         ]
     );
@@ -692,6 +715,11 @@ export default function IndexPage() {
                                 </Col>
                             </Row>
                             {[
+                                {
+                                    title: "Collection",
+                                    facetState: facetStateCollection,
+                                    placeholder: "Filter by collection...",
+                                },
                                 {
                                     title: "Time domain",
                                     facetState: facetStateTimeDomain,
