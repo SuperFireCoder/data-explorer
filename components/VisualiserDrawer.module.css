@@ -13,3 +13,9 @@
     left: 0;
     width: 100%;
 }
+
+.legendImageContainer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}

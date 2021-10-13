@@ -111,6 +111,12 @@ export default function VisualiserDrawer({
                             <ProgressBar animate stripes value={1} />
                         )}
                     </div>
+                    <div className={styles.legendImageContainer}>
+                        {/* FIXME: This is a temporary solution to render legends on assumption there is only one visible layer on top of the base one */}
+                        {props._legendImages[1] !== undefined && (
+                            <img src={props._legendImages[1]} />
+                        )}
+                    </div>
                 </>
             );
         },
