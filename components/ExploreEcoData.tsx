@@ -133,9 +133,12 @@ interface Props {
     keycloakToken?: any
 }
 
-export default function ExploreEcoData({keycloak, keycloakToken}:Props) {
+export default function ExploreEcoData() {
     
+    const { keycloak } = useKeycloakInfo();
     const router = useRouter();
+
+    const keycloakToken = keycloak?.token;
 
     /** Elasticsearch search response result data */
     const [results, setResults] = useState<

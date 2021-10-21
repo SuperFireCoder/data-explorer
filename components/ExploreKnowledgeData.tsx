@@ -126,9 +126,12 @@ function suppressEvent(e: Event | FormEvent | MouseEvent) {
     e.stopPropagation();
 }
 
-export default function ExploreKnowledgeData(props) {
+export default function ExploreKnowledgeData() {
     
+    const { keycloak } = useKeycloakInfo();
     const router = useRouter();
+
+    const keycloakToken = keycloak?.token;
 
     /** Elasticsearch search response result data */
     const [results, setResults] = useState<
@@ -377,15 +380,15 @@ export default function ExploreKnowledgeData(props) {
 
             // If we have the current user's subject ID and they've chosen to
             // filter by private then set the filtered principals to subject ID
-            if (value === "private" && props.keycloak?.subject !== undefined) {
-                setFilterPrincipals([props.keycloak.subject]);
+            if (value === "private" && keycloak?.subject !== undefined) {
+                setFilterPrincipals([keycloak.subject]);
                 return;
             }
 
             // Otherwise set blank
             setFilterPrincipals([]);
         },
-        [props.keycloakToken, props.keycloak]
+        [keycloakToken, keycloak]
     );
 
     /**
@@ -525,8 +528,8 @@ export default function ExploreKnowledgeData(props) {
             // `Authorization` header depends on whether token is available
             const headers: Record<string, string> = {};
 
-            if (props.keycloakToken && props.keycloakToken.length > 0) {
-                headers["Authorization"] = `Bearer ${props.keycloakToken}`;
+            if (keycloakToken && keycloakToken.length > 0) {
+                headers["Authorization"] = `Bearer ${keycloakToken}`;
             }
 
             const esQueryCancelToken = axios.CancelToken.source();
@@ -556,7 +559,7 @@ export default function ExploreKnowledgeData(props) {
                 esQueryCancelToken.cancel();
             };
         },
-        [pageParameters, props.keycloakToken]
+        [pageParameters, keycloakToken]
     );
 
     useEffect(
@@ -706,7 +709,7 @@ export default function ExploreKnowledgeData(props) {
                                     <select
                                         value={
                                             filterPrincipals.length === 1 &&
-                                            props.keycloak?.subject ===
+                                            keycloak?.subject ===
                                                 filterPrincipals[0]
                                                 ? "private"
                                                 : "all"
@@ -717,7 +720,7 @@ export default function ExploreKnowledgeData(props) {
                                         <option
                                             value="private"
                                             disabled={
-                                                props.keycloak?.subject === undefined
+                                                keycloak?.subject === undefined
                                             }
                                         >
                                             Private

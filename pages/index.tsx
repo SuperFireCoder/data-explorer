@@ -170,12 +170,12 @@ export default function IndexPage() {
                         <Tab
                             id="eco-data"
                             title="Explore EcoCommons Data"
-                            panel={<ExploreEcoData keycloak={keycloak} keycloakToken={keycloakToken} />}
+                            panel={<ExploreEcoData />}
                         />
                         <Tab
                             id="knowledge-data"
                             title="Explore Knowledge Network Data"
-                            panel={<ExploreKnowledgeData keycloak={keycloak} keycloakToken={keycloakToken} />}
+                            panel={<ExploreKnowledgeData />}
                         />
                 </Tabs>
             </FixedContainer>
