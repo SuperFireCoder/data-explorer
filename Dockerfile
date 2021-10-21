@@ -26,6 +26,10 @@ CMD npm run start
 # build builder-* stages with "devDependencies" (needed for TS)
 FROM base as builder
 
+# Disable Next.js telemetry
+# https://nextjs.org/telemetry
+RUN npx next telemetry disable
+
 RUN npm run build
 
 # release stage uses app with only "dependencies" installed if NODE_ENV=production
