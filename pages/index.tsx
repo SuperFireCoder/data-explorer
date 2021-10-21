@@ -138,8 +138,20 @@ export default function IndexPage() {
 
     const keycloakToken = keycloak?.token;
 
-    const initialTab = router.query.tab as string | undefined;
-    console.log(keycloak, keycloakToken)
+    let initialTab = router.query.tab as string | undefined;
+    
+    const [currentTab, setCurrentTab] = useState("eco-tab")
+    console.log(router)
+
+    useEffect(() => {
+        console.log('router change')
+       if(router.asPath === "/") {
+        console.log('router change 2') 
+        router.push("/?tab=eco-data", undefined, { shallow: true })
+       }
+    }, [router.asPath])
+
+    console.log('init router', router)
     /** Updates URL in browser with current tab without affecting history */
     const updateTabQueryParam = useCallback(
         

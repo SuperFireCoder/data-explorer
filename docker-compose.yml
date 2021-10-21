@@ -24,10 +24,16 @@ services:
     command: npm run dev
     restart: unless-stopped
     volumes:
+      - ./.env:/srv/app/.env.local
       - ./.env.development:/srv/app/.env.development
-      - ./tests:/srv/app/tests
-      - ./pages:/srv/app/pages
+      - ./.env.development.local:/srv/app/.env.development.local
       - ./components:/srv/app/components
+      - ./hooks:/srv/app/hooks
+      - ./interfaces:/srv/app/interfaces
+      - ./pages:/srv/app/pages
+      - ./public:/srv/app/public
+      - ./tests:/srv/app/tests
       - ./util:/srv/app/util
+
     networks:
       backend:

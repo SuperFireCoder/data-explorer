@@ -7,17 +7,19 @@ import { EsAggregationBucket } from "../interfaces/EsAggregationBucket";
 export function useFacetState<T extends EsAggregationBucket>(
     rawItems: readonly T[] | undefined
 ) {
+
     const [selectedItems, setSelectedItems] = useState<readonly T[]>([]);
 
     const memoedItems = useMemo(() => rawItems || [], [rawItems]);
-
+    console.log('memoedItems', memoedItems)
     const selectedItemKeyHash = useMemo(
         () => selectedItems.reduce((c, x) => c + x.key, ""),
         [selectedItems]
     );
-
+    console.log('selectedItems keyHash', selectedItems, selectedItemKeyHash)
     const handleItemSelect = useCallback((newItem: T) => {
         setSelectedItems((prevSelectedItems) => {
+            console.log('setSelectedItems start', prevSelectedItems, newItem)
             // If already present, remove
             const itemIndex = prevSelectedItems.findIndex(
                 (prevItem) => prevItem.key === newItem.key
@@ -28,7 +30,7 @@ export function useFacetState<T extends EsAggregationBucket>(
                 arrayCopy.splice(itemIndex, 1);
                 return arrayCopy;
             }
-
+            console.log('setSelectedItems end', prevSelectedItems, newItem)
             // Otherwise append
             return [...prevSelectedItems, newItem];
         });
@@ -37,6 +39,7 @@ export function useFacetState<T extends EsAggregationBucket>(
     const handleItemRemoveByTag = useCallback(
         (_tag, i) =>
             setSelectedItems((prevSelectedItems) => {
+                console.log('handleItemRemoveByTag', prevSelectedItems)
                 const arrayCopy = [...prevSelectedItems];
                 arrayCopy.splice(i, 1);
                 return arrayCopy;
@@ -73,7 +76,16 @@ export function useFacetState<T extends EsAggregationBucket>(
         },
         [rawItems]
     );
-
+    
+    // console.log('FacetState', {
+    //     items: memoedItems,
+    //     selectedItems,
+    //     selectedItemKeyHash,
+    //     getQueryParams,
+    //     setSelectedItems,
+    //     handleItemSelect,
+    //     handleItemRemoveByTag,
+    // })
     return {
         items: memoedItems,
         selectedItems,

@@ -40,6 +40,7 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
     tagRenderer = defaultTagRenderer,
     itemEqualityFn = defaultItemEqualityFn,
 }: Props<T>) {
+ 
     const tagInputProps = useMemo(
         () => ({
             onRemove: onItemRemoveByTag,

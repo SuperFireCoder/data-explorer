@@ -210,6 +210,7 @@ export default function ExploreEcoData() {
     // first load
     const [yearMin, setYearMin] = useState<string>("");
     const [yearMax, setYearMax] = useState<string>("");
+    console.log('facetStateTimeDomain', results?.aggregations?.facetTimeDomain?.buckets)
     const facetStateTimeDomain = useFacetState(
         results?.aggregations?.facetTimeDomain?.buckets
     );
@@ -418,7 +419,7 @@ export default function ExploreEcoData() {
                 facetDomain,
                 facetGcm,
             } = pageParameters;
-            console.log('executeEsQuery')
+            console.log('executeEsQuery', pageParameters)
             // Start building Elasticsearch query
             let queryBuilder = bodybuilder()
                 .size(pageSize)

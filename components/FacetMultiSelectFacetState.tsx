@@ -16,7 +16,7 @@ export default function FacetMultiSelectFacetState({
         handleItemSelect,
         handleItemRemoveByTag,
     } = facetState;
-
+    //console.log('f state', selectedItems)
     return (
         <FacetMultiSelect
             items={items}
