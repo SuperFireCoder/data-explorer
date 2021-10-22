@@ -143,13 +143,27 @@ export default function IndexPage() {
     const [currentTab, setCurrentTab] = useState("eco-tab")
     console.log(router)
 
+    //TO REVIEW: 
     useEffect(() => {
-        console.log('router change')
        if(router.asPath === "/") {
-        console.log('router change 2') 
         router.push("/?tab=eco-data", undefined, { shallow: true })
        }
     }, [router.asPath])
+
+
+    useEffect(() => {
+        const tab = router.query.tab;
+
+        // TODO: Look up/validate the tab name
+
+        // Set the tab
+        setCurrentTab(tab as string);
+    }, [router.query]);
+
+    useEffect(() => {
+        // Set default tab
+        
+    }, []);
 
     console.log('init router', router)
     /** Updates URL in browser with current tab without affecting history */

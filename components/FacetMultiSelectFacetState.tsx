@@ -12,15 +12,17 @@ export default function FacetMultiSelectFacetState({
 }: Props) {
     const {
         items,
-        selectedItems,
+        esSelectedItems,
         handleItemSelect,
         handleItemRemoveByTag,
     } = facetState;
     //console.log('f state', selectedItems)
+
+    //TO REVIEW: onItemSelect? 
     return (
         <FacetMultiSelect
             items={items}
-            selectedItems={selectedItems}
+            selectedItems={esSelectedItems}
             placeholder={placeholder}
             onItemSelect={handleItemSelect}
             onItemRemoveByTag={handleItemRemoveByTag}

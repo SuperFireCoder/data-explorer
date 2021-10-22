@@ -3,48 +3,60 @@ import { EsAggregationBucket } from "../interfaces/EsAggregationBucket";
 
 /**
  * @param rawItems Value of the `bucket` in Elasticsearch aggregations
+ * @param selectedItems Selected items
  */
 export function useFacetState<T extends EsAggregationBucket>(
-    rawItems: readonly T[] | undefined
+    rawItems: readonly T[] | undefined,
+    selectedItems: readonly string[],
+    onSelectedItemsChange: (items: string[]) => void,
 ) {
 
-    const [selectedItems, setSelectedItems] = useState<readonly T[]>([]);
+    // const [selectedItems, setSelectedItems] = useState<readonly T[]>(initialSelectedItems);
+
+    // Selected items mapped to Elasticsearch raw items
+    const esSelectedItems = useMemo(() => 
+        selectedItems
+            .map(key => (rawItems ?? []).find(x => x.key === key))
+            .filter(x => x !== undefined) as readonly T[]
+    , [rawItems, selectedItems]);
 
     const memoedItems = useMemo(() => rawItems || [], [rawItems]);
-    console.log('memoedItems', memoedItems)
+
     const selectedItemKeyHash = useMemo(
-        () => selectedItems.reduce((c, x) => c + x.key, ""),
+        () => selectedItems.reduce((c, x) => c + x, ""),
         [selectedItems]
     );
-    console.log('selectedItems keyHash', selectedItems, selectedItemKeyHash)
+ 
     const handleItemSelect = useCallback((newItem: T) => {
-        setSelectedItems((prevSelectedItems) => {
-            console.log('setSelectedItems start', prevSelectedItems, newItem)
+        
+        //TO  REVIEW: prevSelectionItems?
+            // console.log('setSelectedItems start', prevSelectedItems, newItem)
             // If already present, remove
-            const itemIndex = prevSelectedItems.findIndex(
-                (prevItem) => prevItem.key === newItem.key
+            const itemIndex = selectedItems.findIndex(
+                (prevItem) => prevItem === newItem.key
             );
 
             if (itemIndex >= 0) {
-                const arrayCopy = [...prevSelectedItems];
+                const arrayCopy = [...selectedItems];
                 arrayCopy.splice(itemIndex, 1);
-                return arrayCopy;
+                return onSelectedItemsChange(arrayCopy);
             }
-            console.log('setSelectedItems end', prevSelectedItems, newItem)
+            // console.log('setSelectedItems end', prevSelectedItems, newItem)
             // Otherwise append
-            return [...prevSelectedItems, newItem];
-        });
-    }, []);
+            return onSelectedItemsChange([...selectedItems, newItem.key]);
+
+        
+    }, [selectedItems, onSelectedItemsChange]);
 
     const handleItemRemoveByTag = useCallback(
-        (_tag, i) =>
-            setSelectedItems((prevSelectedItems) => {
-                console.log('handleItemRemoveByTag', prevSelectedItems)
-                const arrayCopy = [...prevSelectedItems];
+        (_tag, i) => {
+
+                // console.log('handleItemRemoveByTag', prevSelectedItems)
+                const arrayCopy = [...selectedItems];
                 arrayCopy.splice(i, 1);
-                return arrayCopy;
-            }),
-        []
+                return onSelectedItemsChange(arrayCopy);
+        },
+        [selectedItems, onSelectedItemsChange]
     );
 
     const getQueryParams = useCallback(() => {
@@ -54,44 +66,40 @@ export function useFacetState<T extends EsAggregationBucket>(
         }
 
         // Otherwise return array of _keys_
-        return selectedItems.map((x) => x.key);
+        // return selectedItems.map((x) => x.key);
+
+        // TODO: Remove this function at a later date due to this being
+        // redundant
+        return [];
     }, [selectedItems]);
 
-    // Reconcile selected items array when the `items` array changes
-    useEffect(
-        function reconcileSelectedItemsOnItemsChange() {
-            // If no items available, wipe everything
-            if (rawItems === undefined) {
-                setSelectedItems([]);
-                return;
-            }
+    // // Reconcile selected items array when the `items` array changes
+    // useEffect(
+    //     function reconcileSelectedItemsOnItemsChange() {
+    //         // If no items available, wipe everything
+    //         if (rawItems === undefined) {
+    //             setSelectedItems([]);
+    //             return;
+    //         }
 
-            // Filter through selected items array and keep only if they exist
-            // in the new `items` array
-            setSelectedItems((prevSelectedItems) =>
-                prevSelectedItems.filter((prevItem) =>
-                    rawItems.some((item) => item.key === prevItem.key)
-                )
-            );
-        },
-        [rawItems]
-    );
-    
-    // console.log('FacetState', {
-    //     items: memoedItems,
-    //     selectedItems,
-    //     selectedItemKeyHash,
-    //     getQueryParams,
-    //     setSelectedItems,
-    //     handleItemSelect,
-    //     handleItemRemoveByTag,
-    // })
+    //         // Filter through selected items array and keep only if they exist
+    //         // in the new `items` array
+    //         setSelectedItems((prevSelectedItems) =>
+    //             prevSelectedItems.filter((prevItem) =>
+    //                 rawItems.some((item) => item.key === prevItem.key)
+    //             )
+    //         );
+    //     },
+    //     [rawItems]
+    // );
+   
     return {
         items: memoedItems,
         selectedItems,
+        esSelectedItems,
         selectedItemKeyHash,
         getQueryParams,
-        setSelectedItems,
+        // setSelectedItems,
         handleItemSelect,
         handleItemRemoveByTag,
     };

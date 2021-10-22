@@ -197,29 +197,56 @@ export default function ExploreKnowledgeData() {
     // Users/principals to narrow datasets by
     const [filterPrincipals, setFilterPrincipals] = useState<string[]>([]);
 
+
+    const setQueryParams = useCallback(
+        (newParams: QueryParameters) => {
+            router.push({
+                query: stripEmptyStringQueryParams({
+                    ...router.query,
+                    ...newParams,
+                }),
+            });
+        },
+        [router.query]
+    );
+
     // Facets
     // TODO: Implement some way of feeding the default state into the facets
     // from values contained in `pageParameters` so that they update the UI on
     // first load
     const [yearMin, setYearMin] = useState<string>("");
     const [yearMax, setYearMax] = useState<string>("");
-    const facetStateTimeDomain = useFacetState(
-        results?.aggregations?.facetTimeDomain?.buckets
+     const facetStateTimeDomain = useFacetState(
+        results?.aggregations?.facetTimeDomain?.buckets,
+        pageParameters.facetTimeDomain,
+        (items) => setQueryParams({
+            facetTimeDomain: items,
+        })
     );
     const facetStateSpatialDomain = useFacetState(
-        results?.aggregations?.facetSpatialDomain?.buckets
+        results?.aggregations?.facetSpatialDomain?.buckets,
+        [],
+        () => {}
     );
     const facetStateResolution = useFacetState(
-        results?.aggregations?.facetResolution?.buckets
+        results?.aggregations?.facetResolution?.buckets,
+        [],
+        () => {}
     );
     const facetStateScientificType = useFacetState(
-        results?.aggregations?.facetScientificType?.buckets
+        results?.aggregations?.facetScientificType?.buckets,
+        [],
+        () => {}
     );
     const facetStateDomain = useFacetState(
-        results?.aggregations?.facetDomain?.buckets
+        results?.aggregations?.facetDomain?.buckets,
+        [],
+        () => {}
     );
     const facetStateGcm = useFacetState(
-        results?.aggregations?.facetGcm?.buckets
+        results?.aggregations?.facetGcm?.buckets,
+        [],
+        () => {}
     );
 
     const totalNumberOfResults = useMemo(() => {
@@ -261,18 +288,6 @@ export default function ExploreKnowledgeData() {
     const yearsQueryMaxBound = useMemo(
         () => results?.aggregations?.facetYearMax?.value || 0,
         [results]
-    );
-
-    const setQueryParams = useCallback(
-        (newParams: QueryParameters) => {
-            router.push({
-                query: stripEmptyStringQueryParams({
-                    ...router.query,
-                    ...newParams,
-                }),
-            });
-        },
-        [router.query]
     );
 
     /**
