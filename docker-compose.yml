@@ -24,7 +24,7 @@ services:
     command: npm run dev
     restart: unless-stopped
     volumes:
-      - ./.env:/srv/app/.env.local
+      - ./.env:/srv/app/.env
       - ./.env.development:/srv/app/.env.development
       - ./.env.local:/srv/app/.env.local
       - ./.env.development.local:/srv/app/.env.development.local
