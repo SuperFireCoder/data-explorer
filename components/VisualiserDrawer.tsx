@@ -33,6 +33,7 @@ import {
 } from "../hooks/Visualiser";
 
 import styles from "./VisualiserDrawer.module.css";
+import VisualiserBaseMapControl from "./VisualiserBaseMapControl";
 
 export interface Props {
     drawerTitle: string;
@@ -52,6 +53,9 @@ export default function VisualiserDrawer({
             currentVisibleLayers,
             setCurrentVisibleLayers,
             setRegisteredDatasetLayers,
+            baseMaps,
+            currentBaseMap,
+            setCurrentBaseMap,
             getBearerTokenFn,
         },
         visualiserProps,
@@ -112,15 +116,20 @@ export default function VisualiserDrawer({
                         )}
                     </div>
                     <div className={styles.legendImageContainer}>
-                        {/* FIXME: This is a temporary solution to render legends on assumption there is only one visible layer on top of the base one */}
-                        {props._legendImages[1] !== undefined && (
-                            <img src={props._legendImages[1]} />
+                        {/* FIXME: This is a temporary solution to render legends on assumption there is only one visible layer */}
+                        {props._legendImages[0] !== undefined && (
+                            <img src={props._legendImages[0]} />
                         )}
                     </div>
+                    <VisualiserBaseMapControl
+                        baseMaps={baseMaps}
+                        currentBaseMap={currentBaseMap}
+                        onCurrentBaseMapChange={setCurrentBaseMap}
+                    />
                 </>
             );
         },
-        [metadata]
+        [metadata, baseMaps, currentBaseMap, setCurrentBaseMap]
     );
 
     const handleLayersRadioGroupChange = useCallback<

@@ -1,20 +1,11 @@
 import {
     ECMapVisualiserRequest,
     MapLayer,
-    Projections,
+    BaseMaps,
 } from "@ecocommons-australia/visualiser-client-geospatial";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useKeycloakInfo } from "../util/keycloak";
-
-const baseMapLayers: readonly MapLayer[] = [
-    new MapLayer({
-        type: "simple",
-        label: "OSM",
-        url: "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        mapProjection: Projections.DEFAULT_MAP_PROJECTION,
-    }),
-];
 
 export const useVisualiserSupport = () => {
     const { keycloak } = useKeycloakInfo();
@@ -37,7 +28,7 @@ export const useVisualiserSupport = () => {
         }[]
     >([]);
     const [currentBaseMap, setCurrentBaseMap] = useState<MapLayer>(
-        baseMapLayers[0]
+        BaseMaps.BCCVL_DEFAULT_BASE_MAPS[0]
     );
     const [registeredDatasetLayers, setRegisteredDatasetLayers] = useState<
         readonly {
@@ -48,13 +39,10 @@ export const useVisualiserSupport = () => {
         }[]
     >([]);
 
-    const registeredLayers = useMemo(() => {
-        // Merge base maps with dataset layers
-        return [
-            ...baseMapLayers,
-            ...registeredDatasetLayers.map((x) => x.mapLayer),
-        ];
-    }, [registeredDatasetLayers]);
+    const registeredLayers = useMemo(
+        () => registeredDatasetLayers.map((x) => x.mapLayer),
+        [registeredDatasetLayers]
+    );
 
     const visibleLayers = useMemo(() => {
         // Return just base map when no data selected for previewing
@@ -78,14 +66,18 @@ export const useVisualiserSupport = () => {
             visibleMapLayers.push(visibleMapLayer);
         });
 
-        // Base map is always under data
-        return [currentBaseMap, ...visibleMapLayers];
+        return visibleMapLayers;
     }, [currentVisibleLayers, registeredDatasetLayers]);
+
+    const registeredBaseLayers = BaseMaps.BCCVL_DEFAULT_BASE_MAPS;
+
+    const visibleBaseLayers = useMemo(() => [currentBaseMap], [currentBaseMap]);
 
     return {
         data: {
             currentVisibleLayers,
             setCurrentVisibleLayers,
+            baseMaps: registeredBaseLayers,
             currentBaseMap,
             setCurrentBaseMap,
             registeredDatasetLayers,
@@ -96,6 +88,8 @@ export const useVisualiserSupport = () => {
         visualiserProps: {
             registeredLayers,
             visibleLayers,
+            registeredBaseLayers,
+            visibleBaseLayers,
         },
     };
 };
