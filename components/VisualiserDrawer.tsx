@@ -1,22 +1,6 @@
-import {
-    Drawer,
-    Classes,
-    Position,
-    ProgressBar,
-    RadioGroup,
-    Radio,
-    H4,
-    Icon,
-} from "@blueprintjs/core";
+import { Drawer, Classes, Position, ProgressBar } from "@blueprintjs/core";
 import { Col, Row } from "@ecocommons-australia/ui-library";
-import {
-    FormEvent,
-    FormEventHandler,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     MapLayer,
     Projections,
