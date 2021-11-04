@@ -17,7 +17,7 @@ export default function FacetMultiSelectFacetState({
         handleItemRemoveByTag,
     } = facetState;
     //console.log('f state', selectedItems)
-
+    console.log('items', items)
     //TO REVIEW: onItemSelect? 
     return (
         <FacetMultiSelect

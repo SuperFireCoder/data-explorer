@@ -145,6 +145,11 @@ export default function ExploreEcoData() {
         SearchResponse<EsDataset> | undefined
     >(undefined);
 
+    /** Elasticsearch data */
+    const [globalBucket, setGlobalBucket] = useState<
+        SearchResponse<EsDataset> | undefined
+    >(undefined);
+
     /**
      * Flag indicating that the user has changed the state of the search form,
      * but has not executed the query
@@ -222,36 +227,41 @@ export default function ExploreEcoData() {
     // first load
     const [yearMin, setYearMin] = useState<string>("");
     const [yearMax, setYearMax] = useState<string>("");
-    console.log('facetStateTimeDomain', results?.aggregations?.facetTimeDomain?.buckets)
     const facetStateTimeDomain = useFacetState(
-        results?.aggregations?.facetTimeDomain?.buckets,
+        //results?.aggregations?.facetTimeDomain?.buckets,
+        // TODO: Implement fetching of facet buckets from "global" bucket
+        globalBucket?.aggregations?.facetTimeDomain?.buckets, 
         pageParameters.facetTimeDomain,
         (items) => setQueryParams({
             facetTimeDomain: items,
         })
     );
     const facetStateSpatialDomain = useFacetState(
-        results?.aggregations?.facetSpatialDomain?.buckets,
-        [],
-        () => {}
+        globalBucket?.aggregations?.facetSpatialDomain?.buckets,
+        pageParameters.facetSpatialDomain,
+        (items) => setQueryParams({
+            facetSpatialDomain: items,
+        })
     );
     const facetStateResolution = useFacetState(
-        results?.aggregations?.facetResolution?.buckets,
-        [],
-        () => {}
+        globalBucket?.aggregations?.facetResolution?.buckets,
+        pageParameters.facetResolution,
+        (items) => setQueryParams({
+            facetResolution: items,
+        })
     );
     const facetStateScientificType = useFacetState(
-        results?.aggregations?.facetScientificType?.buckets,
+        globalBucket?.aggregations?.facetScientificType?.buckets,
         [],
         () => {}
     );
     const facetStateDomain = useFacetState(
-        results?.aggregations?.facetDomain?.buckets,
+        globalBucket?.aggregations?.facetDomain?.buckets,
         [],
         () => {}
     );
     const facetStateGcm = useFacetState(
-        results?.aggregations?.facetGcm?.buckets,
+        globalBucket?.aggregations?.facetGcm?.buckets,
         [],
         () => {}
     );
@@ -413,6 +423,74 @@ export default function ExploreEcoData() {
         [keycloakToken, keycloak]
     );
 
+    useEffect(
+        function executeInitialAggregationFetch() {
+            // Facets are built up using aggregations
+            const queryBuilder = bodybuilder()
+                // For `year`, get the min and max values for the UI to
+                // construct a range slide
+                .aggregation("min", "year", "facetYearMin")
+                .aggregation("max", "year", "facetYearMax")
+                // All other aggregations are buckets of simple string values
+                .aggregation("terms", "time_domain", "facetTimeDomain")
+                .aggregation("terms", "spatial_domain", "facetSpatialDomain")
+                .aggregation("terms", "resolution", "facetResolution")
+                .aggregation("terms", "scientific_type", "facetScientificType")
+                .aggregation("terms", "domain", "facetDomain")
+                .aggregation("terms", "gcm", "facetGcm");
+
+            // TODO: Run ES query
+            // TODO: Save this aggregations' result into some state (`globalBucket`)
+            
+
+            // === Separately ===
+            // TODO: Pass this (`globalBucket`) state into the facets, and not the user-driven query results into the facets
+
+            
+            const query = queryBuilder.build();
+
+            // `Authorization` header depends on whether token is available
+            const headers: Record<string, string> = {};
+
+            if (keycloakToken && keycloakToken.length > 0) {
+                headers["Authorization"] = `Bearer ${keycloakToken}`;
+            }
+
+            const esQueryCancelToken = axios.CancelToken.source();
+            
+            axios
+                .post<SearchResponse<EsDataset>>(
+                    `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
+                    query,
+                    { headers, cancelToken: esQueryCancelToken.token }
+                )
+                .then((res) => {
+                    setGlobalBucket(res.data);
+                    console.log(res.data)
+                })
+                .catch((e) => {
+                    // Ignore cancellation events
+                    if (axios.isCancel(e)) {
+                        return;
+                    }
+
+                    console.error(e);
+
+                    alert(e.toString());
+                });
+
+            return function stopOngoingEsQuery() {
+                // Cancel the ES query if it is still running
+                esQueryCancelToken.cancel();
+            };
+        },
+        [
+            // TODO: This global bucket needs to be rerun depending on Keycloak/user sign-in status
+            keycloakToken
+        ]
+    );
+    
+
     /**
      * An effect to automatically execute new Elasticsearch query upon page
      * parameter change, such as page increment or page size change.
@@ -437,24 +515,24 @@ export default function ExploreEcoData() {
             // Start building Elasticsearch query
             let queryBuilder = bodybuilder()
                 .size(pageSize)
-                .from(pageStart)
+                .from(pageStart);
                 // Facets are built up using aggregations
                 //
                 // For `year`, get the min and max values for the UI to
                 // construct a range slide
-                .aggregation("min", "year", "facetYearMin")
-                .aggregation("max", "year", "facetYearMax")
-                // All other aggregations are buckets of simple string values
-                .aggregation("terms", "time_domain", "facetTimeDomain")
-                .aggregation("terms", "spatial_domain", "facetSpatialDomain")
-                .aggregation("terms", "resolution", "facetResolution")
-                .aggregation("terms", "scientific_type", "facetScientificType")
-                .aggregation("terms", "domain", "facetDomain")
-                .aggregation("terms", "gcm", "facetGcm");
+                // .aggregation("min", "year", "facetYearMin")
+                // .aggregation("max", "year", "facetYearMax")
+                // // All other aggregations are buckets of simple string values
+                // .aggregation("terms", "time_domain", "facetTimeDomain")
+                // .aggregation("terms", "spatial_domain", "facetSpatialDomain")
+                // .aggregation("terms", "resolution", "facetResolution")
+                // .aggregation("terms", "scientific_type", "facetScientificType")
+                // .aggregation("terms", "domain", "facetDomain")
+                // .aggregation("terms", "gcm", "facetGcm");
 
             let isEmptyQuery = true;
 
-            // Add facets
+            // Add facets query parameters from user input
             [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
                 queryBuilder,
                 isEmptyQuery,
@@ -555,7 +633,7 @@ export default function ExploreEcoData() {
             }
 
             const esQueryCancelToken = axios.CancelToken.source();
-
+            
             axios
                 .post<SearchResponse<EsDataset>>(
                     `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
@@ -770,7 +848,16 @@ export default function ExploreEcoData() {
                                 </Button>
                                 <Button onClick={() => setQueryParams({
                                     //...facets: []
-                                    facetTimeDomain: []
+                                    searchQuery:"",
+                                    filterPrincipals:[],
+                                    facetYearMin:"",
+                                    facetYearMax:"",
+                                    facetTimeDomain:[],
+                                    facetSpatialDomain:[],
+                                    facetResolution:[],
+                                    facetScientificType:[],
+                                    facetDomain:[],
+                                    facetGcm:[],
                                 })}>Reset</Button>
                             </Col>
                         </Row>
