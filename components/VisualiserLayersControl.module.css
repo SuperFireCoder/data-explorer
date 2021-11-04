@@ -1,0 +1,55 @@
+.optionsToggleButtonContainer {
+    top: 0.5em;
+    right: 3em;
+}
+
+.optionsToggleButtonContainerOptionsVisible {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.optionsToggleButtonContainerOptionsVisible:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.optionsToggleButtonContainerOptionsVisible > button {
+    background: #fff;
+    color: #000;
+}
+
+.optionsToggleButtonContainerOptionsVisible > button:hover,
+.optionsToggleButtonContainerOptionsVisible > button:focus {
+    background: #fff;
+}
+
+.optionsContainer {
+    background: #fdfdfd;
+    position: absolute;
+    top: 3em;
+    right: 0.5em;
+    padding: 0.5em 0.75em;
+    border-radius: 4px;
+    box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.2);
+    max-width: 20em;
+}
+
+.radioGroup {
+    font-size: 0.85em;
+    padding: 0 0.5em;
+    max-height: 15em;
+    overflow-y: auto;
+}
+
+.radioGroup > :global(label.bp3-label) {
+    font-weight: bold;
+    position: sticky;
+    z-index: 1;
+    top: 0;
+    padding: 0.25em 0;
+    margin: 0 -0.5em;
+    background: #fdfdfd;
+}
+
+.radioGroup > :global(label.bp3-label),
+.radioGroup > :global(label.bp3-control) {
+    margin-bottom: 0.5em;
+}

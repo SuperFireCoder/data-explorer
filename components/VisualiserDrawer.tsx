@@ -31,9 +31,11 @@ import {
     useEcMapVisualiserRequest,
     useVisualiserSupport,
 } from "../hooks/Visualiser";
+import VisualiserLayersControl from "./VisualiserLayersControl";
 
 import styles from "./VisualiserDrawer.module.css";
-import VisualiserBaseMapControl from "./VisualiserBaseMapControl";
+
+type LayerInfo = { layerName: string; label: string };
 
 export interface Props {
     drawerTitle: string;
@@ -106,8 +108,25 @@ export default function VisualiserDrawer({
         });
     }, [datasetId, metadata]);
 
+    const handleCurrentLayerChange = useCallback(
+        ({ layerName }: { layerName: string }) => {
+            setCurrentVisibleLayers([
+                {
+                    datasetId,
+                    layerName,
+                },
+            ]);
+        },
+        [datasetId]
+    );
+
     const renderVisualiserOverlayContent = useCallback(
         (props: OverlayContentProps) => {
+            const currentLayerName = currentVisibleLayers[0]?.layerName;
+            const currentLayer = layerInfo?.find(
+                (x) => x.layerName === currentLayerName
+            );
+
             return (
                 <>
                     <div className={styles.tileLoadProgressBar}>
@@ -121,7 +140,11 @@ export default function VisualiserDrawer({
                             <img src={props._legendImages[0]} />
                         )}
                     </div>
-                    <VisualiserBaseMapControl
+                    <VisualiserLayersControl<LayerInfo>
+                        defaultOptionsVisible
+                        layers={layerInfo}
+                        currentLayer={currentLayer}
+                        onCurrentLayerChange={handleCurrentLayerChange}
                         baseMaps={baseMaps}
                         currentBaseMap={currentBaseMap}
                         onCurrentBaseMapChange={setCurrentBaseMap}
@@ -129,23 +152,14 @@ export default function VisualiserDrawer({
                 </>
             );
         },
-        [metadata, baseMaps, currentBaseMap, setCurrentBaseMap]
-    );
-
-    const handleLayersRadioGroupChange = useCallback<
-        FormEventHandler<HTMLInputElement>
-    >(
-        (e) => {
-            const layerName = e.currentTarget.value;
-
-            setCurrentVisibleLayers([
-                {
-                    datasetId,
-                    layerName,
-                },
-            ]);
-        },
-        [datasetId]
+        [
+            metadata,
+            layerInfo,
+            currentVisibleLayers,
+            baseMaps,
+            currentBaseMap,
+            setCurrentBaseMap,
+        ]
     );
 
     useEffect(
@@ -281,7 +295,7 @@ export default function VisualiserDrawer({
                     nowrap
                     style={{ flex: 1 }}
                 >
-                    <Col xs={3}>
+                    {/* <Col xs={3}>
                         {layerInfo === undefined && (
                             <Row>
                                 <Col xs={12}>
@@ -310,7 +324,7 @@ export default function VisualiserDrawer({
                                 <Col xs={12}>
                                     <RadioGroup
                                         label="Layers"
-                                        onChange={handleLayersRadioGroupChange}
+                                        onChange={handleLayersChange}
                                         selectedValue={
                                             currentVisibleLayers[0] &&
                                             currentVisibleLayers[0].layerName
@@ -329,9 +343,9 @@ export default function VisualiserDrawer({
                                 </Col>
                             </Row>
                         )}
-                    </Col>
+                    </Col> */}
                     <Col
-                        xs={9}
+                        xs={12}
                         style={{ position: "relative", display: "flex" }}
                     >
                         <VisualiserGeospatial
