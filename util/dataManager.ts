@@ -4,6 +4,7 @@ import { KeycloakInstance } from "../interfaces/Keycloak";
 
 const ENDPOINTS = {
     DATASET: "/api/dataset/",
+    PERMISSION: "/api/permission/",
 };
 
 export class DataManager {
@@ -74,6 +75,12 @@ export class DataManager {
     public getDatasetTemporaryUrl(uuid: string) {
         return this.xhrGet<{ url: string }>(
             `${ENDPOINTS.DATASET}${uuid}/tempurl`
+        );
+    }
+
+    public getDatasetPermissions(uuid: string) {
+        return this.xhrGet<Record<string, string[]>>(
+            `${ENDPOINTS.PERMISSION}${uuid}`
         );
     }
 }
