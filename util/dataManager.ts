@@ -54,14 +54,14 @@ export class DataManager {
         return { promise, cancellationToken, axiosPromise };
     }
 
-    // private xhrPost<T>(url: string, data: unknown) {
-    //     const cancellationToken = this.getNewAxiosCancellationToken();
-    //     const axiosPromise = this.axios.post<T>(url, data, {
-    //         cancelToken: cancellationToken.token,
-    //     });
-    //     const promise = axiosPromise.then((res) => res.data);
-    //     return { promise, cancellationToken, axiosPromise };
-    // }
+    private xhrPost<T>(url: string, data: unknown) {
+        const cancellationToken = this.getNewAxiosCancellationToken();
+        const axiosPromise = this.axios.post<T>(url, data, {
+            cancelToken: cancellationToken.token,
+        });
+        const promise = axiosPromise.then((res) => res.data);
+        return { promise, cancellationToken, axiosPromise };
+    }
 
     // private xhrDelete<T>(url: string) {
     //     const cancellationToken = this.getNewAxiosCancellationToken();
@@ -82,5 +82,18 @@ export class DataManager {
         return this.xhrGet<Record<string, string[]>>(
             `${ENDPOINTS.PERMISSION}${uuid}`
         );
+    }
+
+    public addDatasetPermissions(
+        uuid: string,
+        permissions: Record<string, string[]>
+    ) {
+        return this.xhrPost<unknown>(`${ENDPOINTS.PERMISSION}${uuid}/add`,  permissions);
+    }
+
+    public removeDatasetPermissions(uuid: string, userIds: string[]) {
+        return this.xhrPost<unknown>(`${ENDPOINTS.PERMISSION}${uuid}/delete`, {
+            users: userIds,
+        });
     }
 }
