@@ -6,7 +6,6 @@ import {
     Button,
     Popover,
     Switch,
-    H3,
     H4,
     Icon,
 } from "@blueprintjs/core";
@@ -345,6 +344,7 @@ export default function DatasetSharingDrawer({
                                             </Col>
                                             <Col xs="content">
                                                 <Popover
+                                                    disabled={commitInProgress}
                                                     content={
                                                         <div
                                                             style={{
@@ -391,7 +391,12 @@ export default function DatasetSharingDrawer({
                                                         </div>
                                                     }
                                                 >
-                                                    <Button small>
+                                                    <Button
+                                                        small
+                                                        disabled={
+                                                            commitInProgress
+                                                        }
+                                                    >
                                                         {permissions
                                                             .map(
                                                                 (p) =>
@@ -414,6 +419,7 @@ export default function DatasetSharingDrawer({
                                                     onClick={() =>
                                                         removeUser(userId)
                                                     }
+                                                    disabled={commitInProgress}
                                                 >
                                                     Remove
                                                 </Button>
