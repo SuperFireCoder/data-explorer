@@ -25,6 +25,7 @@ import VisualiserDrawer from "./VisualiserDrawer";
 
 import styles from "./DatasetCard.module.css";
 import DatasetSharingDrawer from "./DatasetSharingDrawer";
+import { useKeycloakInfo } from "../util/keycloak";
 
 export interface Props {
     /** ID of dataset to load for metadata view, etc. */
@@ -37,6 +38,8 @@ export interface Props {
     type?: DatasetType;
     /** Date the dataset was last updated */
     lastUpdated?: Date;
+    /** User ID of the owner of the dataset */
+    ownerId: string | string[];
     /** Status of the dataset import */
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
     /** Import failure message */
@@ -49,10 +52,14 @@ export default function DatasetCard({
     description,
     type,
     lastUpdated,
+    ownerId,
     status,
     failureMessage,
 }: Props) {
+    const { keycloak } = useKeycloakInfo();
     const dataManager = useDataManager();
+
+    const currentUserId = keycloak?.tokenParsed?.sub;
 
     const [downloadInProgress, setDownloadInProgress] =
         useState<boolean>(false);
@@ -191,16 +198,24 @@ export default function DatasetCard({
                                     <Menu>
                                         <MenuItem
                                             icon="download"
-                                            text="Download dataset"
+                                            text="Download"
                                             onClick={downloadDataset}
-                                            // loading={downloadInProgress}
                                             disabled={disabledDataset}
                                         />
                                         <MenuItem
                                             icon="share"
                                             text="Share..."
                                             onClick={openSharingDrawer}
-                                            disabled={disabledDataset}
+                                            disabled={
+                                                disabledDataset ||
+                                                // Disable sharing when user is not owner
+                                                currentUserId === undefined ||
+                                                typeof ownerId === "string"
+                                                    ? ownerId !== currentUserId
+                                                    : !ownerId.includes(
+                                                          currentUserId
+                                                      )
+                                            }
                                         />
                                     </Menu>
                                 }
