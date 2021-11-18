@@ -52,9 +52,9 @@ export default function DatasetSharingDrawer({
         close: closeDiscardChangesAlert,
     } = useOpenableOpen();
 
-    const [newPermissions, setNewPermissions] = useState<
-        Record<string, Permission[]> | undefined
-    >(undefined);
+    const [workingPermissions, setWorkingPermissions] = useState<
+        Record<string, Permission[]>
+    >({});
     const [existingPermissions, setExistingPermissions] = useState<
         Record<string, Permission[]> | undefined
     >(undefined);
@@ -64,20 +64,6 @@ export default function DatasetSharingDrawer({
         () => existingPermissions === undefined,
         [existingPermissions]
     );
-
-    const displayedPermissions = useMemo(() => {
-        // Merge the two permission objects
-        const permissions = { ...existingPermissions, ...newPermissions };
-
-        // Remove entries where the permission array is empty
-        for (const key of Object.keys(permissions)) {
-            if (permissions[key].length === 0) {
-                delete permissions[key];
-            }
-        }
-
-        return permissions;
-    }, [newPermissions, existingPermissions]);
 
     // Calculate delta from displayed permissions and the last known state
     // (`existingPermissions`)
@@ -99,11 +85,15 @@ export default function DatasetSharingDrawer({
             existingPermissions
         )) {
             // Check if entry exists in displayed permissions
-            const displayedPermissionArray: Permission[] | undefined =
-                displayedPermissions[userId];
+            const workingPermissionArray: Permission[] | undefined =
+                workingPermissions[userId];
 
-            // If there is no record of this user, mark removed
-            if (displayedPermissionArray === undefined) {
+            // If there is no record of this user, or array is empty,
+            // mark as removed
+            if (
+                workingPermissionArray === undefined ||
+                workingPermissionArray.length === 0
+            ) {
                 removed.push(userId);
                 continue;
             }
@@ -111,20 +101,20 @@ export default function DatasetSharingDrawer({
             // If permission sets are NOT the same, mark modified
             if (
                 existingPermissionArray.length !==
-                    displayedPermissionArray.length ||
+                    workingPermissionArray.length ||
                 existingPermissionArray.some(
-                    (x) => !displayedPermissionArray.includes(x)
+                    (x) => !workingPermissionArray.includes(x)
                 )
             ) {
-                modified[userId] = displayedPermissionArray;
+                modified[userId] = workingPermissionArray;
                 continue;
             }
         }
 
         // Check for new entries
-        for (const userId of Object.keys(displayedPermissions)) {
+        for (const userId of Object.keys(workingPermissions)) {
             if (existingPermissions[userId] === undefined) {
-                modified[userId] = displayedPermissions[userId];
+                modified[userId] = workingPermissions[userId];
             }
         }
 
@@ -132,7 +122,7 @@ export default function DatasetSharingDrawer({
             modified,
             removed,
         };
-    }, [existingPermissions, displayedPermissions]);
+    }, [existingPermissions, workingPermissions]);
 
     const hasUncommitedChanges = useMemo(() => {
         return (
@@ -181,33 +171,39 @@ export default function DatasetSharingDrawer({
         }
 
         // Check if already present
-        if (displayedPermissions[userId] !== undefined) {
+        const workingPermissionArray: Permission[] | undefined =
+            workingPermissions[userId];
+
+        if (
+            workingPermissions[userId] !== undefined &&
+            workingPermissionArray.length !== 0
+        ) {
             return;
         }
 
-        // Add to new permissions object
-        setNewPermissions((p) => ({ ...p, [userId]: ["view_ds"] }));
-    }, [displayedPermissions]);
+        // Add to working permissions object
+        setWorkingPermissions((p) => ({ ...p, [userId]: ["view_ds"] }));
+    }, [workingPermissions]);
 
     const removeUser = useCallback((userId: string) => {
-        // Set user's new permission to empty array to indicate user deleted
-        setNewPermissions((p) => ({ ...p, [userId]: [] }));
+        // Set user's working permission to empty array to indicate user deleted
+        setWorkingPermissions((p) => ({ ...p, [userId]: [] }));
     }, []);
 
     const addPermission = useCallback(
         (userId: string, permission: Permission) => {
-            setNewPermissions((p) => ({
+            setWorkingPermissions((p) => ({
                 ...p,
-                [userId]: [...(p?.[userId] ?? []), permission],
+                [userId]: [...(p[userId] ?? []), permission],
             }));
         },
-        [setNewPermissions]
+        [setWorkingPermissions]
     );
 
     const removePermission = useCallback(
         (userId: string, permission: Permission) => {
-            setNewPermissions((p) => {
-                const newPermissions = [...(p?.[userId] ?? [])].filter(
+            setWorkingPermissions((p) => {
+                const newPermissions = [...(p[userId] ?? [])].filter(
                     (x) => x !== permission
                 );
 
@@ -226,7 +222,7 @@ export default function DatasetSharingDrawer({
 
             // Commit to API
             if (Object.keys(permissionsDelta.modified).length > 0) {
-                const { promise } = dataManager.addDatasetPermissions(
+                const { promise } = dataManager.updateDatasetPermissions(
                     datasetId,
                     permissionsDelta.modified
                 );
@@ -259,7 +255,7 @@ export default function DatasetSharingDrawer({
 
             // Wipe previous state
             setExistingPermissions(undefined);
-            setNewPermissions(undefined);
+            setWorkingPermissions({});
 
             let cancellationToken: CancelTokenSource | undefined = undefined;
 
@@ -275,9 +271,13 @@ export default function DatasetSharingDrawer({
 
                     const permissions = await promise;
 
-                    // Store permissions in `existingPermissions`
+                    // Store permissions in `existingPermissions` and copy to
+                    // `newPermissions`
                     setExistingPermissions(
                         permissions as typeof existingPermissions
+                    );
+                    setWorkingPermissions(
+                        permissions as typeof workingPermissions
                     );
                 } catch (e) {
                     // Ignore cancellation events
@@ -323,109 +323,117 @@ export default function DatasetSharingDrawer({
                         ) : (
                             <>
                                 <H4>{datasetName}</H4>
-                                {Object.entries(displayedPermissions).map(
-                                    ([userId, permissions]) => (
-                                        <Row key={userId} align="center">
-                                            <Col
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: "0.5em",
-                                                }}
-                                            >
-                                                <Icon
-                                                    icon="user"
-                                                    iconSize={32}
+                                {Object.entries(workingPermissions).map(
+                                    ([userId, permissions]) =>
+                                        permissions.length === 0 ? null : (
+                                            <Row key={userId} align="center">
+                                                <Col
                                                     style={{
-                                                        color: "rgba(0,0,0,0.2)",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: "0.5em",
                                                     }}
-                                                />
-                                                {userId}
-                                            </Col>
-                                            <Col xs="content">
-                                                <Popover
-                                                    disabled={commitInProgress}
-                                                    content={
-                                                        <div
-                                                            style={{
-                                                                padding: "1em",
-                                                            }}
-                                                        >
-                                                            {SUPPORTED_PERMISSIONS.map(
-                                                                ({
-                                                                    permission,
-                                                                    label,
-                                                                    editDisabled,
-                                                                }) => (
-                                                                    <Switch
-                                                                        key={
-                                                                            permission
-                                                                        }
-                                                                        label={
-                                                                            label
-                                                                        }
-                                                                        disabled={
-                                                                            editDisabled
-                                                                        }
-                                                                        checked={permissions.includes(
-                                                                            permission
-                                                                        )}
-                                                                        onChange={(
-                                                                            e
-                                                                        ) =>
-                                                                            e
-                                                                                .currentTarget
-                                                                                .checked
-                                                                                ? addPermission(
-                                                                                      userId,
-                                                                                      permission
-                                                                                  )
-                                                                                : removePermission(
-                                                                                      userId,
-                                                                                      permission
-                                                                                  )
-                                                                        }
-                                                                    />
-                                                                )
-                                                            )}
-                                                        </div>
-                                                    }
                                                 >
+                                                    <Icon
+                                                        icon="user"
+                                                        iconSize={32}
+                                                        style={{
+                                                            color: "rgba(0,0,0,0.2)",
+                                                        }}
+                                                    />
+                                                    {userId}
+                                                </Col>
+                                                <Col xs="content">
+                                                    <Popover
+                                                        disabled={
+                                                            commitInProgress
+                                                        }
+                                                        content={
+                                                            <div
+                                                                style={{
+                                                                    padding:
+                                                                        "1em",
+                                                                }}
+                                                            >
+                                                                {SUPPORTED_PERMISSIONS.map(
+                                                                    ({
+                                                                        permission,
+                                                                        label,
+                                                                        editDisabled,
+                                                                    }) => (
+                                                                        <Switch
+                                                                            key={
+                                                                                permission
+                                                                            }
+                                                                            label={
+                                                                                label
+                                                                            }
+                                                                            disabled={
+                                                                                editDisabled
+                                                                            }
+                                                                            checked={permissions.includes(
+                                                                                permission
+                                                                            )}
+                                                                            onChange={(
+                                                                                e
+                                                                            ) =>
+                                                                                e
+                                                                                    .currentTarget
+                                                                                    .checked
+                                                                                    ? addPermission(
+                                                                                          userId,
+                                                                                          permission
+                                                                                      )
+                                                                                    : removePermission(
+                                                                                          userId,
+                                                                                          permission
+                                                                                      )
+                                                                            }
+                                                                        />
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        }
+                                                    >
+                                                        <Button
+                                                            small
+                                                            disabled={
+                                                                commitInProgress
+                                                            }
+                                                        >
+                                                            {permissions
+                                                                .map(
+                                                                    (p) =>
+                                                                        SUPPORTED_PERMISSIONS.find(
+                                                                            (
+                                                                                x
+                                                                            ) =>
+                                                                                x.permission ===
+                                                                                p
+                                                                        )?.label
+                                                                )
+                                                                .join(", ")}
+                                                        </Button>
+                                                    </Popover>
+                                                </Col>
+                                                <Col xs="content">
                                                     <Button
                                                         small
+                                                        minimal
+                                                        intent="danger"
+                                                        icon="trash"
+                                                        onClick={() =>
+                                                            removeUser(userId)
+                                                        }
                                                         disabled={
                                                             commitInProgress
                                                         }
                                                     >
-                                                        {permissions
-                                                            .map(
-                                                                (p) =>
-                                                                    SUPPORTED_PERMISSIONS.find(
-                                                                        (x) =>
-                                                                            x.permission ===
-                                                                            p
-                                                                    )?.label
-                                                            )
-                                                            .join(", ")}
+                                                        Remove
                                                     </Button>
-                                                </Popover>
-                                            </Col>
-                                            <Col xs="content">
-                                                <Button
-                                                    small
-                                                    minimal
-                                                    intent="danger"
-                                                    icon="trash"
-                                                    onClick={() =>
-                                                        removeUser(userId)
-                                                    }
-                                                    disabled={commitInProgress}
-                                                >
-                                                    Remove
-                                                </Button>
-                                            </Col>
-                                        </Row>
-                                    )
+                                                </Col>
+                                            </Row>
+                                        )
                                 )}
                             </>
                         )}

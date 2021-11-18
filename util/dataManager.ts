@@ -84,11 +84,13 @@ export class DataManager {
         );
     }
 
-    public addDatasetPermissions(
+    public updateDatasetPermissions(
         uuid: string,
         permissions: Record<string, string[]>
     ) {
-        return this.xhrPost<unknown>(`${ENDPOINTS.PERMISSION}${uuid}/add`,  permissions);
+        return this.xhrPost<unknown>(`${ENDPOINTS.PERMISSION}${uuid}/update`, {
+            permissions,
+        });
     }
 
     public removeDatasetPermissions(uuid: string, userIds: string[]) {
