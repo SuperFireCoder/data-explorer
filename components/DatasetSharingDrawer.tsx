@@ -8,6 +8,7 @@ import {
     Switch,
     H4,
     Icon,
+    Toaster,
 } from "@blueprintjs/core";
 import { Col, Row } from "@ecocommons-australia/ui-library";
 import axios, { CancelTokenSource } from "axios";
@@ -28,6 +29,13 @@ const SUPPORTED_PERMISSIONS = [
         editDisabled: false,
     },
 ] as const;
+
+const MESSAGE_TOASTER =
+    typeof document !== "undefined"
+        ? Toaster.create({
+              autoFocus: false,
+          })
+        : undefined;
 
 type Permission = typeof SUPPORTED_PERMISSIONS[number]["permission"];
 
@@ -239,6 +247,13 @@ export default function DatasetSharingDrawer({
 
             // Close drawer
             onClose?.();
+
+            // Give message to user that commit completed
+            MESSAGE_TOASTER?.show({
+                message: "Changes to dataset share saved",
+                intent: "success",
+                icon: "tick",
+            });
         } catch (e) {
             console.error(e);
             alert(e.toString());
