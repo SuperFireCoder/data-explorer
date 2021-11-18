@@ -65,7 +65,7 @@ export default function DatasetSharingDrawer({
         [existingPermissions]
     );
 
-    // Calculate delta from displayed permissions and the last known state
+    // Calculate delta from working permissions and the last known state
     // (`existingPermissions`)
     const permissionsDelta = useMemo(() => {
         // Filter out added/modified???? and removed entries
@@ -84,7 +84,7 @@ export default function DatasetSharingDrawer({
         for (const [userId, existingPermissionArray] of Object.entries(
             existingPermissions
         )) {
-            // Check if entry exists in displayed permissions
+            // Check if entry exists in working permissions
             const workingPermissionArray: Permission[] | undefined =
                 workingPermissions[userId];
 
@@ -315,7 +315,7 @@ export default function DatasetSharingDrawer({
             >
                 <div
                     className={Classes.DRAWER_BODY}
-                    data-testid="metadata-drawer"
+                    data-testid="sharing-drawer"
                 >
                     <div className={Classes.DIALOG_BODY}>
                         {existingPermissions === undefined ? (
