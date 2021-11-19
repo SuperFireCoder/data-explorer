@@ -54,14 +54,8 @@ interface QueryParameters {
     /** Array of users/subjects to filter results by */
     filterPrincipals?: string | string[];
 
-    facetYearMin?: string;
-    facetYearMax?: string;
-    facetTimeDomain?: string | string[];
-    facetSpatialDomain?: string | string[];
-    facetResolution?: string | string[];
-    facetGcm?: string | string[];
-    facetDomain?: string | string[];
-    facetScientificType?: string | string[];
+    facetPublisher?: string | string[];
+    facetFormat?: string | string[];
 }
 
 function stripEmptyStringQueryParams(
@@ -138,6 +132,11 @@ export default function ExploreKnowledgeData() {
         SearchResponse<EsDataset> | undefined
     >(undefined);
 
+    /** Elasticsearch data */
+    const [globalBucket, setGlobalBucket] = useState<
+        SearchResponse<EsDataset> | undefined
+    >(undefined);
+
     /**
      * Flag indicating that the user has changed the state of the search form,
      * but has not executed the query
@@ -154,14 +153,8 @@ export default function ExploreKnowledgeData() {
             pageStart = "0",
             searchQuery = "",
             filterPrincipals = [],
-            facetYearMin = "",
-            facetYearMax = "",
-            facetTimeDomain = [],
-            facetSpatialDomain = [],
-            facetResolution = [],
-            facetScientificType = [],
-            facetDomain = [],
-            facetGcm = [],
+            facetPublisher = [],
+            facetFormat = [],
         } = router.query as QueryParameters;
 
         return {
@@ -176,16 +169,8 @@ export default function ExploreKnowledgeData() {
             filterPrincipals: normaliseAsReadonlyStringArray(filterPrincipals),
 
             // Facets
-            facetYearMin: parseInt(facetYearMin, 10), // Value may be NaN
-            facetYearMax: parseInt(facetYearMax, 10), // Value may be NaN
-            facetTimeDomain: normaliseAsReadonlyStringArray(facetTimeDomain),
-            facetSpatialDomain:
-                normaliseAsReadonlyStringArray(facetSpatialDomain),
-            facetResolution: normaliseAsReadonlyStringArray(facetResolution),
-            facetScientificType:
-                normaliseAsReadonlyStringArray(facetScientificType),
-            facetDomain: normaliseAsReadonlyStringArray(facetDomain),
-            facetGcm: normaliseAsReadonlyStringArray(facetGcm),
+            facetPublisher: normaliseAsReadonlyStringArray(facetPublisher),
+            facetFormat: normaliseAsReadonlyStringArray(facetFormat),
         };
     }, [router.query]);
 
@@ -214,40 +199,21 @@ export default function ExploreKnowledgeData() {
     // TODO: Implement some way of feeding the default state into the facets
     // from values contained in `pageParameters` so that they update the UI on
     // first load
-    const [yearMin, setYearMin] = useState<string>("");
-    const [yearMax, setYearMax] = useState<string>("");
-     const facetStateTimeDomain = useFacetState(
-        results?.aggregations?.facetTimeDomain?.buckets,
-        pageParameters.facetTimeDomain,
+     const facetStatePublisher = useFacetState(
+        globalBucket?.aggregations?.facetPublisher?.buckets,
+        pageParameters.facetPublisher,
         (items) => setQueryParams({
-            facetTimeDomain: items,
+            facetPublisher: items,
         })
     );
-    const facetStateSpatialDomain = useFacetState(
-        results?.aggregations?.facetSpatialDomain?.buckets,
-        [],
-        () => {}
+    const facetStateFormat = useFacetState(
+        globalBucket?.aggregations?.distributions?.facetFormat?.buckets,
+        pageParameters.facetFormat,
+        (items) => setQueryParams({
+            facetFormat: items,
+        })
     );
-    const facetStateResolution = useFacetState(
-        results?.aggregations?.facetResolution?.buckets,
-        [],
-        () => {}
-    );
-    const facetStateScientificType = useFacetState(
-        results?.aggregations?.facetScientificType?.buckets,
-        [],
-        () => {}
-    );
-    const facetStateDomain = useFacetState(
-        results?.aggregations?.facetDomain?.buckets,
-        [],
-        () => {}
-    );
-    const facetStateGcm = useFacetState(
-        results?.aggregations?.facetGcm?.buckets,
-        [],
-        () => {}
-    );
+    
 
     const totalNumberOfResults = useMemo(() => {
         // We'll say that there are 0 results if no data is available
@@ -273,21 +239,6 @@ export default function ExploreKnowledgeData() {
     const maxPages = useMemo(
         () => Math.ceil(totalNumberOfResults / pageParameters.pageSize),
         [totalNumberOfResults, pageParameters]
-    );
-
-    const yearsQueryIsAllYears = useMemo(
-        () => yearMin === "" && yearMax === "",
-        [yearMin, yearMax]
-    );
-
-    const yearsQueryMinBound = useMemo(
-        () => results?.aggregations?.facetYearMin?.value || 0,
-        [results]
-    );
-
-    const yearsQueryMaxBound = useMemo(
-        () => results?.aggregations?.facetYearMax?.value || 0,
-        [results]
     );
 
     /**
@@ -320,14 +271,8 @@ export default function ExploreKnowledgeData() {
                 filterPrincipals,
 
                 // Facets
-                facetYearMin: yearMin.toString(),
-                facetYearMax: yearMax.toString(),
-                facetTimeDomain: facetStateTimeDomain.getQueryParams(),
-                facetSpatialDomain: facetStateSpatialDomain.getQueryParams(),
-                facetResolution: facetStateResolution.getQueryParams(),
-                facetScientificType: facetStateScientificType.getQueryParams(),
-                facetDomain: facetStateDomain.getQueryParams(),
-                facetGcm: facetStateGcm.getQueryParams(),
+                facetPublisher: facetStatePublisher.getQueryParams(),
+                facetFormat: facetStateFormat.getQueryParams(),
 
                 // New queries must start at page 0
                 pageStart: "0",
@@ -343,14 +288,8 @@ export default function ExploreKnowledgeData() {
             filterPrincipals,
 
             // If the facet selection changes, this callback needs updating
-            yearMin,
-            yearMax,
-            facetStateTimeDomain.selectedItems,
-            facetStateSpatialDomain.selectedItems,
-            facetStateResolution.selectedItems,
-            facetStateScientificType.selectedItems,
-            facetStateDomain.selectedItems,
-            facetStateGcm.selectedItems,
+            facetStatePublisher.selectedItems,
+            facetStateFormat.selectedItems,
         ]
     );
 
@@ -358,33 +297,6 @@ export default function ExploreKnowledgeData() {
         ChangeEventHandler<HTMLInputElement>
     >((e) => {
         setSearchQuery(e.currentTarget.value);
-    }, []);
-
-    const handleYearAllYearsSwitchChange = useCallback<
-        FormEventHandler<HTMLInputElement>
-    >(() => {
-        // Switching all years -> valued years: set min and max bounds
-        if (yearsQueryIsAllYears) {
-            setYearMin(yearsQueryMinBound);
-            setYearMax(yearsQueryMaxBound);
-            return;
-        }
-
-        // Switching valued years -> all years, set min and max blank
-        setYearMin("");
-        setYearMax("");
-    }, [yearsQueryIsAllYears, yearsQueryMinBound, yearsQueryMaxBound]);
-
-    const handleYearMinInputChange = useCallback<
-        FormEventHandler<HTMLInputElement>
-    >((e) => {
-        setYearMin(e.currentTarget.value.trim());
-    }, []);
-
-    const handleYearMaxInputChange = useCallback<
-        FormEventHandler<HTMLInputElement>
-    >((e) => {
-        setYearMax(e.currentTarget.value.trim());
     }, []);
 
     const handlePrivacySelectChange = useCallback<
@@ -405,6 +317,81 @@ export default function ExploreKnowledgeData() {
         },
         [keycloakToken, keycloak]
     );
+    
+    useEffect(
+        function executeInitialAggregationFetch() {
+            // Facets are built up using aggregations
+            const queryBuilder = bodybuilder()
+                .aggregation('nested', {path: 'distributions'}, 'distributions', (a) => {
+                    return a.aggregation('terms', 'distributions.format.keyword', 'facetFormat')
+                  })
+                .aggregation('terms', 'publisher.name.keyword', 'facetPublisher');
+
+            const query = queryBuilder.build();
+
+            // const query = {
+            //     aggs: {
+            //         distributions: {
+            //           nested: {
+            //             path: 'distributions',
+            //           },
+            //           aggs: {
+            //             facetFormat: {
+            //               terms: {
+            //                 field: 'distributions.format.keyword',
+            //               },
+            //             },
+            //           },
+            //         },
+            //         facetPublisher: {
+            //           terms: {
+            //             field: 'publisher.name.keyword',
+            //           },
+            //         },
+            //       }
+            // }
+            console.log('QUERY kn global: ', query);
+
+            // `Authorization` header depends on whether token is available
+            const headers: Record<string, string> = {};
+
+            if (keycloakToken && keycloakToken.length > 0) {
+                headers["Authorization"] = `Bearer ${keycloakToken}`;
+            }
+
+            const esQueryCancelToken = axios.CancelToken.source();
+            
+            axios
+                .post<SearchResponse<EsDataset>>(
+                    `https://knowledgenet.co/api/v0/es-query/datasets`,
+                    query,
+                    { headers, cancelToken: esQueryCancelToken.token }
+                )
+                .then((res) => {
+                    setGlobalBucket(res.data);
+                    console.log('query kn res',res.data)
+                })
+                .catch((e) => {
+                    // Ignore cancellation events
+                    if (axios.isCancel(e)) {
+                        return;
+                    }
+
+                    console.error(e);
+
+                    alert(e.toString());
+                });
+
+            return function stopOngoingEsQuery() {
+                // Cancel the ES query if it is still running
+                esQueryCancelToken.cancel();
+            };
+        },
+        [
+            // TODO: This global bucket needs to be rerun depending on Keycloak/user sign-in status
+            keycloakToken
+        ]
+    );
 
     /**
      * An effect to automatically execute new Elasticsearch query upon page
@@ -417,33 +404,14 @@ export default function ExploreKnowledgeData() {
                 pageStart,
                 searchQuery,
                 filterPrincipals,
-                facetYearMin,
-                facetYearMax,
-                facetTimeDomain,
-                facetSpatialDomain,
-                facetResolution,
-                facetScientificType,
-                facetDomain,
-                facetGcm,
+                facetPublisher,
+                facetFormat,
             } = pageParameters;
 
             // Start building Elasticsearch query
             let queryBuilder = bodybuilder()
                 .size(pageSize)
                 .from(pageStart)
-                // Facets are built up using aggregations
-                //
-                // For `year`, get the min and max values for the UI to
-                // construct a range slide
-                .aggregation("min", "year", "facetYearMin")
-                .aggregation("max", "year", "facetYearMax")
-                // All other aggregations are buckets of simple string values
-                .aggregation("terms", "time_domain", "facetTimeDomain")
-                .aggregation("terms", "spatial_domain", "facetSpatialDomain")
-                .aggregation("terms", "resolution", "facetResolution")
-                .aggregation("terms", "scientific_type", "facetScientificType")
-                .aggregation("terms", "domain", "facetDomain")
-                .aggregation("terms", "gcm", "facetGcm");
 
             let isEmptyQuery = true;
 
@@ -451,61 +419,16 @@ export default function ExploreKnowledgeData() {
             [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
                 queryBuilder,
                 isEmptyQuery,
-                "time_domain",
-                facetTimeDomain
+                "publisher.name.keyword",
+                facetPublisher
             );
             [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
                 queryBuilder,
                 isEmptyQuery,
-                "spatial_domain",
-                facetSpatialDomain
+                "distributions.format.keyword",
+                facetFormat
             );
-            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-                queryBuilder,
-                isEmptyQuery,
-                "resolution",
-                facetResolution
-            );
-            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-                queryBuilder,
-                isEmptyQuery,
-                "scientific_type",
-                facetScientificType
-            );
-            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-                queryBuilder,
-                isEmptyQuery,
-                "domain",
-                facetDomain
-            );
-            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-                queryBuilder,
-                isEmptyQuery,
-                "gcm",
-                facetGcm
-            );
-
-            // Year range
-            if (!Number.isNaN(facetYearMin) || !Number.isNaN(facetYearMax)) {
-                isEmptyQuery = false;
-
-                const yearRangeQuery: Record<string, number> = {};
-
-                if (!Number.isNaN(facetYearMin)) {
-                    yearRangeQuery["gte"] = facetYearMin;
-                }
-
-                if (!Number.isNaN(facetYearMax)) {
-                    yearRangeQuery["lte"] = facetYearMax;
-                }
-
-                queryBuilder = queryBuilder.query(
-                    "range",
-                    "year",
-                    yearRangeQuery
-                );
-            }
-
+            
             // String search query
             if (searchQuery.length !== 0) {
                 isEmptyQuery = false;
@@ -551,12 +474,13 @@ export default function ExploreKnowledgeData() {
 
             axios
                 .post<SearchResponse<EsDataset>>(
-                    `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
+                    `https://knowledgenet.co/api/v0/es-query/datasets`,
                     query,
                     { headers, cancelToken: esQueryCancelToken.token }
                 )
                 .then((res) => {
                     setResults(res.data);
+                    console.log("KN data",res.data);
                 })
                 .catch((e) => {
                     // Ignore cancellation events
@@ -593,22 +517,15 @@ export default function ExploreKnowledgeData() {
             filterPrincipals,
 
             // Facet selection changes
-            yearMin,
-            yearMax,
-            facetStateTimeDomain.selectedItemKeyHash,
-            facetStateSpatialDomain.selectedItemKeyHash,
-            facetStateResolution.selectedItemKeyHash,
-            facetStateScientificType.selectedItemKeyHash,
-            facetStateDomain.selectedItemKeyHash,
-            facetStateGcm.selectedItemKeyHash,
+            facetStatePublisher.selectedItemKeyHash,
+            facetStateFormat.selectedItemKeyHash,
         ]
     );
 
     return (
         <>
                 <Row>
-                    Under construction
-                    {/* <Col xs={2}>
+                    <Col xs={2}>
                         <form onSubmit={handleQueryFormSubmit}>
                             <Row disableDefaultMargins>
                                 <Col>
@@ -628,84 +545,16 @@ export default function ExploreKnowledgeData() {
                             onSubmit={suppressEvent}
                             data-testid="facet-fields"
                         >
-                            <Row>
-                                <Col>
-                                    <Row disableDefaultMargins>
-                                        <Col xs={6}>
-                                            <H6>Year</H6>
-                                        </Col>
-                                        <Col
-                                            xs={6}
-                                            style={{ textAlign: "right" }}
-                                        >
-                                            <Switch
-                                                checked={yearsQueryIsAllYears}
-                                                onChange={
-                                                    handleYearAllYearsSwitchChange
-                                                }
-                                                innerLabel="Range"
-                                                innerLabelChecked="All"
-                                                style={{ marginRight: "-10px" }}
-                                            />
-                                        </Col>
-                                    </Row>
-                                    {!yearsQueryIsAllYears && (
-                                        <Row
-                                            disableDefaultMargins
-                                            gutterWidth={2}
-                                        >
-                                            <Col xs={6}>
-                                                <InputGroup
-                                                    type="number"
-                                                    value={yearMin}
-                                                    onChange={
-                                                        handleYearMinInputChange
-                                                    }
-                                                />
-                                            </Col>
-                                            <Col xs={6}>
-                                                <InputGroup
-                                                    type="number"
-                                                    value={yearMax}
-                                                    onChange={
-                                                        handleYearMaxInputChange
-                                                    }
-                                                />
-                                            </Col>
-                                        </Row>
-                                    )}
-                                </Col>
-                            </Row>
                             {[
                                 {
-                                    title: "Time domain",
-                                    facetState: facetStateTimeDomain,
-                                    placeholder: "Filter by time domain...",
+                                    title: "Publisher",
+                                    facetState: facetStatePublisher,
+                                    placeholder: "Filter by publisher...",
                                 },
                                 {
-                                    title: "Spatial domain",
-                                    facetState: facetStateSpatialDomain,
-                                    placeholder: "Filter by spatial domain...",
-                                },
-                                {
-                                    title: "Resolution",
-                                    facetState: facetStateResolution,
-                                    placeholder: "Filter by resolution...",
-                                },
-                                {
-                                    title: "Scientific type",
-                                    facetState: facetStateScientificType,
-                                    placeholder: "Filter by scientific type...",
-                                },
-                                {
-                                    title: "Domain",
-                                    facetState: facetStateDomain,
-                                    placeholder: "Filter by domain...",
-                                },
-                                {
-                                    title: "GCM",
-                                    facetState: facetStateGcm,
-                                    placeholder: "Filter by GCM...",
+                                    title: "Resource Type",
+                                    facetState: facetStateFormat,
+                                    placeholder: "Filter by resrouce type...",
                                 },
                             ].map(({ title, facetState, placeholder }) => (
                                 <Row key={title}>
@@ -831,7 +680,7 @@ export default function ExploreKnowledgeData() {
                                 />
                             </Col>
                         </Row>
-                    </Col> */}
+                    </Col>
                 </Row>
         </>
     );

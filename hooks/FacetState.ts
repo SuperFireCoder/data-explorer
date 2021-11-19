@@ -12,7 +12,7 @@ export function useFacetState<T extends EsAggregationBucket>(
 ) {
 
     // const [selectedItems, setSelectedItems] = useState<readonly T[]>(initialSelectedItems);
-
+    console.log('useFacetState', rawItems, selectedItems);
     // Selected items mapped to Elasticsearch raw items
     const esSelectedItems = useMemo(() => 
         selectedItems

@@ -445,10 +445,8 @@ export default function ExploreEcoData() {
 
             // === Separately ===
             // TODO: Pass this (`globalBucket`) state into the facets, and not the user-driven query results into the facets
-
-            
             const query = queryBuilder.build();
-
+            console.log('QUERY Global bucket: ', query);
             // `Authorization` header depends on whether token is available
             const headers: Record<string, string> = {};
 
@@ -466,7 +464,7 @@ export default function ExploreEcoData() {
                 )
                 .then((res) => {
                     setGlobalBucket(res.data);
-                    console.log(res.data)
+                    console.log('query global res', res.data)
                 })
                 .catch((e) => {
                     // Ignore cancellation events
