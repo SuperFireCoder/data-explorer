@@ -7,6 +7,11 @@ export function getDataExplorerBackendServerUrl() {
         .NEXT_PUBLIC_DATA_EXPLORER_BACKEND_SERVER_URL as string;
 }
 
+export function getUserManagementBackendServerUrl() {
+    return config.publicRuntimeConfig
+        .NEXT_PUBLIC_USER_MANAGEMENT_BACKEND_SERVER_URL as string;
+}
+
 export function getDataExplorerSubbarImportData() {
     return config.publicRuntimeConfig
         .NEXT_PUBLIC_DATA_EXPLORER_SUBBAR_IMPORT_DATA as string | undefined;

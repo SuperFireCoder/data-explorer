@@ -16,6 +16,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useDataManager } from "../hooks/DataManager";
 import { useOpenableOpen } from "../hooks/Openable";
+import { useUserManagement } from "../hooks/UserManagement";
 
 const SUPPORTED_PERMISSIONS = [
     {
@@ -53,6 +54,7 @@ export default function DatasetSharingDrawer({
     onClose,
 }: Props) {
     const dataManager = useDataManager();
+    const userManagement = useUserManagement();
 
     const {
         isOpen: discardChangesAlertOpen,
@@ -171,27 +173,55 @@ export default function DatasetSharingDrawer({
         closeDiscardChangesAlert();
     }, [closeDiscardChangesAlert]);
 
-    const addNewUser = useCallback(() => {
-        const userId = window.prompt("User ID?");
+    const addNewUser = useCallback(async () => {
+        try {
+            if (userManagement === undefined) {
+                throw new Error("User management API not available");
+            }
 
-        if (userId === null || userId.length === 0) {
-            return;
+            const userEmail = window.prompt("User email?");
+
+            if (userEmail === null || userEmail.length === 0) {
+                return;
+            }
+
+            // Check user email and get user information
+            const { promise } = userManagement.lookupUserByEmail(userEmail);
+            const userInfo = await promise;
+
+            if (userInfo.length === 0) {
+                alert("User not found");
+                return;
+            }
+
+            // Prompt to check if user is intending to add this particular user?
+            const user = userInfo[0];
+            const result = confirm(`Add "${user.firstName} ${user.lastName}"?`);
+
+            if (!result) {
+                return;
+            }
+
+            const userId = user.id;
+
+            // Check if already present
+            const workingPermissionArray: Permission[] | undefined =
+                workingPermissions[userId];
+
+            if (
+                workingPermissions[userId] !== undefined &&
+                workingPermissionArray.length !== 0
+            ) {
+                return;
+            }
+
+            // Add to working permissions object
+            setWorkingPermissions((p) => ({ ...p, [userId]: ["view_ds"] }));
+        } catch (e) {
+            console.error(e);
+            alert(e.toString());
         }
-
-        // Check if already present
-        const workingPermissionArray: Permission[] | undefined =
-            workingPermissions[userId];
-
-        if (
-            workingPermissions[userId] !== undefined &&
-            workingPermissionArray.length !== 0
-        ) {
-            return;
-        }
-
-        // Add to working permissions object
-        setWorkingPermissions((p) => ({ ...p, [userId]: ["view_ds"] }));
-    }, [workingPermissions]);
+    }, [userManagement, workingPermissions]);
 
     const removeUser = useCallback((userId: string) => {
         // Set user's working permission to empty array to indicate user deleted
