@@ -17,6 +17,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDataManager } from "../hooks/DataManager";
 import { useOpenableOpen } from "../hooks/Openable";
 import { useUserManagement } from "../hooks/UserManagement";
+import DatasetSharingAddUserButton from "./DatasetSharingAddUserButton";
 
 const SUPPORTED_PERMISSIONS = [
     {
@@ -173,37 +174,8 @@ export default function DatasetSharingDrawer({
         closeDiscardChangesAlert();
     }, [closeDiscardChangesAlert]);
 
-    const addNewUser = useCallback(async () => {
-        try {
-            if (userManagement === undefined) {
-                throw new Error("User management API not available");
-            }
-
-            const userEmail = window.prompt("User email?");
-
-            if (userEmail === null || userEmail.length === 0) {
-                return;
-            }
-
-            // Check user email and get user information
-            const { promise } = userManagement.lookupUserByEmail(userEmail);
-            const userInfo = await promise;
-
-            if (userInfo.length === 0) {
-                alert("User not found");
-                return;
-            }
-
-            // Prompt to check if user is intending to add this particular user?
-            const user = userInfo[0];
-            const result = confirm(`Add "${user.firstName} ${user.lastName}"?`);
-
-            if (!result) {
-                return;
-            }
-
-            const userId = user.id;
-
+    const addNewUser = useCallback(
+        (userId: string) => {
             // Check if already present
             const workingPermissionArray: Permission[] | undefined =
                 workingPermissions[userId];
@@ -217,11 +189,9 @@ export default function DatasetSharingDrawer({
 
             // Add to working permissions object
             setWorkingPermissions((p) => ({ ...p, [userId]: ["view_ds"] }));
-        } catch (e) {
-            console.error(e);
-            alert(e.toString());
-        }
-    }, [userManagement, workingPermissions]);
+        },
+        [workingPermissions]
+    );
 
     const removeUser = useCallback((userId: string) => {
         // Set user's working permission to empty array to indicate user deleted
@@ -487,13 +457,10 @@ export default function DatasetSharingDrawer({
                 <div className={Classes.DRAWER_FOOTER}>
                     <Row disableDefaultMargins>
                         <Col>
-                            <Button
-                                icon="plus"
-                                onClick={addNewUser}
+                            <DatasetSharingAddUserButton
                                 disabled={existingPermissionsLoading}
-                            >
-                                Add user
-                            </Button>
+                                onAddUser={addNewUser}
+                            />
                         </Col>
                         <Col xs="content">
                             <Button
