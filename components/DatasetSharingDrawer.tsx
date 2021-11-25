@@ -13,7 +13,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useDataManager } from "../hooks/DataManager";
 import { useOpenableOpen } from "../hooks/Openable";
-import { useUserManagement } from "../hooks/UserManagement";
 import DatasetSharingAddUserButton from "./DatasetSharingAddUserButton";
 import DatasetSharingPermissionsList from "./DatasetSharingPermissionsList";
 
@@ -53,7 +52,6 @@ export default function DatasetSharingDrawer({
     onClose,
 }: Props) {
     const dataManager = useDataManager();
-    const userManagement = useUserManagement();
 
     const {
         isOpen: discardChangesAlertOpen,
@@ -122,7 +120,10 @@ export default function DatasetSharingDrawer({
 
         // Check for new entries
         for (const userId of Object.keys(workingPermissions)) {
-            if (existingPermissions[userId] === undefined) {
+            if (
+                existingPermissions[userId] === undefined &&
+                workingPermissions[userId].length > 0
+            ) {
                 modified[userId] = workingPermissions[userId];
             }
         }

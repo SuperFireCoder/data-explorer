@@ -67,10 +67,28 @@ export class UserManagement {
     //     return { promise, cancellationToken, axiosPromise };
     // }
 
-    public lookupUserByEmail(email: string, config?: AxiosRequestConfig) {
+    public lookupUserByEmail(
+        email: string | readonly string[],
+        config?: AxiosRequestConfig
+    ) {
+        const value = (typeof email === "string" ? [email] : email).join(",");
+
         return this.xhrGet<[] | [UserInfo]>(`${ENDPOINTS.USERS}`, {
             params: {
-                email,
+                email: value,
+            },
+            ...config,
+        });
+    }
+    public lookupUserById(
+        id: string | readonly string[],
+        config?: AxiosRequestConfig
+    ) {
+        const value = (typeof id === "string" ? [id] : id).join(",");
+
+        return this.xhrGet<[] | [UserInfo]>(`${ENDPOINTS.USERS}`, {
+            params: {
+                id: value,
             },
             ...config,
         });

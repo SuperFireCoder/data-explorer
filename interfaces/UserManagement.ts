@@ -3,8 +3,8 @@ export interface UserInfo {
     createdTimestamp: number;
     username: string;
     enabled: boolean;
-    firstName: string;
-    lastName: string;
+    firstName?: string;
+    lastName?: string;
     email: string;
     attributes: Record<string, unknown>;
 }
