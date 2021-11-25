@@ -19,12 +19,12 @@ import DatasetSharingPermissionsList from "./DatasetSharingPermissionsList";
 const SUPPORTED_PERMISSIONS = [
     {
         permission: "view_ds",
-        label: "View dataset",
+        label: "View",
         editDisabled: true,
     },
     {
         permission: "delete_ds",
-        label: "Delete dataset",
+        label: "Delete",
         editDisabled: false,
     },
 ] as const;
