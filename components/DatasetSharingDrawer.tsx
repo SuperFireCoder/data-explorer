@@ -4,10 +4,7 @@ import {
     Position,
     Alert,
     Button,
-    Popover,
-    Switch,
     H4,
-    Icon,
     Toaster,
 } from "@blueprintjs/core";
 import { Col, Row } from "@ecocommons-australia/ui-library";
@@ -18,6 +15,7 @@ import { useDataManager } from "../hooks/DataManager";
 import { useOpenableOpen } from "../hooks/Openable";
 import { useUserManagement } from "../hooks/UserManagement";
 import DatasetSharingAddUserButton from "./DatasetSharingAddUserButton";
+import DatasetSharingPermissionsList from "./DatasetSharingPermissionsList";
 
 const SUPPORTED_PERMISSIONS = [
     {
@@ -338,118 +336,14 @@ export default function DatasetSharingDrawer({
                         ) : (
                             <>
                                 <H4>{datasetName}</H4>
-                                {Object.entries(workingPermissions).map(
-                                    ([userId, permissions]) =>
-                                        permissions.length === 0 ? null : (
-                                            <Row key={userId} align="center">
-                                                <Col
-                                                    style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: "0.5em",
-                                                    }}
-                                                >
-                                                    <Icon
-                                                        icon="user"
-                                                        iconSize={32}
-                                                        style={{
-                                                            color: "rgba(0,0,0,0.2)",
-                                                        }}
-                                                    />
-                                                    {userId}
-                                                </Col>
-                                                <Col xs="content">
-                                                    <Popover
-                                                        disabled={
-                                                            commitInProgress
-                                                        }
-                                                        content={
-                                                            <div
-                                                                style={{
-                                                                    padding:
-                                                                        "1em",
-                                                                }}
-                                                            >
-                                                                {SUPPORTED_PERMISSIONS.map(
-                                                                    ({
-                                                                        permission,
-                                                                        label,
-                                                                        editDisabled,
-                                                                    }) => (
-                                                                        <Switch
-                                                                            key={
-                                                                                permission
-                                                                            }
-                                                                            label={
-                                                                                label
-                                                                            }
-                                                                            disabled={
-                                                                                editDisabled
-                                                                            }
-                                                                            checked={permissions.includes(
-                                                                                permission
-                                                                            )}
-                                                                            onChange={(
-                                                                                e
-                                                                            ) =>
-                                                                                e
-                                                                                    .currentTarget
-                                                                                    .checked
-                                                                                    ? addPermission(
-                                                                                          userId,
-                                                                                          permission
-                                                                                      )
-                                                                                    : removePermission(
-                                                                                          userId,
-                                                                                          permission
-                                                                                      )
-                                                                            }
-                                                                        />
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        }
-                                                    >
-                                                        <Button
-                                                            small
-                                                            disabled={
-                                                                commitInProgress
-                                                            }
-                                                        >
-                                                            {permissions
-                                                                .map(
-                                                                    (p) =>
-                                                                        SUPPORTED_PERMISSIONS.find(
-                                                                            (
-                                                                                x
-                                                                            ) =>
-                                                                                x.permission ===
-                                                                                p
-                                                                        )?.label
-                                                                )
-                                                                .join(", ")}
-                                                        </Button>
-                                                    </Popover>
-                                                </Col>
-                                                <Col xs="content">
-                                                    <Button
-                                                        small
-                                                        minimal
-                                                        intent="danger"
-                                                        icon="trash"
-                                                        onClick={() =>
-                                                            removeUser(userId)
-                                                        }
-                                                        disabled={
-                                                            commitInProgress
-                                                        }
-                                                    >
-                                                        Remove
-                                                    </Button>
-                                                </Col>
-                                            </Row>
-                                        )
-                                )}
+                                <DatasetSharingPermissionsList
+                                    supportedPermissions={SUPPORTED_PERMISSIONS}
+                                    permissions={workingPermissions}
+                                    disabled={commitInProgress}
+                                    onRemoveUser={removeUser}
+                                    onAddUserPermission={addPermission}
+                                    onRemoveUserPermission={removePermission}
+                                />
                             </>
                         )}
                     </div>
