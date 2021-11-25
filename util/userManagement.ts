@@ -71,7 +71,7 @@ export class UserManagement {
         email: string | readonly string[],
         config?: AxiosRequestConfig
     ) {
-        const value = (typeof email === "string" ? [email] : email).join(",");
+        const value = typeof email === "string" ? email : email.join(",");
 
         return this.xhrGet<[] | [UserInfo]>(`${ENDPOINTS.USERS}`, {
             params: {
@@ -84,7 +84,7 @@ export class UserManagement {
         id: string | readonly string[],
         config?: AxiosRequestConfig
     ) {
-        const value = (typeof id === "string" ? [id] : id).join(",");
+        const value = typeof id === "string" ? id : id.join(",");
 
         return this.xhrGet<[] | [UserInfo]>(`${ENDPOINTS.USERS}`, {
             params: {
