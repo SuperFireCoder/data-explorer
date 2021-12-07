@@ -4,6 +4,7 @@ import { KeycloakInstance } from "../interfaces/Keycloak";
 
 const ENDPOINTS = {
     DATASET: "/api/dataset/",
+    PERMISSION: "/api/permission/",
 };
 
 export class DataManager {
@@ -53,14 +54,14 @@ export class DataManager {
         return { promise, cancellationToken, axiosPromise };
     }
 
-    // private xhrPost<T>(url: string, data: unknown) {
-    //     const cancellationToken = this.getNewAxiosCancellationToken();
-    //     const axiosPromise = this.axios.post<T>(url, data, {
-    //         cancelToken: cancellationToken.token,
-    //     });
-    //     const promise = axiosPromise.then((res) => res.data);
-    //     return { promise, cancellationToken, axiosPromise };
-    // }
+    private xhrPost<T>(url: string, data: unknown) {
+        const cancellationToken = this.getNewAxiosCancellationToken();
+        const axiosPromise = this.axios.post<T>(url, data, {
+            cancelToken: cancellationToken.token,
+        });
+        const promise = axiosPromise.then((res) => res.data);
+        return { promise, cancellationToken, axiosPromise };
+    }
 
     // private xhrDelete<T>(url: string) {
     //     const cancellationToken = this.getNewAxiosCancellationToken();
@@ -75,5 +76,26 @@ export class DataManager {
         return this.xhrGet<{ url: string }>(
             `${ENDPOINTS.DATASET}${uuid}/tempurl`
         );
+    }
+
+    public getDatasetPermissions(uuid: string) {
+        return this.xhrGet<Record<string, string[]>>(
+            `${ENDPOINTS.PERMISSION}${uuid}`
+        );
+    }
+
+    public updateDatasetPermissions(
+        uuid: string,
+        permissions: Record<string, string[]>
+    ) {
+        return this.xhrPost<unknown>(`${ENDPOINTS.PERMISSION}${uuid}/update`, {
+            permissions,
+        });
+    }
+
+    public removeDatasetPermissions(uuid: string, userIds: string[]) {
+        return this.xhrPost<unknown>(`${ENDPOINTS.PERMISSION}${uuid}/delete`, {
+            users: userIds,
+        });
     }
 }

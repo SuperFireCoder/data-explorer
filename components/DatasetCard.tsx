@@ -1,4 +1,14 @@
-import { Button, ButtonGroup, Card, Classes, H5 } from "@blueprintjs/core";
+import {
+    Button,
+    ButtonGroup,
+    Card,
+    Classes,
+    H5,
+    Menu,
+    MenuItem,
+    Popover,
+    Position,
+} from "@blueprintjs/core";
 import classnames from "classnames";
 import { Col, Row } from "react-grid-system";
 import { ReactNode, useCallback, useMemo, useState } from "react";
@@ -7,12 +17,15 @@ import axios from "axios";
 import { DatasetType } from "../interfaces/DatasetType";
 import { getDDMMMYYYY } from "../util/date";
 import { useDataManager } from "../hooks/DataManager";
+import { useOpenableOpen } from "../hooks/Openable";
 
 import DatasetTypeIndicator from "./DatasetTypeIndicator";
 import MetadataDrawer from "./MetadataDrawer";
 import VisualiserDrawer from "./VisualiserDrawer";
 
 import styles from "./DatasetCard.module.css";
+import DatasetSharingDrawer from "./DatasetSharingDrawer";
+import { useKeycloakInfo } from "../util/keycloak";
 
 export interface Props {
     /** ID of dataset to load for metadata view, etc. */
@@ -25,6 +38,8 @@ export interface Props {
     type?: DatasetType;
     /** Date the dataset was last updated */
     lastUpdated?: Date;
+    /** User ID of the owner of the dataset */
+    ownerId: string | string[];
     /** Status of the dataset import */
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
     /** Import failure message */
@@ -37,13 +52,14 @@ export default function DatasetCard({
     description,
     type,
     lastUpdated,
+    ownerId,
     status,
     failureMessage,
 }: Props) {
+    const { keycloak } = useKeycloakInfo();
     const dataManager = useDataManager();
 
-    const [metadataDrawerOpen, setMetadataDrawerOpen] =
-        useState<boolean>(false);
+    const currentUserId = keycloak?.tokenParsed?.sub;
 
     const [downloadInProgress, setDownloadInProgress] =
         useState<boolean>(false);
@@ -52,28 +68,23 @@ export default function DatasetCard({
         return status !== "SUCCESS";
     }, [status]);
 
-    const openMetadataDrawer = useCallback(
-        () => setMetadataDrawerOpen(true),
-        []
-    );
+    const {
+        isOpen: metadataDrawerOpen,
+        open: openMetadataDrawer,
+        close: closeMetadataDrawer,
+    } = useOpenableOpen();
 
-    const closeMetadataDrawer = useCallback(
-        () => setMetadataDrawerOpen(false),
-        []
-    );
+    const {
+        isOpen: visualiserDrawerOpen,
+        open: openVisualiserDrawer,
+        close: closeVisualiserDrawer,
+    } = useOpenableOpen();
 
-    const [visualiserDrawerOpen, setVisualiserDrawerOpen] =
-        useState<boolean>(false);
-
-    const openVisualiserDrawer = useCallback(
-        () => setVisualiserDrawerOpen(true),
-        []
-    );
-
-    const closerVisualiserDrawer = useCallback(
-        () => setVisualiserDrawerOpen(false),
-        []
-    );
+    const {
+        isOpen: sharingDrawerOpen,
+        open: openSharingDrawer,
+        close: closeSharingDrawer,
+    } = useOpenableOpen();
 
     const downloadDataset = useCallback(async () => {
         if (dataManager === undefined) {
@@ -162,10 +173,10 @@ export default function DatasetCard({
                             </div>
                         )}
                     </Col>
-                    <Col style={{ flexGrow: 0 }}>
+                    <Col xs="content">
                         <ButtonGroup vertical alignText="left">
                             <Button
-                                icon="document-open"
+                                icon="eye-open"
                                 data-testid="view-button"
                                 intent="success"
                                 onClick={openVisualiserDrawer}
@@ -182,15 +193,42 @@ export default function DatasetCard({
                             >
                                 Info
                             </Button>
-                            <Button
-                                icon="download"
-                                intent="warning"
-                                onClick={downloadDataset}
-                                loading={downloadInProgress}
-                                disabled={disabledDataset}
+                            <Popover
+                                content={
+                                    <Menu>
+                                        <MenuItem
+                                            icon="download"
+                                            text="Download"
+                                            onClick={downloadDataset}
+                                            disabled={disabledDataset}
+                                        />
+                                        <MenuItem
+                                            icon="share"
+                                            text="Share..."
+                                            onClick={openSharingDrawer}
+                                            disabled={
+                                                disabledDataset ||
+                                                // Disable sharing when user is not owner
+                                                currentUserId === undefined ||
+                                                typeof ownerId === "string"
+                                                    ? ownerId !== currentUserId
+                                                    : !ownerId.includes(
+                                                          currentUserId
+                                                      )
+                                            }
+                                        />
+                                    </Menu>
+                                }
+                                position={Position.BOTTOM_RIGHT}
                             >
-                                Download
-                            </Button>
+                                <Button
+                                    icon="more"
+                                    intent="none"
+                                    disabled={disabledDataset}
+                                >
+                                    More
+                                </Button>
+                            </Popover>
                         </ButtonGroup>
                     </Col>
                 </Row>
@@ -205,7 +243,13 @@ export default function DatasetCard({
                 drawerTitle={title}
                 datasetId={datasetId}
                 isOpen={visualiserDrawerOpen}
-                onClose={closerVisualiserDrawer}
+                onClose={closeVisualiserDrawer}
+            />
+            <DatasetSharingDrawer
+                datasetName={title}
+                datasetId={datasetId}
+                isOpen={sharingDrawerOpen}
+                onClose={closeSharingDrawer}
             />
         </>
     );
