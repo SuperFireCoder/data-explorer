@@ -223,7 +223,7 @@ export default function IndexPage() {
     const facetStateCollection = useFacetState(
         results?.aggregations?.facetCollection?.buckets
     );
-    
+
     const facetStateGcm = useFacetState(
         results?.aggregations?.facetGcm?.buckets
     );
@@ -860,6 +860,9 @@ export default function IndexPage() {
                                                 }
                                                 // TODO: Add modification date into ES index
                                                 // lastUpdated={lastUpdated}
+                                                ownerId={
+                                                    _source.allowed_principals as string[]
+                                                }
                                             />
                                         )
                                     )}
