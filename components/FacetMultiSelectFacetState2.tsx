@@ -1,11 +1,11 @@
-import { useEsIndividualFacet } from "../hooks/EsFacet";
+import { EsIndividualFacet } from "../hooks/EsFacet";
 import FacetMultiSelect from "./FacetMultiSelect";
 
-export interface Props {
-    facet: ReturnType<typeof useEsIndividualFacet>;
+export interface Props<T> {
+    facet: EsIndividualFacet<T>;
 }
 
-export default function FacetMultiSelectFacetState2({ facet }: Props) {
+export default function FacetMultiSelectFacetState2<T>({ facet }: Props<T>) {
     const {
         items = [],
         selectedItems = [],

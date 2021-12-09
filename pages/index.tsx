@@ -11,13 +11,21 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from "react";
 import { SearchResponse } from "elasticsearch";
 import { useRouter } from "next/router";
 import bodybuilder, { Bodybuilder } from "bodybuilder";
 import axios from "axios";
-import { InputGroup, Button, H6, Switch } from "@blueprintjs/core";
+import {
+    InputGroup,
+    Button,
+    H6,
+    Switch,
+    Overlay,
+    Spinner,
+} from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 
 import Header from "../components/Header";
@@ -35,6 +43,7 @@ import { useKeycloakInfo } from "../util/keycloak";
 import { Select } from "@blueprintjs/select";
 import {
     EsFacetRootConfig,
+    MinimumFormState,
     QueryState,
     useEsFacetRoot,
     useEsIndividualFacet,
@@ -951,11 +960,18 @@ export default function IndexPage() {
                     <Col xs={10}>
                         <Row disableDefaultMargins align="center">
                             <Col
+                                xs="content"
                                 className="bp3-ui-text bp3-text-disabled"
                                 data-testid="results-count"
                             >
-                                {totalNumberOfResults} result
-                                {totalNumberOfResults !== 1 && "s"}
+                                {queryInProgress ? (
+                                    <Spinner size={Spinner.SIZE_SMALL} />
+                                ) : (
+                                    <>
+                                        {totalNumberOfResults} result
+                                        {totalNumberOfResults !== 1 && "s"}
+                                    </>
+                                )}
                             </Col>
                             <Col
                                 style={{ textAlign: "right" }}

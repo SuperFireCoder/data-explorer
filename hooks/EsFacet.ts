@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { EsAggregationBucket } from "../interfaces/EsAggregationBucket";
 import { EsDataset } from "../interfaces/EsDataset";
 
-type MinimumFormState = { pageSize: number; pageStart: number };
+export type MinimumFormState = { pageSize: number; pageStart: number };
 
 export type QueryState = {
     bodyBuilder: bodybuilder.Bodybuilder;
@@ -36,11 +36,25 @@ export interface EsFacetRoot<T extends MinimumFormState, R> {
     onFormStateChange: (formState: Partial<T>) => void;
 
     facets: EsFacetRootConfig<T>["facets"];
-    aggregations: Record<string, readonly EsAggregationBucket[] | undefined>;
+    aggregations:
+        | Record<string, readonly EsAggregationBucket[] | undefined>
+        | undefined;
 
     totalNumberOfResults: number;
     queryInProgress: boolean;
     queryResult: SearchResponse<R> | undefined;
+}
+
+export interface EsIndividualFacet<T> {
+    id: keyof T;
+    label: string;
+    placeholder?: string;
+
+    type: "array";
+    items: readonly EsAggregationBucket[];
+    selectedItems: readonly EsAggregationBucket[];
+    onItemSelect: (item: EsAggregationBucket) => void;
+    onItemRemoveByTag: (tag: unknown, i: number) => void;
 }
 
 export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
@@ -56,7 +70,7 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
 
     // State for aggregations (expected to be static across different queries)
     const [globalAggregations, setGlobalAggregations] = useState<
-        Record<string, EsAggregationBucket[]> | undefined
+        Record<string, readonly EsAggregationBucket[] | undefined> | undefined
     >(undefined);
 
     const totalNumberOfResults = useMemo(() => {
@@ -229,7 +243,7 @@ export const useEsIndividualFacet = <T extends MinimumFormState>(
     // FIXME: Fix generic constraints for EsFacetRoot
     esFacetRoot: EsFacetRoot<T, any>,
     config: EsIndividualFacetConfig<T>
-) => {
+): EsIndividualFacet<T> => {
     // useEffect(
     //     function checkIfFacetRegistered() {
     //         if (!esFacetRoot.facets.some((x) => x.id === config.id)) {
@@ -282,7 +296,7 @@ export const useEsIndividualFacet = <T extends MinimumFormState>(
     );
 
     const handleItemRemoveByTag = useCallback(
-        (_tag, i) => {
+        (_tag: unknown, i: number) => {
             const arrayCopy = [...selectedStringItems];
             arrayCopy.splice(i, 1);
             const newFormValue = arrayCopy;
