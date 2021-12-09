@@ -162,6 +162,26 @@ function suppressEvent(e: Event | FormEvent | MouseEvent) {
 
 const FACETS: EsFacetRootConfig<FormState>["facets"] = [
     {
+        id: "facetCollection",
+        facetApplicationFn: (formState, query) =>
+            addTermAggregationFacetStateToQuery(
+                query,
+                "collection_names",
+                formState.facetCollection
+            ),
+        aggregationApplicationFn: (query) => {
+            return {
+                ...query,
+                bodyBuilder: query.bodyBuilder.aggregation(
+                    "terms",
+                    "collection_names",
+                    { size: 1000000 },
+                    "facetCollection"
+                ),
+            };
+        },
+    },
+    {
         id: "facetTimeDomain",
         facetApplicationFn: (formState, query) =>
             addTermAggregationFacetStateToQuery(
@@ -217,6 +237,66 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                     "resolution",
                     { size: 1000000 },
                     "facetResolution"
+                ),
+            };
+        },
+    },
+    {
+        id: "facetScientificType",
+        facetApplicationFn: (formState, query) =>
+            addTermAggregationFacetStateToQuery(
+                query,
+                "scientific_type",
+                formState.facetScientificType
+            ),
+        aggregationApplicationFn: (query) => {
+            return {
+                ...query,
+                bodyBuilder: query.bodyBuilder.aggregation(
+                    "terms",
+                    "scientific_type",
+                    { size: 1000000 },
+                    "facetScientificType"
+                ),
+            };
+        },
+    },
+    {
+        id: "facetDomain",
+        facetApplicationFn: (formState, query) =>
+            addTermAggregationFacetStateToQuery(
+                query,
+                "domain",
+                formState.facetDomain
+            ),
+        aggregationApplicationFn: (query) => {
+            return {
+                ...query,
+                bodyBuilder: query.bodyBuilder.aggregation(
+                    "terms",
+                    "domain",
+                    { size: 1000000 },
+                    "facetDomain"
+                ),
+            };
+        },
+    },
+    {
+        id: "facetGcm",
+        facetApplicationFn: (formState, query) =>
+            addTermAggregationFacetStateToQuery(
+                query,
+                "gcm",
+                formState.facetGcm
+            ),
+        aggregationApplicationFn: (query) => {
+            return {
+                ...query,
+                bodyBuilder: query.bodyBuilder.aggregation(
+                    "terms",
+                    "gcm",
+                    { size: 1000000 },
+                    "facetGcm"
                 ),
             };
         },
@@ -306,11 +386,13 @@ export default function IndexPage() {
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
     });
 
-    const {
-        totalNumberOfResults,
-        queryInProgress,
-        queryResult: results,
-    } = esFacetRoot;
+    const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
+
+    const facetCollection = useEsIndividualFacet(esFacetRoot, {
+        id: "facetCollection",
+        label: "Collection",
+        placeholder: "Filter by collection...",
+    });
 
     const facetTimeDomain = useEsIndividualFacet(esFacetRoot, {
         id: "facetTimeDomain",
@@ -330,6 +412,24 @@ export default function IndexPage() {
         placeholder: "Filter by resolution...",
     });
 
+    const facetScientificType = useEsIndividualFacet(esFacetRoot, {
+        id: "facetScientificType",
+        label: "Scientific type",
+        placeholder: "Filter by scientific type...",
+    });
+
+    const facetDomain = useEsIndividualFacet(esFacetRoot, {
+        id: "facetDomain",
+        label: "Domain",
+        placeholder: "Filter by domain...",
+    });
+
+    const facetGcm = useEsIndividualFacet(esFacetRoot, {
+        id: "facetGcm",
+        label: "GCM",
+        placeholder: "Filter by GCM...",
+    });
+
     // // String search query value
     // const [searchQuery, setSearchQuery] = useState<string>(
     //     pageParameters.searchQuery
@@ -344,44 +444,6 @@ export default function IndexPage() {
     // // first load
     // const [yearMin, setYearMin] = useState<string>("");
     // const [yearMax, setYearMax] = useState<string>("");
-    // const facetStateTimeDomain = useFacetState(
-    //     results?.aggregations?.facetTimeDomain?.buckets
-    // );
-    // const facetStateSpatialDomain = useFacetState(
-    //     results?.aggregations?.facetSpatialDomain?.buckets
-    // );
-    // const facetStateResolution = useFacetState(
-    //     results?.aggregations?.facetResolution?.buckets
-    // );
-    // const facetStateScientificType = useFacetState(
-    //     results?.aggregations?.facetScientificType?.buckets
-    // );
-    // const facetStateDomain = useFacetState(
-    //     results?.aggregations?.facetDomain?.buckets
-    // );
-    // const facetStateCollection = useFacetState(
-    //     results?.aggregations?.facetCollection?.buckets
-    // );
-
-    // const facetStateGcm = useFacetState(
-    //     results?.aggregations?.facetGcm?.buckets
-    // );
-
-    // const totalNumberOfResults = useMemo(() => {
-    //     // We'll say that there are 0 results if no data is available
-    //     if (results === undefined) {
-    //         return 0;
-    //     }
-
-    //     const total = results.hits.total;
-
-    //     // Older Elasticsearch had number for `total`?
-    //     if (typeof total === "number") {
-    //         return total;
-    //     } else {
-    //         return (total as any).value as number;
-    //     }
-    // }, [results, pageParameters]);
 
     const currentPageIndex = useMemo(
         () => Math.floor(formState.pageStart / formState.pageSize),
@@ -420,59 +482,6 @@ export default function IndexPage() {
         },
         [updateFormState, formState.pageSize]
     );
-
-    // const handleQueryFormSubmit = useCallback(
-    //     (e: FormEvent | MouseEvent) => {
-    //         e.preventDefault();
-
-    //         // Clear the "not yet executed" flag
-    //         setSearchQueryNotYetExecuted(false);
-
-    //         // Set query params of the page - this will trigger the effect to
-    //         // launch the API call
-    //         setQueryParams({
-    //             // String search query
-    //             searchQuery,
-
-    //             // Users/principals
-    //             filterPrincipals,
-
-    //             // Facets
-    //             facetYearMin: yearMin.toString(),
-    //             facetYearMax: yearMax.toString(),
-    //             facetTimeDomain: facetStateTimeDomain.getQueryParams(),
-    //             facetSpatialDomain: facetStateSpatialDomain.getQueryParams(),
-    //             facetResolution: facetStateResolution.getQueryParams(),
-    //             facetScientificType: facetStateScientificType.getQueryParams(),
-    //             facetDomain: facetStateDomain.getQueryParams(),
-    //             facetCollection: facetStateCollection.getQueryParams(),
-    //             facetGcm: facetStateGcm.getQueryParams(),
-
-    //             // New queries must start at page 0
-    //             pageStart: "0",
-    //         });
-    //     },
-    //     [
-    //         setQueryParams,
-
-    //         // String search query change
-    //         searchQuery,
-
-    //         // Users/principals
-    //         filterPrincipals,
-
-    //         // If the facet selection changes, this callback needs updating
-    //         yearMin,
-    //         yearMax,
-    //         facetStateTimeDomain.selectedItems,
-    //         facetStateSpatialDomain.selectedItems,
-    //         facetStateResolution.selectedItems,
-    //         facetStateScientificType.selectedItems,
-    //         facetStateDomain.selectedItems,
-    //         facetStateCollection.selectedItems,
-    //         facetStateGcm.selectedItems,
-    //     ]
-    // );
 
     // const handleSearchQueryInputChange = useCallback<
     //     ChangeEventHandler<HTMLInputElement>
@@ -735,34 +744,6 @@ export default function IndexPage() {
     //     [pageParameters, keycloakToken]
     // );
 
-    // useEffect(
-    //     function updateSearchQueryNotYetExecutedState() {
-    //         // If any of the monitored objects changes, this effect runs and will
-    //         // set the "not yet executed" flag to `true`
-    //         //
-    //         // No `if` statement is required since we rely on React to do this
-    //         setSearchQueryNotYetExecuted(true);
-    //     },
-    //     [
-    //         // String search query changes
-    //         searchQuery,
-
-    //         // Users/principals
-    //         filterPrincipals,
-
-    //         // Facet selection changes
-    //         yearMin,
-    //         yearMax,
-    //         facetStateTimeDomain.selectedItemKeyHash,
-    //         facetStateSpatialDomain.selectedItemKeyHash,
-    //         facetStateResolution.selectedItemKeyHash,
-    //         facetStateScientificType.selectedItemKeyHash,
-    //         facetStateDomain.selectedItemKeyHash,
-    //         facetStateCollection.selectedItemKeyHash,
-    //         facetStateGcm.selectedItemKeyHash,
-    //     ]
-    // );
-
     return (
         <>
             <HtmlHead title={["Datasets", "Explore data"]} />
@@ -841,70 +822,18 @@ export default function IndexPage() {
                                     )}
                                 </Col>
                             </Row> */}
-                            {/* {[
-                                {
-                                    title: "Collection",
-                                    facetState: facetStateCollection,
-                                    placeholder: "Filter by collection...",
-                                },
-                                {
-                                    title: "Time domain",
-                                    facetState: facetStateTimeDomain,
-                                    placeholder: "Filter by time domain...",
-                                },
-                                {
-                                    title: "Spatial domain",
-                                    facetState: facetStateSpatialDomain,
-                                    placeholder: "Filter by spatial domain...",
-                                },
-                                {
-                                    title: "Resolution",
-                                    facetState: facetStateResolution,
-                                    placeholder: "Filter by resolution...",
-                                },
-                                {
-                                    title: "Scientific type",
-                                    facetState: facetStateScientificType,
-                                    placeholder: "Filter by scientific type...",
-                                },
-                                {
-                                    title: "Domain",
-                                    facetState: facetStateDomain,
-                                    placeholder: "Filter by domain...",
-                                },
-                                {
-                                    title: "GCM",
-                                    facetState: facetStateGcm,
-                                    placeholder: "Filter by GCM...",
-                                },
-                            ].map(({ title, facetState, placeholder }) => (
-                                <Row key={title}>
-                                    <Col>
-                                        <H6>{title}</H6>
-                                        <FacetMultiSelectFacetState
-                                            facetState={facetState}
-                                            placeholder={placeholder}
-                                        />
-                                    </Col>
-                                </Row>
-                            ))} */}
                             {[
-                                {
-                                    title: "Time domain",
-                                    facet: facetTimeDomain,
-                                },
-                                {
-                                    title: "Spatial domain",
-                                    facet: facetSpatialDomain,
-                                },
-                                {
-                                    title: "Resolution",
-                                    facet: facetResolution,
-                                },
-                            ].map(({ title, facet }) => (
-                                <Row key={title}>
+                                facetCollection,
+                                facetTimeDomain,
+                                facetSpatialDomain,
+                                facetResolution,
+                                facetScientificType,
+                                facetDomain,
+                                facetGcm,
+                            ].map((facet) => (
+                                <Row key={facet.id}>
                                     <Col>
-                                        <H6>{title}</H6>
+                                        <H6>{facet.label}</H6>
                                         <FacetMultiSelectFacetState2
                                             facet={facet}
                                         />
@@ -937,25 +866,6 @@ export default function IndexPage() {
                                 </Col>
                             </Row> */}
                         </form>
-                        {/* <Row>
-                            <Col>
-                                <Button
-                                    data-testid="search-submit-button"
-                                    onClick={handleQueryFormSubmit}
-                                    fill
-                                    // If search form modified and not yet executed,
-                                    // highlight via "success", otherwise just mute
-                                    // its importance by using "none"
-                                    intent={
-                                        searchQueryNotYetExecuted
-                                            ? "success"
-                                            : "none"
-                                    }
-                                >
-                                    Search &amp; apply filters
-                                </Button>
-                            </Col>
-                        </Row> */}
                     </Col>
                     <Col xs={10}>
                         <Row disableDefaultMargins align="center">
@@ -986,43 +896,40 @@ export default function IndexPage() {
                         </Row>
                         <Row>
                             <Col>
-                                {results &&
-                                    results.hits.hits.map(
-                                        ({ _id, _source }) => (
-                                            <DatasetCard
-                                                data-testid="dataset-card"
-                                                key={_id}
-                                                datasetId={_source.uuid}
-                                                title={_source.title}
-                                                description={
-                                                    _source.description
-                                                }
-                                                status={_source.status}
-                                                failureMessage={
-                                                    _source.status === "FAILED"
-                                                        ? _source.message
-                                                        : undefined
-                                                }
-                                                type={
-                                                    _source.status === "SUCCESS"
-                                                        ? // TODO: Clarify values for "scientific_type"
-                                                          ({
-                                                              type: _source
-                                                                  .scientific_type[0],
-                                                              subtype:
-                                                                  _source
-                                                                      .scientific_type[1],
-                                                          } as unknown as DatasetType)
-                                                        : undefined
-                                                }
-                                                // TODO: Add modification date into ES index
-                                                // lastUpdated={lastUpdated}
-                                                ownerId={
-                                                    _source.allowed_principals as string[]
-                                                }
-                                            />
-                                        )
-                                    )}
+                                {queryResult?.hits.hits.map(
+                                    ({ _id, _source }) => (
+                                        <DatasetCard
+                                            data-testid="dataset-card"
+                                            key={_id}
+                                            datasetId={_source.uuid}
+                                            title={_source.title}
+                                            description={_source.description}
+                                            status={_source.status}
+                                            failureMessage={
+                                                _source.status === "FAILED"
+                                                    ? _source.message
+                                                    : undefined
+                                            }
+                                            type={
+                                                _source.status === "SUCCESS"
+                                                    ? // TODO: Clarify values for "scientific_type"
+                                                      ({
+                                                          type: _source
+                                                              .scientific_type[0],
+                                                          subtype:
+                                                              _source
+                                                                  .scientific_type[1],
+                                                      } as unknown as DatasetType)
+                                                    : undefined
+                                            }
+                                            // TODO: Add modification date into ES index
+                                            // lastUpdated={lastUpdated}
+                                            ownerId={
+                                                _source.allowed_principals as string[]
+                                            }
+                                        />
+                                    )
+                                )}
                             </Col>
                         </Row>
                         <Row>
