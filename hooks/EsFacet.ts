@@ -52,7 +52,7 @@ export interface EsIndividualFacet<T> {
 
     type: "array";
     items: readonly EsAggregationBucket[];
-    selectedItems: readonly EsAggregationBucket[];
+    selectedItems: readonly (EsAggregationBucket | undefined)[];
     onItemSelect: (item: EsAggregationBucket) => void;
     onItemRemoveByTag: (tag: unknown, i: number) => void;
 }
@@ -266,7 +266,7 @@ export const useEsIndividualFacet = <T extends MinimumFormState>(
     );
 
     const selectedItems = useMemo(
-        () => selectedStringItems.map((x) => items?.find((i) => x === i.key)!),
+        () => selectedStringItems.map((x) => items?.find((i) => x === i.key)),
         [items, selectedStringItems]
     );
 

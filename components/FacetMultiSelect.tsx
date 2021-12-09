@@ -6,18 +6,18 @@ import { EsAggregationBucket } from "../interfaces/EsAggregationBucket";
 
 export interface Props<T> {
     items: readonly T[];
-    selectedItems: readonly T[];
+    selectedItems: readonly (T | undefined)[];
     placeholder?: string;
     onItemSelect: (item: T, event?: SyntheticEvent<HTMLElement>) => void;
     onItemRemoveByTag: (tag: ReactNode, index: number) => void;
     tagRenderer?: (item: T) => ReactNode;
-    itemEqualityFn?: (a: T, b: T) => boolean;
+    itemEqualityFn?: (a: T | undefined, b: T | undefined) => boolean;
 }
 
 const defaultItemEqualityFn = (
-    a: EsAggregationBucket,
-    b: EsAggregationBucket
-) => a.key === b.key;
+    a: EsAggregationBucket | undefined,
+    b: EsAggregationBucket | undefined
+) => !!(a && b) && a.key === b.key;
 
 const defaultItemPredicateFilter: ItemPredicate<EsAggregationBucket> = (
     query,
@@ -29,7 +29,8 @@ const defaultItemPredicateFilter: ItemPredicate<EsAggregationBucket> = (
         ? item.key === query
         : item.key.toLowerCase().indexOf(query.toLowerCase()) >= 0;
 
-const defaultTagRenderer = (item: EsAggregationBucket) => item.key;
+const defaultTagRenderer = (item: EsAggregationBucket | undefined) =>
+    item?.key ?? "";
 
 export default function FacetMultiSelect<T extends EsAggregationBucket>({
     items,
