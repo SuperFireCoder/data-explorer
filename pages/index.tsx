@@ -33,6 +33,13 @@ import {
 } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
 import { Select } from "@blueprintjs/select";
+import {
+    EsFacetRootConfig,
+    QueryState,
+    useEsFacetRoot,
+    useEsIndividualFacet,
+} from "../hooks/EsFacet";
+import FacetMultiSelectFacetState2 from "../components/FacetMultiSelectFacetState2";
 
 const subBarLinks = [
     { key: "explore", href: "/", label: "Explore data" },
@@ -65,6 +72,22 @@ interface QueryParameters {
     facetScientificType?: string | string[];
 }
 
+interface FormState {
+    pageSize: number;
+    pageStart: number;
+    searchQuery: string;
+    filterPrincipals: readonly string[];
+    facetYearMin: number;
+    facetYearMax: number;
+    facetTimeDomain: readonly string[];
+    facetSpatialDomain: readonly string[];
+    facetResolution: readonly string[];
+    facetScientificType: readonly string[];
+    facetDomain: readonly string[];
+    facetCollection: readonly string[];
+    facetGcm: readonly string[];
+}
+
 function stripEmptyStringQueryParams(
     queryParams: ParsedUrlQueryInput
 ): ParsedUrlQueryInput {
@@ -89,22 +112,20 @@ function normaliseAsReadonlyStringArray(
  * whether the query has had filters applied such as prior facets or some string
  * query.)
  *
- * @param queryBuilder
- * @param isEmptyQuery
+ * @param queryState
  * @param facetEsTerm String identifier for the term used in Elasticsearch query
  * @param facetValues
  *
  * @returns Array of [new bodyBuilder query instance, `isEmptyQuery` boolean]
  */
 function addTermAggregationFacetStateToQuery(
-    queryBuilder: Bodybuilder,
-    isEmptyQuery: boolean,
+    queryState: QueryState,
     facetEsTerm: string,
     facetValues: readonly string[]
-): [Bodybuilder, boolean] {
+): QueryState {
     // If nothing selected for this facet, return state untouched
     if (facetValues.length === 0) {
-        return [queryBuilder, isEmptyQuery];
+        return queryState;
     }
 
     // Add all selected facet values
@@ -114,12 +135,15 @@ function addTermAggregationFacetStateToQuery(
         (x) => (innerQuery = innerQuery.orQuery("match", facetEsTerm, x))
     );
 
-    const newQueryBuilder = queryBuilder.query(
+    const newQueryBuilder = queryState.bodyBuilder.query(
         "bool",
         (innerQuery.build() as any).query.bool
     );
 
-    return [newQueryBuilder, false];
+    return {
+        bodyBuilder: newQueryBuilder,
+        modified: true,
+    };
 }
 
 function suppressEvent(e: Event | FormEvent | MouseEvent) {
@@ -127,28 +151,91 @@ function suppressEvent(e: Event | FormEvent | MouseEvent) {
     e.stopPropagation();
 }
 
+const FACETS: EsFacetRootConfig<FormState>["facets"] = [
+    {
+        id: "facetTimeDomain",
+        facetApplicationFn: (formState, query) =>
+            addTermAggregationFacetStateToQuery(
+                query,
+                "time_domain",
+                formState.facetTimeDomain
+            ),
+        aggregationApplicationFn: (query) => {
+            return {
+                ...query,
+                bodyBuilder: query.bodyBuilder.aggregation(
+                    "terms",
+                    "time_domain",
+                    { size: 1000000 },
+                    "facetTimeDomain"
+                ),
+            };
+        },
+    },
+    {
+        id: "facetSpatialDomain",
+        facetApplicationFn: (formState, query) =>
+            addTermAggregationFacetStateToQuery(
+                query,
+                "spatial_domain",
+                formState.facetSpatialDomain
+            ),
+        aggregationApplicationFn: (query) => {
+            return {
+                ...query,
+                bodyBuilder: query.bodyBuilder.aggregation(
+                    "terms",
+                    "spatial_domain",
+                    { size: 1000000 },
+                    "facetSpatialDomain"
+                ),
+            };
+        },
+    },
+    {
+        id: "facetResolution",
+        facetApplicationFn: (formState, query) =>
+            addTermAggregationFacetStateToQuery(
+                query,
+                "resolution",
+                formState.facetResolution
+            ),
+        aggregationApplicationFn: (query) => {
+            return {
+                ...query,
+                bodyBuilder: query.bodyBuilder.aggregation(
+                    "terms",
+                    "resolution",
+                    { size: 1000000 },
+                    "facetResolution"
+                ),
+            };
+        },
+    },
+];
+
 export default function IndexPage() {
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
 
-    const keycloakToken = keycloak?.token;
+    // const keycloakToken = keycloak?.token;
 
-    /** Elasticsearch search response result data */
-    const [results, setResults] = useState<
-        SearchResponse<EsDataset> | undefined
-    >(undefined);
+    // /** Elasticsearch search response result data */
+    // const [results, setResults] = useState<
+    //     SearchResponse<EsDataset> | undefined
+    // >(undefined);
 
-    /**
-     * Flag indicating that the user has changed the state of the search form,
-     * but has not executed the query
-     */
-    const [searchQueryNotYetExecuted, setSearchQueryNotYetExecuted] =
-        useState<boolean>(false);
+    // /**
+    //  * Flag indicating that the user has changed the state of the search form,
+    //  * but has not executed the query
+    //  */
+    // const [searchQueryNotYetExecuted, setSearchQueryNotYetExecuted] =
+    //     useState<boolean>(false);
 
     /**
      * Extracts the current page parameters from the URL query parameter values.
      */
-    const pageParameters = useMemo(() => {
+    const formState = useMemo<FormState>(() => {
         const {
             pageSize = "10",
             pageStart = "0",
@@ -191,450 +278,481 @@ export default function IndexPage() {
         };
     }, [router.query]);
 
-    // String search query value
-    const [searchQuery, setSearchQuery] = useState<string>(
-        pageParameters.searchQuery
-    );
-
-    // Users/principals to narrow datasets by
-    const [filterPrincipals, setFilterPrincipals] = useState<string[]>([]);
-
-    // Facets
-    // TODO: Implement some way of feeding the default state into the facets
-    // from values contained in `pageParameters` so that they update the UI on
-    // first load
-    const [yearMin, setYearMin] = useState<string>("");
-    const [yearMax, setYearMax] = useState<string>("");
-    const facetStateTimeDomain = useFacetState(
-        results?.aggregations?.facetTimeDomain?.buckets
-    );
-    const facetStateSpatialDomain = useFacetState(
-        results?.aggregations?.facetSpatialDomain?.buckets
-    );
-    const facetStateResolution = useFacetState(
-        results?.aggregations?.facetResolution?.buckets
-    );
-    const facetStateScientificType = useFacetState(
-        results?.aggregations?.facetScientificType?.buckets
-    );
-    const facetStateDomain = useFacetState(
-        results?.aggregations?.facetDomain?.buckets
-    );
-    const facetStateCollection = useFacetState(
-        results?.aggregations?.facetCollection?.buckets
-    );
-
-    const facetStateGcm = useFacetState(
-        results?.aggregations?.facetGcm?.buckets
-    );
-
-    const totalNumberOfResults = useMemo(() => {
-        // We'll say that there are 0 results if no data is available
-        if (results === undefined) {
-            return 0;
-        }
-
-        const total = results.hits.total;
-
-        // Older Elasticsearch had number for `total`?
-        if (typeof total === "number") {
-            return total;
-        } else {
-            return (total as any).value as number;
-        }
-    }, [results, pageParameters]);
-
-    const currentPageIndex = useMemo(
-        () => Math.floor(pageParameters.pageStart / pageParameters.pageSize),
-        [pageParameters]
-    );
-
-    const maxPages = useMemo(
-        () => Math.ceil(totalNumberOfResults / pageParameters.pageSize),
-        [totalNumberOfResults, pageParameters]
-    );
-
-    const yearsQueryIsAllYears = useMemo(
-        () => yearMin === "" && yearMax === "",
-        [yearMin, yearMax]
-    );
-
-    const yearsQueryMinBound = useMemo(
-        () => results?.aggregations?.facetYearMin?.value || 0,
-        [results]
-    );
-
-    const yearsQueryMaxBound = useMemo(
-        () => results?.aggregations?.facetYearMax?.value || 0,
-        [results]
-    );
-
-    const setQueryParams = useCallback(
-        (newParams: QueryParameters) => {
+    const updateFormState = useCallback(
+        (formState: Partial<FormState>) => {
+            // Update query params for this page, which will update `formState`
+            // above
             router.push({
                 query: stripEmptyStringQueryParams({
                     ...router.query,
-                    ...newParams,
+                    ...formState,
                 }),
             });
         },
         [router.query]
     );
 
+    const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
+        facets: FACETS,
+        url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
+    });
+
+    const {
+        totalNumberOfResults,
+        queryInProgress,
+        queryResult: results,
+    } = esFacetRoot;
+
+    const facetTimeDomain = useEsIndividualFacet(esFacetRoot, {
+        id: "facetTimeDomain",
+        label: "Time domain",
+        placeholder: "Filter by time domain...",
+    });
+
+    const facetSpatialDomain = useEsIndividualFacet(esFacetRoot, {
+        id: "facetSpatialDomain",
+        label: "Spatial domain",
+        placeholder: "Filter by spatial domain...",
+    });
+
+    const facetResolution = useEsIndividualFacet(esFacetRoot, {
+        id: "facetResolution",
+        label: "Resolution",
+        placeholder: "Filter by resolution...",
+    });
+
+    // // String search query value
+    // const [searchQuery, setSearchQuery] = useState<string>(
+    //     pageParameters.searchQuery
+    // );
+
+    // // Users/principals to narrow datasets by
+    // const [filterPrincipals, setFilterPrincipals] = useState<string[]>([]);
+
+    // Facets
+    // // TODO: Implement some way of feeding the default state into the facets
+    // // from values contained in `pageParameters` so that they update the UI on
+    // // first load
+    // const [yearMin, setYearMin] = useState<string>("");
+    // const [yearMax, setYearMax] = useState<string>("");
+    // const facetStateTimeDomain = useFacetState(
+    //     results?.aggregations?.facetTimeDomain?.buckets
+    // );
+    // const facetStateSpatialDomain = useFacetState(
+    //     results?.aggregations?.facetSpatialDomain?.buckets
+    // );
+    // const facetStateResolution = useFacetState(
+    //     results?.aggregations?.facetResolution?.buckets
+    // );
+    // const facetStateScientificType = useFacetState(
+    //     results?.aggregations?.facetScientificType?.buckets
+    // );
+    // const facetStateDomain = useFacetState(
+    //     results?.aggregations?.facetDomain?.buckets
+    // );
+    // const facetStateCollection = useFacetState(
+    //     results?.aggregations?.facetCollection?.buckets
+    // );
+
+    // const facetStateGcm = useFacetState(
+    //     results?.aggregations?.facetGcm?.buckets
+    // );
+
+    // const totalNumberOfResults = useMemo(() => {
+    //     // We'll say that there are 0 results if no data is available
+    //     if (results === undefined) {
+    //         return 0;
+    //     }
+
+    //     const total = results.hits.total;
+
+    //     // Older Elasticsearch had number for `total`?
+    //     if (typeof total === "number") {
+    //         return total;
+    //     } else {
+    //         return (total as any).value as number;
+    //     }
+    // }, [results, pageParameters]);
+
+    const currentPageIndex = useMemo(
+        () => Math.floor(formState.pageStart / formState.pageSize),
+        [formState.pageStart, formState.pageSize]
+    );
+
+    const maxPages = useMemo(
+        () => Math.ceil(totalNumberOfResults / formState.pageSize),
+        [totalNumberOfResults, formState.pageSize]
+    );
+
+    // const yearsQueryIsAllYears = useMemo(
+    //     () => yearMin === "" && yearMax === "",
+    //     [yearMin, yearMax]
+    // );
+
+    // const yearsQueryMinBound = useMemo(
+    //     () => results?.aggregations?.facetYearMin?.value || 0,
+    //     [results]
+    // );
+
+    // const yearsQueryMaxBound = useMemo(
+    //     () => results?.aggregations?.facetYearMax?.value || 0,
+    //     [results]
+    // );
+
     /**
      * Handler to change page query parameter values via URL query parameters.
      */
     const onPageSelect = useCallback(
         (pageIndex: number) => {
-            setQueryParams({
-                pageSize: `${pageParameters.pageSize}`,
-                pageStart: `${pageIndex * pageParameters.pageSize}`,
+            updateFormState({
+                pageSize: formState.pageSize,
+                pageStart: pageIndex * formState.pageSize,
             });
         },
-        [setQueryParams, pageParameters]
+        [updateFormState, formState.pageSize]
     );
 
-    const handleQueryFormSubmit = useCallback(
-        (e: FormEvent | MouseEvent) => {
-            e.preventDefault();
+    // const handleQueryFormSubmit = useCallback(
+    //     (e: FormEvent | MouseEvent) => {
+    //         e.preventDefault();
 
-            // Clear the "not yet executed" flag
-            setSearchQueryNotYetExecuted(false);
+    //         // Clear the "not yet executed" flag
+    //         setSearchQueryNotYetExecuted(false);
 
-            // Set query params of the page - this will trigger the effect to
-            // launch the API call
-            setQueryParams({
-                // String search query
-                searchQuery,
+    //         // Set query params of the page - this will trigger the effect to
+    //         // launch the API call
+    //         setQueryParams({
+    //             // String search query
+    //             searchQuery,
 
-                // Users/principals
-                filterPrincipals,
+    //             // Users/principals
+    //             filterPrincipals,
 
-                // Facets
-                facetYearMin: yearMin.toString(),
-                facetYearMax: yearMax.toString(),
-                facetTimeDomain: facetStateTimeDomain.getQueryParams(),
-                facetSpatialDomain: facetStateSpatialDomain.getQueryParams(),
-                facetResolution: facetStateResolution.getQueryParams(),
-                facetScientificType: facetStateScientificType.getQueryParams(),
-                facetDomain: facetStateDomain.getQueryParams(),
-                facetCollection: facetStateCollection.getQueryParams(),
-                facetGcm: facetStateGcm.getQueryParams(),
+    //             // Facets
+    //             facetYearMin: yearMin.toString(),
+    //             facetYearMax: yearMax.toString(),
+    //             facetTimeDomain: facetStateTimeDomain.getQueryParams(),
+    //             facetSpatialDomain: facetStateSpatialDomain.getQueryParams(),
+    //             facetResolution: facetStateResolution.getQueryParams(),
+    //             facetScientificType: facetStateScientificType.getQueryParams(),
+    //             facetDomain: facetStateDomain.getQueryParams(),
+    //             facetCollection: facetStateCollection.getQueryParams(),
+    //             facetGcm: facetStateGcm.getQueryParams(),
 
-                // New queries must start at page 0
-                pageStart: "0",
-            });
-        },
-        [
-            setQueryParams,
+    //             // New queries must start at page 0
+    //             pageStart: "0",
+    //         });
+    //     },
+    //     [
+    //         setQueryParams,
 
-            // String search query change
-            searchQuery,
+    //         // String search query change
+    //         searchQuery,
 
-            // Users/principals
-            filterPrincipals,
+    //         // Users/principals
+    //         filterPrincipals,
 
-            // If the facet selection changes, this callback needs updating
-            yearMin,
-            yearMax,
-            facetStateTimeDomain.selectedItems,
-            facetStateSpatialDomain.selectedItems,
-            facetStateResolution.selectedItems,
-            facetStateScientificType.selectedItems,
-            facetStateDomain.selectedItems,
-            facetStateCollection.selectedItems,
-            facetStateGcm.selectedItems,
-        ]
-    );
+    //         // If the facet selection changes, this callback needs updating
+    //         yearMin,
+    //         yearMax,
+    //         facetStateTimeDomain.selectedItems,
+    //         facetStateSpatialDomain.selectedItems,
+    //         facetStateResolution.selectedItems,
+    //         facetStateScientificType.selectedItems,
+    //         facetStateDomain.selectedItems,
+    //         facetStateCollection.selectedItems,
+    //         facetStateGcm.selectedItems,
+    //     ]
+    // );
 
-    const handleSearchQueryInputChange = useCallback<
-        ChangeEventHandler<HTMLInputElement>
-    >((e) => {
-        setSearchQuery(e.currentTarget.value);
-    }, []);
+    // const handleSearchQueryInputChange = useCallback<
+    //     ChangeEventHandler<HTMLInputElement>
+    // >((e) => {
+    //     setSearchQuery(e.currentTarget.value);
+    // }, []);
 
-    const handleYearAllYearsSwitchChange = useCallback<
-        FormEventHandler<HTMLInputElement>
-    >(() => {
-        // Switching all years -> valued years: set min and max bounds
-        if (yearsQueryIsAllYears) {
-            setYearMin(yearsQueryMinBound);
-            setYearMax(yearsQueryMaxBound);
-            return;
-        }
+    // const handleYearAllYearsSwitchChange = useCallback<
+    //     FormEventHandler<HTMLInputElement>
+    // >(() => {
+    //     // Switching all years -> valued years: set min and max bounds
+    //     if (yearsQueryIsAllYears) {
+    //         setYearMin(yearsQueryMinBound);
+    //         setYearMax(yearsQueryMaxBound);
+    //         return;
+    //     }
 
-        // Switching valued years -> all years, set min and max blank
-        setYearMin("");
-        setYearMax("");
-    }, [yearsQueryIsAllYears, yearsQueryMinBound, yearsQueryMaxBound]);
+    //     // Switching valued years -> all years, set min and max blank
+    //     setYearMin("");
+    //     setYearMax("");
+    // }, [yearsQueryIsAllYears, yearsQueryMinBound, yearsQueryMaxBound]);
 
-    const handleYearMinInputChange = useCallback<
-        FormEventHandler<HTMLInputElement>
-    >((e) => {
-        setYearMin(e.currentTarget.value.trim());
-    }, []);
+    // const handleYearMinInputChange = useCallback<
+    //     FormEventHandler<HTMLInputElement>
+    // >((e) => {
+    //     setYearMin(e.currentTarget.value.trim());
+    // }, []);
 
-    const handleYearMaxInputChange = useCallback<
-        FormEventHandler<HTMLInputElement>
-    >((e) => {
-        setYearMax(e.currentTarget.value.trim());
-    }, []);
+    // const handleYearMaxInputChange = useCallback<
+    //     FormEventHandler<HTMLInputElement>
+    // >((e) => {
+    //     setYearMax(e.currentTarget.value.trim());
+    // }, []);
 
-    const handlePrivacySelectChange = useCallback<
-        ChangeEventHandler<HTMLSelectElement>
-    >(
-        (e) => {
-            const value = e.currentTarget.value;
+    // const handlePrivacySelectChange = useCallback<
+    //     ChangeEventHandler<HTMLSelectElement>
+    // >(
+    //     (e) => {
+    //         const value = e.currentTarget.value;
 
-            // If we have the current user's subject ID and they've chosen to
-            // filter by private then set the filtered principals to subject ID
-            if (value === "private" && keycloak?.subject !== undefined) {
-                setFilterPrincipals([keycloak.subject]);
-                return;
-            }
+    //         // If we have the current user's subject ID and they've chosen to
+    //         // filter by private then set the filtered principals to subject ID
+    //         if (value === "private" && keycloak?.subject !== undefined) {
+    //             setFilterPrincipals([keycloak.subject]);
+    //             return;
+    //         }
 
-            // Otherwise set blank
-            setFilterPrincipals([]);
-        },
-        [keycloakToken, keycloak]
-    );
+    //         // Otherwise set blank
+    //         setFilterPrincipals([]);
+    //     },
+    //     [keycloakToken, keycloak]
+    // );
 
     /**
      * An effect to automatically execute new Elasticsearch query upon page
      * parameter change, such as page increment or page size change.
      */
-    useEffect(
-        function executeEsQuery() {
-            const {
-                pageSize,
-                pageStart,
-                searchQuery,
-                filterPrincipals,
-                facetYearMin,
-                facetYearMax,
-                facetTimeDomain,
-                facetSpatialDomain,
-                facetResolution,
-                facetScientificType,
-                facetDomain,
-                facetCollection,
-                facetGcm,
-            } = pageParameters;
+    // useEffect(
+    //     function executeEsQuery() {
+    //         const {
+    //             pageSize,
+    //             pageStart,
+    //             searchQuery,
+    //             filterPrincipals,
+    //             facetYearMin,
+    //             facetYearMax,
+    //             facetTimeDomain,
+    //             facetSpatialDomain,
+    //             facetResolution,
+    //             facetScientificType,
+    //             facetDomain,
+    //             facetCollection,
+    //             facetGcm,
+    //         } = pageParameters;
 
-            // Start building Elasticsearch query
-            let queryBuilder = bodybuilder()
-                .size(pageSize)
-                .from(pageStart)
-                // Facets are built up using aggregations
-                //
-                // For `year`, get the min and max values for the UI to
-                // construct a range slide
-                .aggregation("min", "year", "facetYearMin")
-                .aggregation("max", "year", "facetYearMax")
-                // All other aggregations are buckets of simple string values
-                .aggregation(
-                    "terms",
-                    "time_domain",
-                    { size: 1000000 },
-                    "facetTimeDomain"
-                )
-                .aggregation(
-                    "terms",
-                    "spatial_domain",
-                    { size: 1000000 },
-                    "facetSpatialDomain"
-                )
-                .aggregation(
-                    "terms",
-                    "resolution",
-                    { size: 1000000 },
-                    "facetResolution"
-                )
-                .aggregation(
-                    "terms",
-                    "scientific_type",
-                    { size: 1000000 },
-                    "facetScientificType"
-                )
-                .aggregation(
-                    "terms",
-                    "domain",
-                    { size: 1000000 },
-                    "facetDomain"
-                )
-                .aggregation(
-                    "terms",
-                    "collection_names",
-                    { size: 1000000 },
-                    "facetCollection"
-                )
-                .aggregation("terms", "gcm", { size: 1000000 }, "facetGcm");
+    //         // Start building Elasticsearch query
+    //         let queryBuilder = bodybuilder()
+    //             .size(pageSize)
+    //             .from(pageStart)
+    //             // Facets are built up using aggregations
+    //             //
+    //             // For `year`, get the min and max values for the UI to
+    //             // construct a range slide
+    //             .aggregation("min", "year", "facetYearMin")
+    //             .aggregation("max", "year", "facetYearMax")
+    //             // All other aggregations are buckets of simple string values
+    //             .aggregation(
+    //                 "terms",
+    //                 "time_domain",
+    //                 { size: 1000000 },
+    //                 "facetTimeDomain"
+    //             )
+    //             .aggregation(
+    //                 "terms",
+    //                 "spatial_domain",
+    //                 { size: 1000000 },
+    //                 "facetSpatialDomain"
+    //             )
+    //             .aggregation(
+    //                 "terms",
+    //                 "resolution",
+    //                 { size: 1000000 },
+    //                 "facetResolution"
+    //             )
+    //             .aggregation(
+    //                 "terms",
+    //                 "scientific_type",
+    //                 { size: 1000000 },
+    //                 "facetScientificType"
+    //             )
+    //             .aggregation(
+    //                 "terms",
+    //                 "domain",
+    //                 { size: 1000000 },
+    //                 "facetDomain"
+    //             )
+    //             .aggregation(
+    //                 "terms",
+    //                 "collection_names",
+    //                 { size: 1000000 },
+    //                 "facetCollection"
+    //             )
+    //             .aggregation("terms", "gcm", { size: 1000000 }, "facetGcm");
 
-            let isEmptyQuery = true;
+    //         let isEmptyQuery = true;
 
-            // Add facets
-            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-                queryBuilder,
-                isEmptyQuery,
-                "time_domain",
-                facetTimeDomain
-            );
-            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-                queryBuilder,
-                isEmptyQuery,
-                "spatial_domain",
-                facetSpatialDomain
-            );
-            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-                queryBuilder,
-                isEmptyQuery,
-                "resolution",
-                facetResolution
-            );
-            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-                queryBuilder,
-                isEmptyQuery,
-                "scientific_type",
-                facetScientificType
-            );
-            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-                queryBuilder,
-                isEmptyQuery,
-                "domain",
-                facetDomain
-            );
-            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-                queryBuilder,
-                isEmptyQuery,
-                "collection_names",
-                facetCollection
-            );
-            [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-                queryBuilder,
-                isEmptyQuery,
-                "gcm",
-                facetGcm
-            );
+    //         // Add facets
+    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+    //             queryBuilder,
+    //             isEmptyQuery,
+    //             "time_domain",
+    //             facetTimeDomain
+    //         );
+    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+    //             queryBuilder,
+    //             isEmptyQuery,
+    //             "spatial_domain",
+    //             facetSpatialDomain
+    //         );
+    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+    //             queryBuilder,
+    //             isEmptyQuery,
+    //             "resolution",
+    //             facetResolution
+    //         );
+    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+    //             queryBuilder,
+    //             isEmptyQuery,
+    //             "scientific_type",
+    //             facetScientificType
+    //         );
+    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+    //             queryBuilder,
+    //             isEmptyQuery,
+    //             "domain",
+    //             facetDomain
+    //         );
+    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+    //             queryBuilder,
+    //             isEmptyQuery,
+    //             "collection_names",
+    //             facetCollection
+    //         );
+    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
+    //             queryBuilder,
+    //             isEmptyQuery,
+    //             "gcm",
+    //             facetGcm
+    //         );
 
-            // Year range
-            if (!Number.isNaN(facetYearMin) || !Number.isNaN(facetYearMax)) {
-                isEmptyQuery = false;
+    //         // Year range
+    //         if (!Number.isNaN(facetYearMin) || !Number.isNaN(facetYearMax)) {
+    //             isEmptyQuery = false;
 
-                const yearRangeQuery: Record<string, number> = {};
+    //             const yearRangeQuery: Record<string, number> = {};
 
-                if (!Number.isNaN(facetYearMin)) {
-                    yearRangeQuery["gte"] = facetYearMin;
-                }
+    //             if (!Number.isNaN(facetYearMin)) {
+    //                 yearRangeQuery["gte"] = facetYearMin;
+    //             }
 
-                if (!Number.isNaN(facetYearMax)) {
-                    yearRangeQuery["lte"] = facetYearMax;
-                }
+    //             if (!Number.isNaN(facetYearMax)) {
+    //                 yearRangeQuery["lte"] = facetYearMax;
+    //             }
 
-                queryBuilder = queryBuilder.query(
-                    "range",
-                    "year",
-                    yearRangeQuery
-                );
-            }
+    //             queryBuilder = queryBuilder.query(
+    //                 "range",
+    //                 "year",
+    //                 yearRangeQuery
+    //             );
+    //         }
 
-            // String search query
-            if (searchQuery.length !== 0) {
-                isEmptyQuery = false;
+    //         // String search query
+    //         if (searchQuery.length !== 0) {
+    //             isEmptyQuery = false;
 
-                // The search box value is used for a query against title
-                // and description
-                const innerQuery = bodybuilder()
-                    .orQuery("match", "title", searchQuery)
-                    .orQuery("match", "description", searchQuery);
+    //             // The search box value is used for a query against title
+    //             // and description
+    //             const innerQuery = bodybuilder()
+    //                 .orQuery("match", "title", searchQuery)
+    //                 .orQuery("match", "description", searchQuery);
 
-                queryBuilder = queryBuilder.query(
-                    "bool",
-                    (innerQuery.build() as any).query.bool
-                );
-            }
+    //             queryBuilder = queryBuilder.query(
+    //                 "bool",
+    //                 (innerQuery.build() as any).query.bool
+    //             );
+    //         }
 
-            // If users/principals are provided, apply them as a filter
-            if (filterPrincipals.length > 0) {
-                // NOTE: This is a filter, so the `isEmptyQuery` flag does not
-                // need to be set to `false`
-                queryBuilder = queryBuilder.filter(
-                    "terms",
-                    "allowed_principals",
-                    filterPrincipals
-                );
-            }
+    //         // If users/principals are provided, apply them as a filter
+    //         if (filterPrincipals.length > 0) {
+    //             // NOTE: This is a filter, so the `isEmptyQuery` flag does not
+    //             // need to be set to `false`
+    //             queryBuilder = queryBuilder.filter(
+    //                 "terms",
+    //                 "allowed_principals",
+    //                 filterPrincipals
+    //             );
+    //         }
 
-            // If query empty, attempt to fetch all
-            if (isEmptyQuery) {
-                queryBuilder = queryBuilder.query("match_all");
-            }
+    //         // If query empty, attempt to fetch all
+    //         if (isEmptyQuery) {
+    //             queryBuilder = queryBuilder.query("match_all");
+    //         }
 
-            const query = queryBuilder.build();
+    //         const query = queryBuilder.build();
 
-            // `Authorization` header depends on whether token is available
-            const headers: Record<string, string> = {};
+    //         // `Authorization` header depends on whether token is available
+    //         const headers: Record<string, string> = {};
 
-            if (keycloakToken && keycloakToken.length > 0) {
-                headers["Authorization"] = `Bearer ${keycloakToken}`;
-            }
+    //         if (keycloakToken && keycloakToken.length > 0) {
+    //             headers["Authorization"] = `Bearer ${keycloakToken}`;
+    //         }
 
-            const esQueryCancelToken = axios.CancelToken.source();
+    //         const esQueryCancelToken = axios.CancelToken.source();
 
-            axios
-                .post<SearchResponse<EsDataset>>(
-                    `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
-                    query,
-                    { headers, cancelToken: esQueryCancelToken.token }
-                )
-                .then((res) => {
-                    setResults(res.data);
-                })
-                .catch((e) => {
-                    // Ignore cancellation events
-                    if (axios.isCancel(e)) {
-                        return;
-                    }
+    //         axios
+    //             .post<SearchResponse<EsDataset>>(
+    //                 `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
+    //                 query,
+    //                 { headers, cancelToken: esQueryCancelToken.token }
+    //             )
+    //             .then((res) => {
+    //                 setResults(res.data);
+    //             })
+    //             .catch((e) => {
+    //                 // Ignore cancellation events
+    //                 if (axios.isCancel(e)) {
+    //                     return;
+    //                 }
 
-                    console.error(e);
+    //                 console.error(e);
 
-                    alert(e.toString());
-                });
+    //                 alert(e.toString());
+    //             });
 
-            return function stopOngoingEsQuery() {
-                // Cancel the ES query if it is still running
-                esQueryCancelToken.cancel();
-            };
-        },
-        [pageParameters, keycloakToken]
-    );
+    //         return function stopOngoingEsQuery() {
+    //             // Cancel the ES query if it is still running
+    //             esQueryCancelToken.cancel();
+    //         };
+    //     },
+    //     [pageParameters, keycloakToken]
+    // );
 
-    useEffect(
-        function updateSearchQueryNotYetExecutedState() {
-            // If any of the monitored objects changes, this effect runs and will
-            // set the "not yet executed" flag to `true`
-            //
-            // No `if` statement is required since we rely on React to do this
-            setSearchQueryNotYetExecuted(true);
-        },
-        [
-            // String search query changes
-            searchQuery,
+    // useEffect(
+    //     function updateSearchQueryNotYetExecutedState() {
+    //         // If any of the monitored objects changes, this effect runs and will
+    //         // set the "not yet executed" flag to `true`
+    //         //
+    //         // No `if` statement is required since we rely on React to do this
+    //         setSearchQueryNotYetExecuted(true);
+    //     },
+    //     [
+    //         // String search query changes
+    //         searchQuery,
 
-            // Users/principals
-            filterPrincipals,
+    //         // Users/principals
+    //         filterPrincipals,
 
-            // Facet selection changes
-            yearMin,
-            yearMax,
-            facetStateTimeDomain.selectedItemKeyHash,
-            facetStateSpatialDomain.selectedItemKeyHash,
-            facetStateResolution.selectedItemKeyHash,
-            facetStateScientificType.selectedItemKeyHash,
-            facetStateDomain.selectedItemKeyHash,
-            facetStateCollection.selectedItemKeyHash,
-            facetStateGcm.selectedItemKeyHash,
-        ]
-    );
+    //         // Facet selection changes
+    //         yearMin,
+    //         yearMax,
+    //         facetStateTimeDomain.selectedItemKeyHash,
+    //         facetStateSpatialDomain.selectedItemKeyHash,
+    //         facetStateResolution.selectedItemKeyHash,
+    //         facetStateScientificType.selectedItemKeyHash,
+    //         facetStateDomain.selectedItemKeyHash,
+    //         facetStateCollection.selectedItemKeyHash,
+    //         facetStateGcm.selectedItemKeyHash,
+    //     ]
+    // );
 
     return (
         <>
@@ -647,7 +765,7 @@ export default function IndexPage() {
             <FixedContainer>
                 <Row>
                     <Col xs={2}>
-                        <form onSubmit={handleQueryFormSubmit}>
+                        {/* <form onSubmit={handleQueryFormSubmit}>
                             <Row disableDefaultMargins>
                                 <Col>
                                     <InputGroup
@@ -661,12 +779,12 @@ export default function IndexPage() {
                                     />
                                 </Col>
                             </Row>
-                        </form>
+                        </form> */}
                         <form
                             onSubmit={suppressEvent}
                             data-testid="facet-fields"
                         >
-                            <Row>
+                            {/* <Row>
                                 <Col>
                                     <Row disableDefaultMargins>
                                         <Col xs={6}>
@@ -713,8 +831,8 @@ export default function IndexPage() {
                                         </Row>
                                     )}
                                 </Col>
-                            </Row>
-                            {[
+                            </Row> */}
+                            {/* {[
                                 {
                                     title: "Collection",
                                     facetState: facetStateCollection,
@@ -760,8 +878,31 @@ export default function IndexPage() {
                                         />
                                     </Col>
                                 </Row>
+                            ))} */}
+                            {[
+                                {
+                                    title: "Time domain",
+                                    facet: facetTimeDomain,
+                                },
+                                {
+                                    title: "Spatial domain",
+                                    facet: facetSpatialDomain,
+                                },
+                                {
+                                    title: "Resolution",
+                                    facet: facetResolution,
+                                },
+                            ].map(({ title, facet }) => (
+                                <Row key={title}>
+                                    <Col>
+                                        <H6>{title}</H6>
+                                        <FacetMultiSelectFacetState2
+                                            facet={facet}
+                                        />
+                                    </Col>
+                                </Row>
                             ))}
-                            <Row>
+                            {/* <Row>
                                 <Col>
                                     <H6>Privacy</H6>
                                     <select
@@ -785,9 +926,9 @@ export default function IndexPage() {
                                         </option>
                                     </select>
                                 </Col>
-                            </Row>
+                            </Row> */}
                         </form>
-                        <Row>
+                        {/* <Row>
                             <Col>
                                 <Button
                                     data-testid="search-submit-button"
@@ -805,7 +946,7 @@ export default function IndexPage() {
                                     Search &amp; apply filters
                                 </Button>
                             </Col>
-                        </Row>
+                        </Row> */}
                     </Col>
                     <Col xs={10}>
                         <Row disableDefaultMargins align="center">
