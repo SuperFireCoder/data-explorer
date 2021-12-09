@@ -1,8 +1,8 @@
-import { EsIndividualFacet } from "../hooks/EsFacet";
+import { EsIndividualFacetArray } from "../hooks/EsFacet";
 import FacetMultiSelect from "./FacetMultiSelect";
 
 export interface Props<T> {
-    facet: EsIndividualFacet<T>;
+    facet: EsIndividualFacetArray<T>;
 }
 
 export default function FacetMultiSelectFacetState2<T>({ facet }: Props<T>) {

@@ -1,9 +1,16 @@
 import axios from "axios";
 import bodybuilder from "bodybuilder";
 import { SearchResponse } from "elasticsearch";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+    ChangeEventHandler,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 import { EsAggregationBucket } from "../interfaces/EsAggregationBucket";
 import { EsDataset } from "../interfaces/EsDataset";
+import { useKeycloakInfo } from "../util/keycloak";
 
 export type MinimumFormState = { pageSize: number; pageStart: number };
 
@@ -17,7 +24,7 @@ export interface EsFacetRootConfig<T> {
     facets: readonly {
         id: keyof T;
         facetApplicationFn: (formState: T, query: QueryState) => QueryState;
-        aggregationApplicationFn: (query: QueryState) => QueryState;
+        aggregationApplicationFn?: (query: QueryState) => QueryState;
     }[];
 
     /** ES endpoint URL */
@@ -25,7 +32,6 @@ export interface EsFacetRootConfig<T> {
 }
 
 export interface EsIndividualFacetConfig<T> {
-    // type: "number" | "string" | "array";
     id: keyof T;
     label: string;
     placeholder?: string;
@@ -45,7 +51,22 @@ export interface EsFacetRoot<T extends MinimumFormState, R> {
     queryResult: SearchResponse<R> | undefined;
 }
 
-export interface EsIndividualFacet<T> {
+export type EsIndividualFacet<T> =
+    | EsIndividualFacetFreeText<T>
+    | EsIndividualFacetArray<T>;
+
+export interface EsIndividualFacetFreeText<T> {
+    id: keyof T;
+    label: string;
+    placeholder?: string;
+
+    type: "free-text";
+    value: string;
+    onValueChange: (value: string) => void;
+    onInputFieldChange: ChangeEventHandler<HTMLInputElement>;
+}
+
+export interface EsIndividualFacetArray<T> {
     id: keyof T;
     label: string;
     placeholder?: string;
@@ -62,6 +83,9 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
     onFormStateChange: (formState: Partial<T>) => void,
     config: EsFacetRootConfig<T>
 ): EsFacetRoot<T, R> => {
+    const { keycloak } = useKeycloakInfo();
+    const keycloakToken = keycloak?.token;
+
     // State for query result
     const [queryResult, setQueryResult] = useState<
         SearchResponse<R> | undefined
@@ -98,8 +122,10 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
         let queryState = { bodyBuilder, modified: false };
 
         for (const facet of config.facets) {
-            // Apply aggregations
-            queryState = facet.aggregationApplicationFn(queryState);
+            if (facet.aggregationApplicationFn !== undefined) {
+                // Apply aggregations
+                queryState = facet.aggregationApplicationFn(queryState);
+            }
         }
 
         // NOTE: The `modified` property of `queryState` is not used for this
@@ -107,79 +133,90 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
         return queryState.bodyBuilder.query("match_all").build();
     }, [config.facets]);
 
-    const constructEsQueryObject = useCallback(
-        (pageSize: number, pageStart: number) => {
-            const bodyBuilder = bodybuilder().size(pageSize).from(pageStart);
+    const constructEsQueryObject = useCallback(() => {
+        const { pageSize, pageStart } = formState;
 
-            let queryState = { bodyBuilder, modified: false };
+        const bodyBuilder = bodybuilder().size(pageSize).from(pageStart);
 
-            for (const facet of config.facets) {
-                // Apply facet to query
-                queryState = facet.facetApplicationFn(formState, queryState);
-            }
+        let queryState = { bodyBuilder, modified: false };
 
-            // If no query terms were applied, then search for everything
-            if (!queryState.modified) {
-                queryState = {
-                    bodyBuilder: queryState.bodyBuilder.query("match_all"),
-                    modified: true,
-                };
-            }
+        for (const facet of config.facets) {
+            // Apply facet to query
+            queryState = facet.facetApplicationFn(formState, queryState);
+        }
 
-            return queryState.bodyBuilder.build();
-        },
-        [formState, config.facets]
-    );
+        // If no query terms were applied, then search for everything
+        if (!queryState.modified) {
+            queryState = {
+                bodyBuilder: queryState.bodyBuilder.query("match_all"),
+                modified: true,
+            };
+        }
 
-    useEffect(function executeGlobalAggregationsFetch() {
-        const esQueryCancelToken = axios.CancelToken.source();
+        return queryState.bodyBuilder.build();
+    }, [formState, config.facets]);
 
-        (async () => {
-            try {
-                // Call Elasticsearch
-                const query = constructEsGlobalAggregationFetchQueryObject();
-                const { data } = await axios.post<SearchResponse<R>>(
-                    config.url,
-                    query,
-                    {
-                        // TODO: Implement headers for auth-required search
-                        cancelToken: esQueryCancelToken.token,
+    useEffect(
+        function executeGlobalAggregationsFetch() {
+            const esQueryCancelToken = axios.CancelToken.source();
+
+            (async () => {
+                try {
+                    // Call Elasticsearch
+                    const query =
+                        constructEsGlobalAggregationFetchQueryObject();
+
+                    // `Authorization` header depends on whether token is available
+                    const headers: Record<string, string> = {};
+
+                    if (keycloakToken && keycloakToken.length > 0) {
+                        headers["Authorization"] = `Bearer ${keycloakToken}`;
                     }
-                );
 
-                const rawAggregations = data?.aggregations ?? {};
+                    const { data } = await axios.post<SearchResponse<R>>(
+                        config.url,
+                        query,
+                        {
+                            headers,
+                            cancelToken: esQueryCancelToken.token,
+                        }
+                    );
 
-                // Map out aggregations to what we want
-                const aggregationsRecords: Record<
-                    string,
-                    EsAggregationBucket[]
-                > = Object.fromEntries(
-                    Object.entries(rawAggregations).map(
-                        ([aggName, aggResult]) => [
-                            aggName,
-                            (aggResult as any).buckets,
-                        ]
-                    )
-                );
+                    const rawAggregations = data?.aggregations ?? {};
 
-                setGlobalAggregations(aggregationsRecords);
-            } catch (e) {
-                // Ignore cancellation events
-                if (axios.isCancel(e)) {
-                    return;
+                    // Map out aggregations to what we want
+                    const aggregationsRecords: Record<
+                        string,
+                        EsAggregationBucket[]
+                    > = Object.fromEntries(
+                        Object.entries(rawAggregations).map(
+                            ([aggName, aggResult]) => [
+                                aggName,
+                                (aggResult as any).buckets,
+                            ]
+                        )
+                    );
+
+                    setGlobalAggregations(aggregationsRecords);
+                } catch (e) {
+                    // Ignore cancellation events
+                    if (axios.isCancel(e)) {
+                        return;
+                    }
+
+                    console.error(e);
+
+                    alert(e.toString());
                 }
+            })();
 
-                console.error(e);
-
-                alert(e.toString());
-            }
-        })();
-
-        return function stopGlobalAggregationsFetch() {
-            // Cancel the ES query if it is still running
-            esQueryCancelToken.cancel();
-        };
-    }, []);
+            return function stopGlobalAggregationsFetch() {
+                // Cancel the ES query if it is still running
+                esQueryCancelToken.cancel();
+            };
+        },
+        [keycloakToken, constructEsGlobalAggregationFetchQueryObject]
+    );
 
     useEffect(
         function executeEsQueryOnFormStateChange() {
@@ -190,10 +227,15 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
 
                 try {
                     // Call Elasticsearch
-                    const query = constructEsQueryObject(
-                        formState.pageSize,
-                        formState.pageStart
-                    );
+                    const query = constructEsQueryObject();
+
+                    // `Authorization` header depends on whether token is available
+                    const headers: Record<string, string> = {};
+
+                    if (keycloakToken && keycloakToken.length > 0) {
+                        headers["Authorization"] = `Bearer ${keycloakToken}`;
+                    }
+
                     const { data } = await axios.post<SearchResponse<R>>(
                         config.url,
                         query,
@@ -223,7 +265,7 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
                 esQueryCancelToken.cancel();
             };
         },
-        [formState, constructEsQueryObject]
+        [keycloakToken, constructEsQueryObject]
     );
 
     return {
@@ -239,22 +281,52 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
     };
 };
 
-export const useEsIndividualFacet = <T extends MinimumFormState>(
+export const useEsIndividualFacetFreeText = <T extends MinimumFormState>(
     // FIXME: Fix generic constraints for EsFacetRoot
     esFacetRoot: EsFacetRoot<T, any>,
     config: EsIndividualFacetConfig<T>
-): EsIndividualFacet<T> => {
-    // useEffect(
-    //     function checkIfFacetRegistered() {
-    //         if (!esFacetRoot.facets.some((x) => x.id === config.id)) {
-    //             throw new Error(
-    //                 "Facet must first be registered with root before use"
-    //             );
-    //         }
-    //     },
-    //     [esFacetRoot.facets, config.id]
-    // );
+): EsIndividualFacetFreeText<T> => {
+    const value = useMemo(
+        () => esFacetRoot.formState[config.id] as unknown as string,
+        [esFacetRoot.formState[config.id]]
+    );
 
+    const handleValueChange = useCallback(
+        (newValue: string) => {
+            esFacetRoot.onFormStateChange({
+                [config.id]: newValue,
+            } as unknown as Partial<T>);
+        },
+        [config.id, esFacetRoot.onFormStateChange]
+    );
+
+    const handleInputFieldChange = useCallback<
+        ChangeEventHandler<HTMLInputElement>
+    >(
+        (e) => {
+            e.preventDefault();
+            handleValueChange(e.currentTarget.value);
+        },
+        [handleValueChange]
+    );
+
+    return {
+        id: config.id,
+        label: config.label,
+        placeholder: config.placeholder,
+
+        type: "free-text",
+        value,
+        onValueChange: handleValueChange,
+        onInputFieldChange: handleInputFieldChange,
+    };
+};
+
+export const useEsIndividualFacetArray = <T extends MinimumFormState>(
+    // FIXME: Fix generic constraints for EsFacetRoot
+    esFacetRoot: EsFacetRoot<T, any>,
+    config: EsIndividualFacetConfig<T>
+): EsIndividualFacetArray<T> => {
     const selectedStringItems = useMemo(
         () => esFacetRoot.formState[config.id] as unknown as readonly string[],
         [esFacetRoot.formState[config.id]]

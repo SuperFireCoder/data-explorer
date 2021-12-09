@@ -25,6 +25,7 @@ import {
     Switch,
     Overlay,
     Spinner,
+    Icon,
 } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 
@@ -46,9 +47,11 @@ import {
     MinimumFormState,
     QueryState,
     useEsFacetRoot,
-    useEsIndividualFacet,
+    useEsIndividualFacetArray,
+    useEsIndividualFacetFreeText,
 } from "../hooks/EsFacet";
 import FacetMultiSelectFacetState2 from "../components/FacetMultiSelectFacetState2";
+import FacetFreeTextFacetState2 from "../components/FacetFreeTextFacetState2";
 
 const subBarLinks = [
     { key: "explore", href: "/", label: "Explore data" },
@@ -161,6 +164,31 @@ function suppressEvent(e: Event | FormEvent | MouseEvent) {
 }
 
 const FACETS: EsFacetRootConfig<FormState>["facets"] = [
+    {
+        id: "searchQuery",
+        facetApplicationFn: (formState, query) => {
+            const searchQuery = formState.searchQuery.trim();
+
+            // If blank, don't apply this facet
+            if (searchQuery.length === 0) {
+                return query;
+            }
+
+            // The search box value is used for a query against title
+            // and description
+            const innerQuery = bodybuilder()
+                .orQuery("match", "title", searchQuery)
+                .orQuery("match", "description", searchQuery);
+
+            return {
+                modified: true,
+                bodyBuilder: query.bodyBuilder.query(
+                    "bool",
+                    (innerQuery.build() as any).query.bool
+                ),
+            };
+        },
+    },
     {
         id: "facetCollection",
         facetApplicationFn: (formState, query) =>
@@ -304,22 +332,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
 ];
 
 export default function IndexPage() {
-    const { keycloak } = useKeycloakInfo();
     const router = useRouter();
-
-    // const keycloakToken = keycloak?.token;
-
-    // /** Elasticsearch search response result data */
-    // const [results, setResults] = useState<
-    //     SearchResponse<EsDataset> | undefined
-    // >(undefined);
-
-    // /**
-    //  * Flag indicating that the user has changed the state of the search form,
-    //  * but has not executed the query
-    //  */
-    // const [searchQueryNotYetExecuted, setSearchQueryNotYetExecuted] =
-    //     useState<boolean>(false);
 
     /**
      * Extracts the current page parameters from the URL query parameter values.
@@ -388,52 +401,53 @@ export default function IndexPage() {
 
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
 
-    const facetCollection = useEsIndividualFacet(esFacetRoot, {
+    const searchQuery = useEsIndividualFacetFreeText(esFacetRoot, {
+        id: "searchQuery",
+        label: "Search",
+        placeholder: "Search datasets...",
+    });
+
+    const facetCollection = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetCollection",
         label: "Collection",
         placeholder: "Filter by collection...",
     });
 
-    const facetTimeDomain = useEsIndividualFacet(esFacetRoot, {
+    const facetTimeDomain = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetTimeDomain",
         label: "Time domain",
         placeholder: "Filter by time domain...",
     });
 
-    const facetSpatialDomain = useEsIndividualFacet(esFacetRoot, {
+    const facetSpatialDomain = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetSpatialDomain",
         label: "Spatial domain",
         placeholder: "Filter by spatial domain...",
     });
 
-    const facetResolution = useEsIndividualFacet(esFacetRoot, {
+    const facetResolution = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetResolution",
         label: "Resolution",
         placeholder: "Filter by resolution...",
     });
 
-    const facetScientificType = useEsIndividualFacet(esFacetRoot, {
+    const facetScientificType = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetScientificType",
         label: "Scientific type",
         placeholder: "Filter by scientific type...",
     });
 
-    const facetDomain = useEsIndividualFacet(esFacetRoot, {
+    const facetDomain = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetDomain",
         label: "Domain",
         placeholder: "Filter by domain...",
     });
 
-    const facetGcm = useEsIndividualFacet(esFacetRoot, {
+    const facetGcm = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetGcm",
         label: "GCM",
         placeholder: "Filter by GCM...",
     });
-
-    // // String search query value
-    // const [searchQuery, setSearchQuery] = useState<string>(
-    //     pageParameters.searchQuery
-    // );
 
     // // Users/principals to narrow datasets by
     // const [filterPrincipals, setFilterPrincipals] = useState<string[]>([]);
@@ -482,12 +496,6 @@ export default function IndexPage() {
         },
         [updateFormState, formState.pageSize]
     );
-
-    // const handleSearchQueryInputChange = useCallback<
-    //     ChangeEventHandler<HTMLInputElement>
-    // >((e) => {
-    //     setSearchQuery(e.currentTarget.value);
-    // }, []);
 
     // const handleYearAllYearsSwitchChange = useCallback<
     //     FormEventHandler<HTMLInputElement>
@@ -755,21 +763,33 @@ export default function IndexPage() {
             <FixedContainer>
                 <Row>
                     <Col xs={2}>
-                        {/* <form onSubmit={handleQueryFormSubmit}>
-                            <Row disableDefaultMargins>
-                                <Col>
-                                    <InputGroup
-                                        data-testid="search-field"
-                                        type="search"
-                                        leftIcon="search"
-                                        id="dataset-search"
-                                        placeholder="Search datasets..."
-                                        value={searchQuery}
-                                        onChange={handleSearchQueryInputChange}
-                                    />
-                                </Col>
-                            </Row>
-                        </form> */}
+                        <Row disableDefaultMargins>
+                            <Col>
+                                <FacetFreeTextFacetState2
+                                    facet={searchQuery}
+                                    data-testid="search-field"
+                                    type="search"
+                                    leftIcon="search"
+                                    rightElement={
+                                        searchQuery.value.length > 0 ? (
+                                            <Button
+                                                icon="small-cross"
+                                                minimal
+                                                onClick={() =>
+                                                    searchQuery.onValueChange(
+                                                        ""
+                                                    )
+                                                }
+                                                style={{
+                                                    borderRadius: "100%",
+                                                }}
+                                            />
+                                        ) : undefined
+                                    }
+                                    id="dataset-search"
+                                />
+                            </Col>
+                        </Row>
                         <form
                             onSubmit={suppressEvent}
                             data-testid="facet-fields"
