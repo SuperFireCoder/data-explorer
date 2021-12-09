@@ -12,6 +12,8 @@ export interface Props<T> {
     onItemRemoveByTag: (tag: ReactNode, index: number) => void;
     tagRenderer?: (item: T) => ReactNode;
     itemEqualityFn?: (a: T | undefined, b: T | undefined) => boolean;
+    /** Whether to disable rendering of the document count label for items */
+    disableDocCountLabel?: boolean;
 }
 
 const defaultItemEqualityFn = (
@@ -40,6 +42,7 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
     onItemRemoveByTag,
     tagRenderer = defaultTagRenderer,
     itemEqualityFn = defaultItemEqualityFn,
+    disableDocCountLabel = false,
 }: Props<T>) {
     const tagInputProps = useMemo(
         () => ({
@@ -72,13 +75,15 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
                     active={modifiers.active}
                     onClick={handleClick}
                     text={item.key}
-                    label={`${item.doc_count}`}
+                    label={
+                        disableDocCountLabel ? undefined : `${item.doc_count}`
+                    }
                     // Keep select menu list open after selection
                     shouldDismissPopover={false}
                 />
             );
         },
-        [isItemInSelectedItems]
+        [isItemInSelectedItems, disableDocCountLabel]
     );
 
     return (

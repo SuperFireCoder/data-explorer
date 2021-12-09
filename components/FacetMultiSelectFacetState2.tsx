@@ -3,9 +3,13 @@ import FacetMultiSelect from "./FacetMultiSelect";
 
 export interface Props<T> {
     facet: EsIndividualFacetArray<T>;
+    disableDocCountLabel?: boolean;
 }
 
-export default function FacetMultiSelectFacetState2<T>({ facet }: Props<T>) {
+export default function FacetMultiSelectFacetState2<T>({
+    facet,
+    disableDocCountLabel,
+}: Props<T>) {
     const {
         items = [],
         selectedItems = [],
@@ -21,6 +25,7 @@ export default function FacetMultiSelectFacetState2<T>({ facet }: Props<T>) {
             placeholder={placeholder}
             onItemSelect={onItemSelect}
             onItemRemoveByTag={onItemRemoveByTag}
+            disableDocCountLabel={disableDocCountLabel}
         />
     );
 }

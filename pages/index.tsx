@@ -856,6 +856,12 @@ export default function IndexPage() {
                                         <H6>{facet.label}</H6>
                                         <FacetMultiSelectFacetState2
                                             facet={facet}
+                                            // When there is a free text search
+                                            // query, disable showing document
+                                            // counts as they are misleading
+                                            disableDocCountLabel={
+                                                searchQuery.value.length !== 0
+                                            }
                                         />
                                     </Col>
                                 </Row>
