@@ -74,6 +74,10 @@ export interface EsIndividualFacetArray<T> {
     type: "array";
     items: readonly EsAggregationBucket[];
     selectedItems: readonly (EsAggregationBucket | undefined)[];
+    itemSortFn?: (
+        a: EsAggregationBucket | undefined,
+        b: EsAggregationBucket | undefined
+    ) => number;
     onItemSelect: (item: EsAggregationBucket) => void;
     onItemRemoveByTag: (tag: unknown, i: number) => void;
 }
@@ -325,7 +329,12 @@ export const useEsIndividualFacetFreeText = <T extends MinimumFormState>(
 export const useEsIndividualFacetArray = <T extends MinimumFormState>(
     // FIXME: Fix generic constraints for EsFacetRoot
     esFacetRoot: EsFacetRoot<T, any>,
-    config: EsIndividualFacetConfig<T>
+    config: EsIndividualFacetConfig<T> & {
+        itemSortFn?: (
+            a: EsAggregationBucket | undefined,
+            b: EsAggregationBucket | undefined
+        ) => number;
+    }
 ): EsIndividualFacetArray<T> => {
     const selectedStringItems = useMemo(
         () => esFacetRoot.formState[config.id] as unknown as readonly string[],
@@ -388,6 +397,7 @@ export const useEsIndividualFacetArray = <T extends MinimumFormState>(
         type: "array",
         items,
         selectedItems,
+        itemSortFn: config.itemSortFn,
         onItemSelect: handleItemSelect,
         onItemRemoveByTag: handleItemRemoveByTag,
     };

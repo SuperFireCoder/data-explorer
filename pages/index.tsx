@@ -52,6 +52,7 @@ import {
 } from "../hooks/EsFacet";
 import FacetMultiSelectFacetState2 from "../components/FacetMultiSelectFacetState2";
 import FacetFreeTextFacetState2 from "../components/FacetFreeTextFacetState2";
+import { itemSortKeyAlpha } from "../components/FacetMultiSelect";
 
 const subBarLinks = [
     { key: "explore", href: "/", label: "Explore data" },
@@ -411,42 +412,91 @@ export default function IndexPage() {
         id: "facetCollection",
         label: "Collection",
         placeholder: "Filter by collection...",
+        itemSortFn: itemSortKeyAlpha,
     });
 
     const facetTimeDomain = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetTimeDomain",
         label: "Time domain",
         placeholder: "Filter by time domain...",
+        itemSortFn: itemSortKeyAlpha,
     });
 
     const facetSpatialDomain = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetSpatialDomain",
         label: "Spatial domain",
         placeholder: "Filter by spatial domain...",
+        itemSortFn: itemSortKeyAlpha,
     });
 
     const facetResolution = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetResolution",
         label: "Resolution",
         placeholder: "Filter by resolution...",
+        itemSortFn: (a, b) => {
+            const aName = a?.key;
+            const bName = b?.key;
+
+            if (aName === undefined || bName === undefined) {
+                return 0;
+            }
+
+            // Parse "arcmin"/"arcsec" names
+            const parseArcSecValueFromName = (x: string) => {
+                const parts = x
+                    .split(" ")
+                    .filter((s) => s.trim().length !== 0)
+                    .map((s) => s.toLowerCase());
+
+                // Assume first is number, second is unit
+                // e.g. "36 arcsec (...)"
+                if (parts[1] === "arcsec") {
+                    return Number.parseFloat(parts[0]);
+                }
+
+                if (parts[1] === "arcmin") {
+                    return Number.parseFloat(parts[0]) * 60;
+                }
+
+                // Return NaN if we don't know what we're dealing with rather
+                // than throwing as we don't want to completely crash the sort
+                return Number.NaN;
+            };
+
+            const aValue = parseArcSecValueFromName(aName);
+            const bValue = parseArcSecValueFromName(bName);
+
+            if (aValue < bValue) {
+                return -1;
+            }
+
+            if (aValue > bValue) {
+                return 1;
+            }
+
+            return 0;
+        },
     });
 
     const facetScientificType = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetScientificType",
         label: "Scientific type",
         placeholder: "Filter by scientific type...",
+        itemSortFn: itemSortKeyAlpha,
     });
 
     const facetDomain = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetDomain",
         label: "Domain",
         placeholder: "Filter by domain...",
+        itemSortFn: itemSortKeyAlpha,
     });
 
     const facetGcm = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetGcm",
         label: "GCM",
         placeholder: "Filter by GCM...",
+        itemSortFn: itemSortKeyAlpha,
     });
 
     // // Users/principals to narrow datasets by

@@ -13,6 +13,7 @@ export default function FacetMultiSelectFacetState2<T>({
     const {
         items = [],
         selectedItems = [],
+        itemSortFn,
         onItemSelect,
         onItemRemoveByTag,
         placeholder,
@@ -26,6 +27,7 @@ export default function FacetMultiSelectFacetState2<T>({
             onItemSelect={onItemSelect}
             onItemRemoveByTag={onItemRemoveByTag}
             disableDocCountLabel={disableDocCountLabel}
+            itemSortFn={itemSortFn}
         />
     );
 }
