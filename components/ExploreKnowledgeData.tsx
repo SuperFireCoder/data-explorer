@@ -86,6 +86,7 @@ function normaliseAsReadonlyStringArray(
  * @param isEmptyQuery
  * @param facetEsTerm String identifier for the term used in Elasticsearch query
  * @param facetValues
+ * @param queryType bool || nested
  *
  * @returns Array of [new bodyBuilder query instance, `isEmptyQuery` boolean]
  */
@@ -93,7 +94,8 @@ function addTermAggregationFacetStateToQuery(
     queryBuilder: Bodybuilder,
     isEmptyQuery: boolean,
     facetEsTerm: string,
-    facetValues: readonly string[]
+    facetValues: readonly string[],
+    queryType = ""
 ): [Bodybuilder, boolean] {
     // If nothing selected for this facet, return state untouched
     if (facetValues.length === 0) {
@@ -106,12 +108,21 @@ function addTermAggregationFacetStateToQuery(
     facetValues.forEach(
         (x) => (innerQuery = innerQuery.orQuery("match", facetEsTerm, x))
     );
+    
+    let newQueryBuilder = queryBuilder;
+    
+    if (queryType === "bool") {
+        newQueryBuilder = innerQuery
+    }
 
-    const newQueryBuilder = queryBuilder.query(
-        "bool",
-        (innerQuery.build() as any).query.bool
-    );
+    if (queryType === "nested") {
+        newQueryBuilder = newQueryBuilder
+                            .query('nested', 'path', 'distributions', (q) => {
+                            return q.query('terms', 'distributions.format.keyword', facetValues)
+                            })
+    }
 
+    console.log('new query', newQueryBuilder.build(), facetValues);
     return [newQueryBuilder, false];
 }
 
@@ -126,6 +137,14 @@ export default function ExploreKnowledgeData() {
     const router = useRouter();
 
     const keycloakToken = keycloak?.token;
+
+    /**
+     * "Restricted" set of publishers which are determined to contain
+     * environmental data; this is delivered from our own CSV data source
+     *
+     * @type {{ id: string, name: string }[]}
+     */
+    let restrictedPubs = [];
 
     /** Elasticsearch search response result data */
     const [results, setResults] = useState<
@@ -323,9 +342,9 @@ export default function ExploreKnowledgeData() {
             // Facets are built up using aggregations
             const queryBuilder = bodybuilder()
                 .aggregation('nested', {path: 'distributions'}, 'distributions', (a) => {
-                    return a.aggregation('terms', 'distributions.format.keyword', 'facetFormat')
+                    return a.aggregation('terms', 'distributions.format.keyword', 'facetFormat', {size: 10000})
                   })
-                .aggregation('terms', 'publisher.name.keyword', 'facetPublisher');
+                .aggregation('terms', 'publisher.name.keyword', 'facetPublisher', {size: 10000});
 
             const query = queryBuilder.build();
 
@@ -393,6 +412,21 @@ export default function ExploreKnowledgeData() {
         ]
     );
 
+
+    // useEffect(function loadPublishers() {
+    //     axios.get('https://raw.githubusercontent.com/CSIRO-enviro-informatics/workspace-ui/master/config/knv2-publishers.csv')
+    //     .then((res) => {
+    //         const rawPublishers = Csv.parse(res.data);
+
+    //         // Capture only those which are flagged as being environmental data
+    //         restrictedPubs = rawPublishers
+    //         .filter(row => row['Environmental data? Y/N/Part'] === 'Y')
+    //         .map(row => ({ id: row.ID, name: row.Name }));
+
+    //         this.getResults();
+    //     });
+    // }, [])
+
     /**
      * An effect to automatically execute new Elasticsearch query upon page
      * parameter change, such as page increment or page size change.
@@ -420,13 +454,15 @@ export default function ExploreKnowledgeData() {
                 queryBuilder,
                 isEmptyQuery,
                 "publisher.name.keyword",
-                facetPublisher
+                facetPublisher,
+                "bool"
             );
             [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
                 queryBuilder,
                 isEmptyQuery,
                 "distributions.format.keyword",
-                facetFormat
+                facetFormat,
+                "nested"
             );
             
             // String search query
@@ -458,6 +494,7 @@ export default function ExploreKnowledgeData() {
 
             // If query empty, attempt to fetch all
             if (isEmptyQuery) {
+                // queryBuilder = queryBuilder.query("match_all");
                 queryBuilder = queryBuilder.query("match_all");
             }
 
@@ -480,7 +517,6 @@ export default function ExploreKnowledgeData() {
                 )
                 .then((res) => {
                     setResults(res.data);
-                    console.log("KN data",res.data);
                 })
                 .catch((e) => {
                     // Ignore cancellation events
