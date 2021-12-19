@@ -911,6 +911,7 @@ export default function ExploreEcoData() {
                                                           } as unknown as DatasetType)
                                                         : undefined
                                                 }
+                                                exploreDataType="dataExplorer"
                                                 // TODO: Add modification date into ES index
                                                 // lastUpdated={lastUpdated}
                                             />

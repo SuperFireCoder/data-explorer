@@ -25,6 +25,7 @@ export interface Props {
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
     /** Import failure message */
     failureMessage?: string;
+    exploreDataType: "dataExplorer" | "knowledgeNetwork"; 
 }
 
 export default function DatasetCard({
@@ -35,6 +36,7 @@ export default function DatasetCard({
     lastUpdated,
     status,
     failureMessage,
+    exploreDataType
 }: Props) {
     const [metadataDrawerOpen, setMetadataDrawerOpen] =
         useState<boolean>(false);
@@ -163,6 +165,7 @@ export default function DatasetCard({
                 datasetId={datasetId}
                 isOpen={metadataDrawerOpen}
                 onClose={closeMetadataDrawer}
+                exploreDataType={exploreDataType} // TODO metaview
             />
             <VisualiserDrawer
                 drawerTitle={title}

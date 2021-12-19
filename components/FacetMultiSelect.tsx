@@ -1,8 +1,8 @@
 import { MenuItem } from "@blueprintjs/core";
 import { ItemPredicate, ItemRenderer, MultiSelect } from "@blueprintjs/select";
 import { ReactNode, SyntheticEvent, useCallback, useMemo } from "react";
-
 import { EsAggregationBucket } from "../interfaces/EsAggregationBucket";
+import styles from "./FacetMultiSelect.module.css";
 
 export interface Props<T> {
     items: readonly T[];
@@ -96,6 +96,7 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
             resetOnQuery={false}
             placeholder={placeholder}
             fill
+            popoverProps={{ popoverClassName: styles.selectOptionsMenu }}
         />
     );
 }

@@ -33,6 +33,8 @@ import {
 } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
 import { Select } from "@blueprintjs/select";
+import MetadataDrawer from "./MetadataDrawer";
+import { readdirSync } from "fs";
 
 const subBarLinks = [
     { key: "explore", href: "/", label: "Explore data" },
@@ -117,8 +119,8 @@ function addTermAggregationFacetStateToQuery(
 
     if (queryType === "nested") {
         newQueryBuilder = newQueryBuilder
-                            .query('nested', 'path', 'distributions', (q) => {
-                            return q.query('terms', 'distributions.format.keyword', facetValues)
+                            .orQuery('nested', 'path', 'distributions', (q) => {
+                            return q.orQuery('terms', 'distributions.format.keyword', facetValues)
                             })
     }
 
@@ -137,7 +139,7 @@ export default function ExploreKnowledgeData() {
     const router = useRouter();
 
     const keycloakToken = keycloak?.token;
-
+    const [ knDataStatus, setknDataStatus ] = useState({status: "", message: ""}); 
     /**
      * "Restricted" set of publishers which are determined to contain
      * environmental data; this is delivered from our own CSV data source
@@ -348,27 +350,6 @@ export default function ExploreKnowledgeData() {
 
             const query = queryBuilder.build();
 
-            // const query = {
-            //     aggs: {
-            //         distributions: {
-            //           nested: {
-            //             path: 'distributions',
-            //           },
-            //           aggs: {
-            //             facetFormat: {
-            //               terms: {
-            //                 field: 'distributions.format.keyword',
-            //               },
-            //             },
-            //           },
-            //         },
-            //         facetPublisher: {
-            //           terms: {
-            //             field: 'publisher.name.keyword',
-            //           },
-            //         },
-            //       }
-            // }
             console.log('QUERY kn global: ', query);
 
             // `Authorization` header depends on whether token is available
@@ -388,7 +369,11 @@ export default function ExploreKnowledgeData() {
                 )
                 .then((res) => {
                     setGlobalBucket(res.data);
-                    console.log('query kn res',res.data)
+                    console.log('kn res', res, res.status);
+                    if(res.status === 200) {
+                        setknDataStatus({status: "SUCCESS", message:""});
+                        console.log('kn res', "200");
+                    }
                 })
                 .catch((e) => {
                     // Ignore cancellation events
@@ -397,7 +382,8 @@ export default function ExploreKnowledgeData() {
                     }
 
                     console.error(e);
-
+                    const err = e.toString();
+                    setknDataStatus({status: "FAILED", message:err});
                     alert(e.toString());
                 });
 
@@ -411,21 +397,6 @@ export default function ExploreKnowledgeData() {
             keycloakToken
         ]
     );
-
-
-    // useEffect(function loadPublishers() {
-    //     axios.get('https://raw.githubusercontent.com/CSIRO-enviro-informatics/workspace-ui/master/config/knv2-publishers.csv')
-    //     .then((res) => {
-    //         const rawPublishers = Csv.parse(res.data);
-
-    //         // Capture only those which are flagged as being environmental data
-    //         restrictedPubs = rawPublishers
-    //         .filter(row => row['Environmental data? Y/N/Part'] === 'Y')
-    //         .map(row => ({ id: row.ID, name: row.Name }));
-
-    //         this.getResults();
-    //     });
-    // }, [])
 
     /**
      * An effect to automatically execute new Elasticsearch query upon page
@@ -671,35 +642,46 @@ export default function ExploreKnowledgeData() {
                         </Row>
                         <Row>
                             <Col>
+                            {/* <MetadataDrawer
+                                drawerTitle={"test"}
+                                datasetId={"ds-listtas-326cb4f7-2072-4ad8-84c6-22d3334fabad"}
+                                isOpen={true}
+                                onClose={() => {return false}}
+                                exploreDataType={"knowledgeNetwork"}
+                            /> */}
                                 {results &&
                                     results.hits.hits.map(
                                         ({ _id, _source }) => (
                                             <DatasetCard
                                                 data-testid="dataset-card"
                                                 key={_id}
-                                                datasetId={_source.uuid}
+                                                datasetId={_source.identifier}
                                                 title={_source.title}
                                                 description={
                                                     _source.description
                                                 }
-                                                status={_source.status}
+                                                status={knDataStatus.status}
                                                 failureMessage={
-                                                    _source.status === "FAILED"
-                                                        ? _source.message
+                                                    knDataStatus.status === "FAILED"
+                                                        ? knDataStatus.message
                                                         : undefined
                                                 }
                                                 type={
-                                                    _source.status === "SUCCESS"
+                                                    knDataStatus.status === "SUCCESS"
                                                         ? // TODO: Clarify values for "scientific_type"
-                                                          ({
-                                                              type: _source
-                                                                  .scientific_type[0],
-                                                              subtype:
-                                                                  _source
-                                                                      .scientific_type[1],
-                                                          } as unknown as DatasetType)
+                                                        undefined
+                                                        //   (
+                                                            
+                                                        //     {
+                                                        //     //   type: _source
+                                                        //     //       .scientific_type[0],
+                                                        //     //   subtype:
+                                                        //     //       _source
+                                                        //     //           .scientific_type[1],
+                                                        //   } as unknown as DatasetType)
                                                         : undefined
                                                 }
+                                                exploreDataType="knowledgeNetwork"
                                                 // TODO: Add modification date into ES index
                                                 // lastUpdated={lastUpdated}
                                             />
