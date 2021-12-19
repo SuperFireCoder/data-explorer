@@ -37,6 +37,13 @@ export interface EsIndividualFacetConfig<T> {
     placeholder?: string;
 }
 
+export interface EsIndividualFacetNumberRangeConfig<T> {
+    minId: keyof T;
+    maxId: keyof T;
+    label: string;
+    placeholder?: string;
+}
+
 export interface EsFacetRoot<T extends MinimumFormState, R> {
     formState: T;
     onFormStateChange: (formState: Partial<T>) => void;
@@ -80,6 +87,18 @@ export interface EsIndividualFacetArray<T> {
     ) => number;
     onItemSelect: (item: EsAggregationBucket) => void;
     onItemRemoveByTag: (tag: unknown, i: number) => void;
+}
+
+export interface EsIndividualFacetNumberRange<T> {
+    minId: keyof T;
+    maxId: keyof T;
+    label: string;
+    placeholder?: string;
+
+    type: "number-range";
+    minValue: number;
+    maxValue: number;
+    onRangeChange: (min: number, max: number) => void;
 }
 
 export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
@@ -272,6 +291,24 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
         [keycloakToken, constructEsQueryObject]
     );
 
+    useEffect(
+        function resetPageIndexIfOutOfBounds() {
+            if (
+                formState.pageStart !== 0 &&
+                totalNumberOfResults < formState.pageStart
+            ) {
+                onFormStateChange({
+                    pageStart: 0,
+                } as Partial<T>);
+            }
+        },
+        // NOTE: We only want to evaluate this effect when the query result
+        // changes, not every time one of the page parameters change, hence
+        // why we don't put everything that could possibly change in the
+        // dependency array below
+        [totalNumberOfResults, queryResult]
+    );
+
     return {
         formState,
         onFormStateChange,
@@ -400,5 +437,42 @@ export const useEsIndividualFacetArray = <T extends MinimumFormState>(
         itemSortFn: config.itemSortFn,
         onItemSelect: handleItemSelect,
         onItemRemoveByTag: handleItemRemoveByTag,
+    };
+};
+
+export const useEsIndividualFacetNumberRange = <T extends MinimumFormState>(
+    esFacetRoot: EsFacetRoot<T, any>,
+    config: EsIndividualFacetNumberRangeConfig<T>
+): EsIndividualFacetNumberRange<T> => {
+    const minValue = useMemo(
+        () => esFacetRoot.formState[config.minId] as unknown as number,
+        [esFacetRoot.formState[config.minId]]
+    );
+
+    const maxValue = useMemo(
+        () => esFacetRoot.formState[config.maxId] as unknown as number,
+        [esFacetRoot.formState[config.maxId]]
+    );
+
+    const handleRangeChange = useCallback(
+        (min: number, max: number) => {
+            esFacetRoot.onFormStateChange({
+                [config.minId]: min,
+                [config.maxId]: max,
+            } as unknown as Partial<T>);
+        },
+        [config.minId, config.maxId, esFacetRoot.onFormStateChange]
+    );
+
+    return {
+        minId: config.minId,
+        maxId: config.maxId,
+        label: config.label,
+        placeholder: config.placeholder,
+
+        type: "number-range",
+        minValue,
+        maxValue,
+        onRangeChange: handleRangeChange,
     };
 };

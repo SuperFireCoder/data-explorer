@@ -49,10 +49,12 @@ import {
     useEsFacetRoot,
     useEsIndividualFacetArray,
     useEsIndividualFacetFreeText,
+    useEsIndividualFacetNumberRange,
 } from "../hooks/EsFacet";
 import FacetMultiSelectFacetState2 from "../components/FacetMultiSelectFacetState2";
 import FacetFreeTextFacetState2 from "../components/FacetFreeTextFacetState2";
 import { itemSortKeyAlpha } from "../components/FacetMultiSelect";
+import FacetNumberRangeFacetState2 from "../components/FacetNumberRangeFacetState2";
 
 const subBarLinks = [
     { key: "explore", href: "/", label: "Explore data" },
@@ -188,6 +190,47 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                     (innerQuery.build() as any).query.bool
                 ),
             };
+        },
+    },
+    {
+        id: "facetYearMin",
+        facetApplicationFn: (formState, query) => {
+            const { facetYearMin, facetYearMax } = formState;
+
+            // If both range values are NaN then the query is returned unchanged
+            if (Number.isNaN(facetYearMin) && Number.isNaN(facetYearMax)) {
+                return query;
+            }
+
+            const yearRangeQuery: Record<string, number> = {};
+
+            if (!Number.isNaN(facetYearMin)) {
+                yearRangeQuery["gte"] = facetYearMin;
+            }
+
+            if (!Number.isNaN(facetYearMax)) {
+                yearRangeQuery["lte"] = facetYearMax;
+            }
+
+            return {
+                modified: true,
+                bodyBuilder: query.bodyBuilder.query(
+                    "range",
+                    "year",
+                    yearRangeQuery
+                ),
+            };
+        },
+    },
+    {
+        // NOTE: The facet application function here is just returning the query
+        // as-is, as the function declared for `facetYearMin` covers both
+        //
+        // TODO: Figure out how to configure paired/"range" facets across two
+        // params properly
+        id: "facetYearMax",
+        facetApplicationFn: (_formState, query) => {
+            return query;
         },
     },
     {
@@ -383,12 +426,26 @@ export default function IndexPage() {
 
     const updateFormState = useCallback(
         (formState: Partial<FormState>) => {
+            // Copy out state and replace NaN values with empty strings
+            //
+            // This means that those keys with NaN values are removed from the
+            // query params when it gets passed through
+            // `stripEmptyStringQueryParams()` below
+            const state = { ...formState };
+
+            for (const key of Object.keys(state) as (keyof typeof state)[]) {
+                if (Number.isNaN(state[key])) {
+                    // Deliberately set the value as empty string
+                    state[key] = "" as any;
+                }
+            }
+
             // Update query params for this page, which will update `formState`
             // above
             router.push({
                 query: stripEmptyStringQueryParams({
                     ...router.query,
-                    ...formState,
+                    ...state,
                 }),
             });
         },
@@ -406,6 +463,12 @@ export default function IndexPage() {
         id: "searchQuery",
         label: "Search",
         placeholder: "Search datasets...",
+    });
+
+    const facetYearRange = useEsIndividualFacetNumberRange(esFacetRoot, {
+        minId: "facetYearMin",
+        maxId: "facetYearMax",
+        label: "Year",
     });
 
     const facetCollection = useEsIndividualFacetArray(esFacetRoot, {
@@ -502,13 +565,6 @@ export default function IndexPage() {
     // // Users/principals to narrow datasets by
     // const [filterPrincipals, setFilterPrincipals] = useState<string[]>([]);
 
-    // Facets
-    // // TODO: Implement some way of feeding the default state into the facets
-    // // from values contained in `pageParameters` so that they update the UI on
-    // // first load
-    // const [yearMin, setYearMin] = useState<string>("");
-    // const [yearMax, setYearMax] = useState<string>("");
-
     const currentPageIndex = useMemo(
         () => Math.floor(formState.pageStart / formState.pageSize),
         [formState.pageStart, formState.pageSize]
@@ -518,21 +574,6 @@ export default function IndexPage() {
         () => Math.ceil(totalNumberOfResults / formState.pageSize),
         [totalNumberOfResults, formState.pageSize]
     );
-
-    // const yearsQueryIsAllYears = useMemo(
-    //     () => yearMin === "" && yearMax === "",
-    //     [yearMin, yearMax]
-    // );
-
-    // const yearsQueryMinBound = useMemo(
-    //     () => results?.aggregations?.facetYearMin?.value || 0,
-    //     [results]
-    // );
-
-    // const yearsQueryMaxBound = useMemo(
-    //     () => results?.aggregations?.facetYearMax?.value || 0,
-    //     [results]
-    // );
 
     /**
      * Handler to change page query parameter values via URL query parameters.
@@ -546,33 +587,6 @@ export default function IndexPage() {
         },
         [updateFormState, formState.pageSize]
     );
-
-    // const handleYearAllYearsSwitchChange = useCallback<
-    //     FormEventHandler<HTMLInputElement>
-    // >(() => {
-    //     // Switching all years -> valued years: set min and max bounds
-    //     if (yearsQueryIsAllYears) {
-    //         setYearMin(yearsQueryMinBound);
-    //         setYearMax(yearsQueryMaxBound);
-    //         return;
-    //     }
-
-    //     // Switching valued years -> all years, set min and max blank
-    //     setYearMin("");
-    //     setYearMax("");
-    // }, [yearsQueryIsAllYears, yearsQueryMinBound, yearsQueryMaxBound]);
-
-    // const handleYearMinInputChange = useCallback<
-    //     FormEventHandler<HTMLInputElement>
-    // >((e) => {
-    //     setYearMin(e.currentTarget.value.trim());
-    // }, []);
-
-    // const handleYearMaxInputChange = useCallback<
-    //     FormEventHandler<HTMLInputElement>
-    // >((e) => {
-    //     setYearMax(e.currentTarget.value.trim());
-    // }, []);
 
     // const handlePrivacySelectChange = useCallback<
     //     ChangeEventHandler<HTMLSelectElement>
@@ -844,54 +858,16 @@ export default function IndexPage() {
                             onSubmit={suppressEvent}
                             data-testid="facet-fields"
                         >
-                            {/* <Row>
+                            <Row>
                                 <Col>
-                                    <Row disableDefaultMargins>
-                                        <Col xs={6}>
-                                            <H6>Year</H6>
-                                        </Col>
-                                        <Col
-                                            xs={6}
-                                            style={{ textAlign: "right" }}
-                                        >
-                                            <Switch
-                                                checked={yearsQueryIsAllYears}
-                                                onChange={
-                                                    handleYearAllYearsSwitchChange
-                                                }
-                                                innerLabel="Range"
-                                                innerLabelChecked="All"
-                                                style={{ marginRight: "-10px" }}
-                                            />
-                                        </Col>
-                                    </Row>
-                                    {!yearsQueryIsAllYears && (
-                                        <Row
-                                            disableDefaultMargins
-                                            gutterWidth={2}
-                                        >
-                                            <Col xs={6}>
-                                                <InputGroup
-                                                    type="number"
-                                                    value={yearMin}
-                                                    onChange={
-                                                        handleYearMinInputChange
-                                                    }
-                                                />
-                                            </Col>
-                                            <Col xs={6}>
-                                                <InputGroup
-                                                    type="number"
-                                                    value={yearMax}
-                                                    onChange={
-                                                        handleYearMaxInputChange
-                                                    }
-                                                />
-                                            </Col>
-                                        </Row>
-                                    )}
+                                    <FacetNumberRangeFacetState2
+                                        facet={facetYearRange}
+                                        defaultMin={1990}
+                                        defaultMax={2010}
+                                        numberParseMode="integer"
+                                    />
                                 </Col>
-                            </Row> */}
+                            </Row>
                             {[
                                 facetCollection,
                                 facetTimeDomain,
