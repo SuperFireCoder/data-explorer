@@ -4,50 +4,27 @@ import {
     Col,
     Row,
 } from "@ecocommons-australia/ui-library";
-import {
-    ChangeEventHandler,
-    FormEvent,
-    FormEventHandler,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
-import { SearchResponse } from "elasticsearch";
+import { FormEvent, useCallback, useMemo } from "react";
 import { useRouter } from "next/router";
-import bodybuilder, { Bodybuilder } from "bodybuilder";
-import axios from "axios";
-import {
-    InputGroup,
-    Button,
-    H6,
-    Switch,
-    Overlay,
-    Spinner,
-    Icon,
-} from "@blueprintjs/core";
+import bodybuilder from "bodybuilder";
+import { Button, H6, Spinner } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 
 import Header from "../components/Header";
 import DatasetCard from "../components/DatasetCard";
 import Pagination from "../components/Pagination";
-import FacetMultiSelectFacetState from "../components/FacetMultiSelectFacetState";
-import { EsDataset } from "../interfaces/EsDataset";
 import { DatasetType } from "../interfaces/DatasetType";
-import { useFacetState } from "../hooks/FacetState";
 import {
     getDataExplorerBackendServerUrl,
     getDataExplorerSubbarImportData,
 } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
-import { Select } from "@blueprintjs/select";
 import {
     EsFacetRootConfig,
-    MinimumFormState,
     QueryState,
     useEsFacetRoot,
     useEsIndividualFacetArray,
+    useEsIndividualFacetFixedArray,
     useEsIndividualFacetFreeText,
     useEsIndividualFacetNumberRange,
 } from "../hooks/EsFacet";
@@ -55,6 +32,7 @@ import FacetMultiSelectFacetState2 from "../components/FacetMultiSelectFacetStat
 import FacetFreeTextFacetState2 from "../components/FacetFreeTextFacetState2";
 import { itemSortKeyAlpha } from "../components/FacetMultiSelect";
 import FacetNumberRangeFacetState2 from "../components/FacetNumberRangeFacetState2";
+import FacetSelectFacetState2 from "../components/FacetSelectFacetState2";
 
 const subBarLinks = [
     { key: "explore", href: "/", label: "Explore data" },
@@ -373,6 +351,25 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             };
         },
     },
+    {
+        id: "filterPrincipals",
+        facetApplicationFn: (formState, query) => {
+            if (formState.filterPrincipals.length === 0) {
+                return query;
+            }
+
+            // NOTE: This is a filter that does not affect which query to run,
+            // so the `modified` flag does not change
+            return {
+                ...query,
+                bodyBuilder: query.bodyBuilder.filter(
+                    "terms",
+                    "allowed_principals",
+                    formState.filterPrincipals
+                ),
+            };
+        },
+    },
 ];
 
 export default function IndexPage() {
@@ -562,8 +559,45 @@ export default function IndexPage() {
         itemSortFn: itemSortKeyAlpha,
     });
 
-    // // Users/principals to narrow datasets by
-    // const [filterPrincipals, setFilterPrincipals] = useState<string[]>([]);
+    const { keycloak } = useKeycloakInfo();
+
+    const filterPrincipalsItems = useMemo(() => {
+        // If user is signed in, provide option for viewing own data
+        const userId = keycloak?.subject;
+
+        return [
+            { key: "all", label: "Show all datasets", disabled: false },
+            {
+                key: userId ?? "",
+                label: "Show only my datasets",
+                disabled: userId === undefined || userId.length === 0,
+            },
+        ];
+    }, [keycloak?.subject]);
+
+    const filterPrincipals = useEsIndividualFacetFixedArray(esFacetRoot, {
+        id: "filterPrincipals",
+        label: "Privacy",
+        items: filterPrincipalsItems,
+        mapFromState: (allItems, itemKeys) => {
+            const selectedItemKeys = [...itemKeys];
+
+            // Actively select "all" option if there is nothing in the item keys
+            // array
+            if (itemKeys.length === 0) {
+                selectedItemKeys.push("all");
+            }
+
+            return selectedItemKeys.map((key) =>
+                allItems.find((x) => x.key === key)
+            );
+        },
+        mapToState: (items) => {
+            // Drop "all" value as we don't need to store it in the state as
+            // we won't need to include it in the query
+            return items.map((x) => x.key).filter((x) => x !== "all");
+        },
+    });
 
     const currentPageIndex = useMemo(
         () => Math.floor(formState.pageStart / formState.pageSize),
@@ -587,234 +621,6 @@ export default function IndexPage() {
         },
         [updateFormState, formState.pageSize]
     );
-
-    // const handlePrivacySelectChange = useCallback<
-    //     ChangeEventHandler<HTMLSelectElement>
-    // >(
-    //     (e) => {
-    //         const value = e.currentTarget.value;
-
-    //         // If we have the current user's subject ID and they've chosen to
-    //         // filter by private then set the filtered principals to subject ID
-    //         if (value === "private" && keycloak?.subject !== undefined) {
-    //             setFilterPrincipals([keycloak.subject]);
-    //             return;
-    //         }
-
-    //         // Otherwise set blank
-    //         setFilterPrincipals([]);
-    //     },
-    //     [keycloakToken, keycloak]
-    // );
-
-    /**
-     * An effect to automatically execute new Elasticsearch query upon page
-     * parameter change, such as page increment or page size change.
-     */
-    // useEffect(
-    //     function executeEsQuery() {
-    //         const {
-    //             pageSize,
-    //             pageStart,
-    //             searchQuery,
-    //             filterPrincipals,
-    //             facetYearMin,
-    //             facetYearMax,
-    //             facetTimeDomain,
-    //             facetSpatialDomain,
-    //             facetResolution,
-    //             facetScientificType,
-    //             facetDomain,
-    //             facetCollection,
-    //             facetGcm,
-    //         } = pageParameters;
-
-    //         // Start building Elasticsearch query
-    //         let queryBuilder = bodybuilder()
-    //             .size(pageSize)
-    //             .from(pageStart)
-    //             // Facets are built up using aggregations
-    //             //
-    //             // For `year`, get the min and max values for the UI to
-    //             // construct a range slide
-    //             .aggregation("min", "year", "facetYearMin")
-    //             .aggregation("max", "year", "facetYearMax")
-    //             // All other aggregations are buckets of simple string values
-    //             .aggregation(
-    //                 "terms",
-    //                 "time_domain",
-    //                 { size: 1000000 },
-    //                 "facetTimeDomain"
-    //             )
-    //             .aggregation(
-    //                 "terms",
-    //                 "spatial_domain",
-    //                 { size: 1000000 },
-    //                 "facetSpatialDomain"
-    //             )
-    //             .aggregation(
-    //                 "terms",
-    //                 "resolution",
-    //                 { size: 1000000 },
-    //                 "facetResolution"
-    //             )
-    //             .aggregation(
-    //                 "terms",
-    //                 "scientific_type",
-    //                 { size: 1000000 },
-    //                 "facetScientificType"
-    //             )
-    //             .aggregation(
-    //                 "terms",
-    //                 "domain",
-    //                 { size: 1000000 },
-    //                 "facetDomain"
-    //             )
-    //             .aggregation(
-    //                 "terms",
-    //                 "collection_names",
-    //                 { size: 1000000 },
-    //                 "facetCollection"
-    //             )
-    //             .aggregation("terms", "gcm", { size: 1000000 }, "facetGcm");
-
-    //         let isEmptyQuery = true;
-
-    //         // Add facets
-    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-    //             queryBuilder,
-    //             isEmptyQuery,
-    //             "time_domain",
-    //             facetTimeDomain
-    //         );
-    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-    //             queryBuilder,
-    //             isEmptyQuery,
-    //             "spatial_domain",
-    //             facetSpatialDomain
-    //         );
-    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-    //             queryBuilder,
-    //             isEmptyQuery,
-    //             "resolution",
-    //             facetResolution
-    //         );
-    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-    //             queryBuilder,
-    //             isEmptyQuery,
-    //             "scientific_type",
-    //             facetScientificType
-    //         );
-    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-    //             queryBuilder,
-    //             isEmptyQuery,
-    //             "domain",
-    //             facetDomain
-    //         );
-    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-    //             queryBuilder,
-    //             isEmptyQuery,
-    //             "collection_names",
-    //             facetCollection
-    //         );
-    //         [queryBuilder, isEmptyQuery] = addTermAggregationFacetStateToQuery(
-    //             queryBuilder,
-    //             isEmptyQuery,
-    //             "gcm",
-    //             facetGcm
-    //         );
-
-    //         // Year range
-    //         if (!Number.isNaN(facetYearMin) || !Number.isNaN(facetYearMax)) {
-    //             isEmptyQuery = false;
-
-    //             const yearRangeQuery: Record<string, number> = {};
-
-    //             if (!Number.isNaN(facetYearMin)) {
-    //                 yearRangeQuery["gte"] = facetYearMin;
-    //             }
-
-    //             if (!Number.isNaN(facetYearMax)) {
-    //                 yearRangeQuery["lte"] = facetYearMax;
-    //             }
-
-    //             queryBuilder = queryBuilder.query(
-    //                 "range",
-    //                 "year",
-    //                 yearRangeQuery
-    //             );
-    //         }
-
-    //         // String search query
-    //         if (searchQuery.length !== 0) {
-    //             isEmptyQuery = false;
-
-    //             // The search box value is used for a query against title
-    //             // and description
-    //             const innerQuery = bodybuilder()
-    //                 .orQuery("match", "title", searchQuery)
-    //                 .orQuery("match", "description", searchQuery);
-
-    //             queryBuilder = queryBuilder.query(
-    //                 "bool",
-    //                 (innerQuery.build() as any).query.bool
-    //             );
-    //         }
-
-    //         // If users/principals are provided, apply them as a filter
-    //         if (filterPrincipals.length > 0) {
-    //             // NOTE: This is a filter, so the `isEmptyQuery` flag does not
-    //             // need to be set to `false`
-    //             queryBuilder = queryBuilder.filter(
-    //                 "terms",
-    //                 "allowed_principals",
-    //                 filterPrincipals
-    //             );
-    //         }
-
-    //         // If query empty, attempt to fetch all
-    //         if (isEmptyQuery) {
-    //             queryBuilder = queryBuilder.query("match_all");
-    //         }
-
-    //         const query = queryBuilder.build();
-
-    //         // `Authorization` header depends on whether token is available
-    //         const headers: Record<string, string> = {};
-
-    //         if (keycloakToken && keycloakToken.length > 0) {
-    //             headers["Authorization"] = `Bearer ${keycloakToken}`;
-    //         }
-
-    //         const esQueryCancelToken = axios.CancelToken.source();
-
-    //         axios
-    //             .post<SearchResponse<EsDataset>>(
-    //                 `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
-    //                 query,
-    //                 { headers, cancelToken: esQueryCancelToken.token }
-    //             )
-    //             .then((res) => {
-    //                 setResults(res.data);
-    //             })
-    //             .catch((e) => {
-    //                 // Ignore cancellation events
-    //                 if (axios.isCancel(e)) {
-    //                     return;
-    //                 }
-
-    //                 console.error(e);
-
-    //                 alert(e.toString());
-    //             });
-
-    //         return function stopOngoingEsQuery() {
-    //             // Cancel the ES query if it is still running
-    //             esQueryCancelToken.cancel();
-    //         };
-    //     },
-    //     [pageParameters, keycloakToken]
-    // );
 
     return (
         <>
@@ -892,6 +698,7 @@ export default function IndexPage() {
                                     </Col>
                                 </Row>
                             ))}
+                            <FacetSelectFacetState2 facet={filterPrincipals} />
                             {/* <Row>
                                 <Col>
                                     <H6>Privacy</H6>

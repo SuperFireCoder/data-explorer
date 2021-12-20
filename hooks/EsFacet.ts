@@ -60,7 +60,9 @@ export interface EsFacetRoot<T extends MinimumFormState, R> {
 
 export type EsIndividualFacet<T> =
     | EsIndividualFacetFreeText<T>
-    | EsIndividualFacetArray<T>;
+    | EsIndividualFacetArray<T>
+    | EsIndividualFacetFixedArray<T>
+    | EsIndividualFacetNumberRange<T>;
 
 export interface EsIndividualFacetFreeText<T> {
     id: keyof T;
@@ -87,6 +89,18 @@ export interface EsIndividualFacetArray<T> {
     ) => number;
     onItemSelect: (item: EsAggregationBucket) => void;
     onItemRemoveByTag: (tag: unknown, i: number) => void;
+}
+
+export interface EsIndividualFacetFixedArray<T> {
+    id: keyof T;
+    label: string;
+    placeholder?: string;
+
+    type: "fixed-array";
+    items: readonly { key: string; label: string; disabled?: boolean }[];
+    selectedItems: readonly ({ key: string; label: string } | undefined)[];
+
+    onItemSelect: (item: readonly { key: string; label: string }[]) => void;
 }
 
 export interface EsIndividualFacetNumberRange<T> {
@@ -263,7 +277,7 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
                         config.url,
                         query,
                         {
-                            // TODO: Implement headers for auth-required search
+                            headers,
                             cancelToken: esQueryCancelToken.token,
                         }
                     );
@@ -437,6 +451,48 @@ export const useEsIndividualFacetArray = <T extends MinimumFormState>(
         itemSortFn: config.itemSortFn,
         onItemSelect: handleItemSelect,
         onItemRemoveByTag: handleItemRemoveByTag,
+    };
+};
+
+export const useEsIndividualFacetFixedArray = <T extends MinimumFormState>(
+    // FIXME: Fix generic constraints for EsFacetRoot
+    esFacetRoot: EsFacetRoot<T, any>,
+    config: EsIndividualFacetConfig<T> & {
+        items: readonly { key: string; label: string; disabled?: boolean }[];
+        mapFromState: (
+            allItems: readonly { key: string; label: string }[],
+            itemKeys: readonly string[]
+        ) => readonly ({ key: string; label: string } | undefined)[];
+        mapToState: (
+            items: readonly { key: string; label: string }[]
+        ) => readonly string[];
+    }
+): EsIndividualFacetFixedArray<T> => {
+    const selectedItems = useMemo(() => {
+        const itemKeys = esFacetRoot.formState[
+            config.id
+        ] as unknown as readonly string[];
+        return config.mapFromState(config.items, itemKeys);
+    }, [config.items, config.mapFromState, esFacetRoot.formState]);
+
+    const handleItemSelect = useCallback(
+        (newItems: readonly { key: string; label: string }[]) => {
+            esFacetRoot.onFormStateChange({
+                [config.id]: config.mapToState(newItems),
+            } as unknown as Partial<T>);
+        },
+        [config.id, config.mapToState, esFacetRoot.onFormStateChange]
+    );
+
+    return {
+        id: config.id,
+        label: config.label,
+        placeholder: config.placeholder,
+
+        type: "fixed-array",
+        items: config.items,
+        selectedItems,
+        onItemSelect: handleItemSelect,
     };
 };
 
