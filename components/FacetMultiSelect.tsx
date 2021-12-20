@@ -1,23 +1,26 @@
 import { MenuItem } from "@blueprintjs/core";
 import { ItemPredicate, ItemRenderer, MultiSelect } from "@blueprintjs/select";
 import { ReactNode, SyntheticEvent, useCallback, useMemo } from "react";
-
 import { EsAggregationBucket } from "../interfaces/EsAggregationBucket";
+import styles from "./FacetMultiSelect.module.css";
 
 export interface Props<T> {
     items: readonly T[];
-    selectedItems: readonly T[];
+    selectedItems: readonly (T | undefined)[];
     placeholder?: string;
     onItemSelect: (item: T, event?: SyntheticEvent<HTMLElement>) => void;
     onItemRemoveByTag: (tag: ReactNode, index: number) => void;
     tagRenderer?: (item: T) => ReactNode;
-    itemEqualityFn?: (a: T, b: T) => boolean;
+    itemEqualityFn?: (a: T | undefined, b: T | undefined) => boolean;
+    itemSortFn?: (a: T | undefined, b: T | undefined) => number;
+    /** Whether to disable rendering of the document count label for items */
+    disableDocCountLabel?: boolean;
 }
 
 const defaultItemEqualityFn = (
-    a: EsAggregationBucket,
-    b: EsAggregationBucket
-) => a.key === b.key;
+    a: EsAggregationBucket | undefined,
+    b: EsAggregationBucket | undefined
+) => !!(a && b) && a.key === b.key;
 
 const defaultItemPredicateFilter: ItemPredicate<EsAggregationBucket> = (
     query,
@@ -29,7 +32,31 @@ const defaultItemPredicateFilter: ItemPredicate<EsAggregationBucket> = (
         ? item.key === query
         : item.key.toLowerCase().indexOf(query.toLowerCase()) >= 0;
 
-const defaultTagRenderer = (item: EsAggregationBucket) => item.key;
+const defaultTagRenderer = (item: EsAggregationBucket | undefined) =>
+    item?.key ?? "";
+
+export const itemSortKeyAlpha = (
+    a: EsAggregationBucket | undefined,
+    b: EsAggregationBucket | undefined
+) => (a?.key ?? "").localeCompare(b?.key ?? "");
+
+export const itemSortCountDesc = (
+    a: EsAggregationBucket | undefined,
+    b: EsAggregationBucket | undefined
+) => {
+    const aCount = a?.doc_count ?? 0;
+    const bCount = b?.doc_count ?? 0;
+
+    if (aCount < bCount) {
+        return -1;
+    }
+
+    if (aCount > bCount) {
+        return 1;
+    }
+
+    return 0;
+};
 
 export default function FacetMultiSelect<T extends EsAggregationBucket>({
     items,
@@ -39,6 +66,8 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
     onItemRemoveByTag,
     tagRenderer = defaultTagRenderer,
     itemEqualityFn = defaultItemEqualityFn,
+    itemSortFn,
+    disableDocCountLabel = false,
 }: Props<T>) {
     const tagInputProps = useMemo(
         () => ({
@@ -46,6 +75,11 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
             dataTestid: "facet-multi-select-tag-input",
         }),
         [onItemRemoveByTag]
+    );
+
+    const sortedItems = useMemo(
+        () => (itemSortFn === undefined ? items : [...items].sort(itemSortFn)),
+        [items, itemSortFn]
     );
 
     const isItemInSelectedItems = useCallback(
@@ -71,19 +105,21 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
                     active={modifiers.active}
                     onClick={handleClick}
                     text={item.key}
-                    label={`${item.doc_count}`}
+                    label={
+                        disableDocCountLabel ? undefined : `${item.doc_count}`
+                    }
                     // Keep select menu list open after selection
                     shouldDismissPopover={false}
                 />
             );
         },
-        [isItemInSelectedItems]
+        [isItemInSelectedItems, disableDocCountLabel]
     );
 
     return (
         <MultiSelect<T>
             // NOTE: Marking array as mutable for type compatibility only
-            items={items as T[]}
+            items={sortedItems as T[]}
             selectedItems={selectedItems as T[]}
             itemRenderer={menuItemRenderer}
             itemPredicate={defaultItemPredicateFilter}
@@ -95,6 +131,7 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
             resetOnQuery={false}
             placeholder={placeholder}
             fill
+            popoverProps={{ popoverClassName: styles.selectOptionsMenu }}
         />
     );
 }
