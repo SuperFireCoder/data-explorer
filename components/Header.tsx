@@ -30,6 +30,10 @@ export default function Header(
                         .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ANALYSIS_HUB ??
                     "#",
             }}
+            useYellowStripedBackground={
+                config.publicRuntimeConfig.NEXT_PUBLIC_DEPLOYMENT !==
+                "production"
+            }
             {...props}
         />
     );
