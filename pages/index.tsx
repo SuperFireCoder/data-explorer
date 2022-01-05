@@ -1,38 +1,41 @@
+import { Tabs, Tab } from "@blueprintjs/core";
 import {
     FixedContainer,
     HtmlHead,
     Col,
     Row,
 } from "@ecocommons-australia/ui-library";
-import { FormEvent, useCallback, useMemo } from "react";
+import {
+    ChangeEventHandler,
+    FormEvent,
+    FormEventHandler,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
+import { SearchResponse } from "elasticsearch";
 import { useRouter } from "next/router";
-import bodybuilder from "bodybuilder";
-import { Button, H6, Spinner } from "@blueprintjs/core";
+import bodybuilder, { Bodybuilder } from "bodybuilder";
+import axios from "axios";
+import { InputGroup, Button, H6, Switch, FocusStyleManager } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 
 import Header from "../components/Header";
 import DatasetCard from "../components/DatasetCard";
 import Pagination from "../components/Pagination";
+import FacetMultiSelectFacetState from "../components/FacetMultiSelectFacetState";
+import { EsDataset } from "../interfaces/EsDataset";
 import { DatasetType } from "../interfaces/DatasetType";
+import { useFacetState } from "../hooks/FacetState";
 import {
     getDataExplorerBackendServerUrl,
     getDataExplorerSubbarImportData,
 } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
-import {
-    EsFacetRootConfig,
-    QueryState,
-    useEsFacetRoot,
-    useEsIndividualFacetArray,
-    useEsIndividualFacetFixedArray,
-    useEsIndividualFacetFreeText,
-    useEsIndividualFacetNumberRange,
-} from "../hooks/EsFacet";
-import FacetMultiSelectFacetState2 from "../components/FacetMultiSelectFacetState2";
-import FacetFreeTextFacetState2 from "../components/FacetFreeTextFacetState2";
-import { itemSortKeyAlpha } from "../components/FacetMultiSelect";
-import FacetNumberRangeFacetState2 from "../components/FacetNumberRangeFacetState2";
-import FacetSelectFacetState2 from "../components/FacetSelectFacetState2";
+import { Select } from "@blueprintjs/select";
+import ExploreEcoData from "../components/ExploreEcoData";
+import ExploreKnowledgeData from "../components/ExploreKnowledgeData";
 
 const subBarLinks = [
     { key: "explore", href: "/", label: "Explore data" },
@@ -61,24 +64,7 @@ interface QueryParameters {
     facetResolution?: string | string[];
     facetGcm?: string | string[];
     facetDomain?: string | string[];
-    facetCollection?: string | string[];
     facetScientificType?: string | string[];
-}
-
-interface FormState {
-    pageSize: number;
-    pageStart: number;
-    searchQuery: string;
-    filterPrincipals: readonly string[];
-    facetYearMin: number;
-    facetYearMax: number;
-    facetTimeDomain: readonly string[];
-    facetSpatialDomain: readonly string[];
-    facetResolution: readonly string[];
-    facetScientificType: readonly string[];
-    facetDomain: readonly string[];
-    facetCollection: readonly string[];
-    facetGcm: readonly string[];
 }
 
 function stripEmptyStringQueryParams(
@@ -105,20 +91,22 @@ function normaliseAsReadonlyStringArray(
  * whether the query has had filters applied such as prior facets or some string
  * query.)
  *
- * @param queryState
+ * @param queryBuilder
+ * @param isEmptyQuery
  * @param facetEsTerm String identifier for the term used in Elasticsearch query
  * @param facetValues
  *
  * @returns Array of [new bodyBuilder query instance, `isEmptyQuery` boolean]
  */
 function addTermAggregationFacetStateToQuery(
-    queryState: QueryState,
+    queryBuilder: Bodybuilder,
+    isEmptyQuery: boolean,
     facetEsTerm: string,
     facetValues: readonly string[]
-): QueryState {
+): [Bodybuilder, boolean] {
     // If nothing selected for this facet, return state untouched
     if (facetValues.length === 0) {
-        return queryState;
+        return [queryBuilder, isEmptyQuery];
     }
 
     // Add all selected facet values
@@ -128,15 +116,12 @@ function addTermAggregationFacetStateToQuery(
         (x) => (innerQuery = innerQuery.orQuery("match", facetEsTerm, x))
     );
 
-    const newQueryBuilder = queryState.bodyBuilder.query(
+    const newQueryBuilder = queryBuilder.query(
         "bool",
         (innerQuery.build() as any).query.bool
     );
 
-    return {
-        bodyBuilder: newQueryBuilder,
-        modified: true,
-    };
+    return [newQueryBuilder, false];
 }
 
 function suppressEvent(e: Event | FormEvent | MouseEvent) {
@@ -144,482 +129,53 @@ function suppressEvent(e: Event | FormEvent | MouseEvent) {
     e.stopPropagation();
 }
 
-const FACETS: EsFacetRootConfig<FormState>["facets"] = [
-    {
-        id: "searchQuery",
-        facetApplicationFn: (formState, query) => {
-            const searchQuery = formState.searchQuery.trim();
-
-            // If blank, don't apply this facet
-            if (searchQuery.length === 0) {
-                return query;
-            }
-
-            // The search box value is used for a query against title
-            // and description
-            const innerQuery = bodybuilder()
-                .orQuery("match", "title", searchQuery)
-                .orQuery("match", "description", searchQuery);
-
-            return {
-                modified: true,
-                bodyBuilder: query.bodyBuilder.query(
-                    "bool",
-                    (innerQuery.build() as any).query.bool
-                ),
-            };
-        },
-    },
-    {
-        id: "facetYearMin",
-        facetApplicationFn: (formState, query) => {
-            const { facetYearMin, facetYearMax } = formState;
-
-            // If both range values are NaN then the query is returned unchanged
-            if (Number.isNaN(facetYearMin) && Number.isNaN(facetYearMax)) {
-                return query;
-            }
-
-            const yearRangeQuery: Record<string, number> = {};
-
-            if (!Number.isNaN(facetYearMin)) {
-                yearRangeQuery["gte"] = facetYearMin;
-            }
-
-            if (!Number.isNaN(facetYearMax)) {
-                yearRangeQuery["lte"] = facetYearMax;
-            }
-
-            return {
-                modified: true,
-                bodyBuilder: query.bodyBuilder.query(
-                    "range",
-                    "year",
-                    yearRangeQuery
-                ),
-            };
-        },
-    },
-    {
-        // NOTE: The facet application function here is just returning the query
-        // as-is, as the function declared for `facetYearMin` covers both
-        //
-        // TODO: Figure out how to configure paired/"range" facets across two
-        // params properly
-        id: "facetYearMax",
-        facetApplicationFn: (_formState, query) => {
-            return query;
-        },
-    },
-    {
-        id: "facetCollection",
-        facetApplicationFn: (formState, query) =>
-            addTermAggregationFacetStateToQuery(
-                query,
-                "collection_names",
-                formState.facetCollection
-            ),
-        aggregationApplicationFn: (query) => {
-            return {
-                ...query,
-                bodyBuilder: query.bodyBuilder.aggregation(
-                    "terms",
-                    "collection_names",
-                    { size: 1000000 },
-                    "facetCollection"
-                ),
-            };
-        },
-    },
-    {
-        id: "facetTimeDomain",
-        facetApplicationFn: (formState, query) =>
-            addTermAggregationFacetStateToQuery(
-                query,
-                "time_domain",
-                formState.facetTimeDomain
-            ),
-        aggregationApplicationFn: (query) => {
-            return {
-                ...query,
-                bodyBuilder: query.bodyBuilder.aggregation(
-                    "terms",
-                    "time_domain",
-                    { size: 1000000 },
-                    "facetTimeDomain"
-                ),
-            };
-        },
-    },
-    {
-        id: "facetSpatialDomain",
-        facetApplicationFn: (formState, query) =>
-            addTermAggregationFacetStateToQuery(
-                query,
-                "spatial_domain",
-                formState.facetSpatialDomain
-            ),
-        aggregationApplicationFn: (query) => {
-            return {
-                ...query,
-                bodyBuilder: query.bodyBuilder.aggregation(
-                    "terms",
-                    "spatial_domain",
-                    { size: 1000000 },
-                    "facetSpatialDomain"
-                ),
-            };
-        },
-    },
-    {
-        id: "facetResolution",
-        facetApplicationFn: (formState, query) =>
-            addTermAggregationFacetStateToQuery(
-                query,
-                "resolution",
-                formState.facetResolution
-            ),
-        aggregationApplicationFn: (query) => {
-            return {
-                ...query,
-                bodyBuilder: query.bodyBuilder.aggregation(
-                    "terms",
-                    "resolution",
-                    { size: 1000000 },
-                    "facetResolution"
-                ),
-            };
-        },
-    },
-    {
-        id: "facetScientificType",
-        facetApplicationFn: (formState, query) =>
-            addTermAggregationFacetStateToQuery(
-                query,
-                "scientific_type",
-                formState.facetScientificType
-            ),
-        aggregationApplicationFn: (query) => {
-            return {
-                ...query,
-                bodyBuilder: query.bodyBuilder.aggregation(
-                    "terms",
-                    "scientific_type",
-                    { size: 1000000 },
-                    "facetScientificType"
-                ),
-            };
-        },
-    },
-    {
-        id: "facetDomain",
-        facetApplicationFn: (formState, query) =>
-            addTermAggregationFacetStateToQuery(
-                query,
-                "domain",
-                formState.facetDomain
-            ),
-        aggregationApplicationFn: (query) => {
-            return {
-                ...query,
-                bodyBuilder: query.bodyBuilder.aggregation(
-                    "terms",
-                    "domain",
-                    { size: 1000000 },
-                    "facetDomain"
-                ),
-            };
-        },
-    },
-    {
-        id: "facetGcm",
-        facetApplicationFn: (formState, query) =>
-            addTermAggregationFacetStateToQuery(
-                query,
-                "gcm",
-                formState.facetGcm
-            ),
-        aggregationApplicationFn: (query) => {
-            return {
-                ...query,
-                bodyBuilder: query.bodyBuilder.aggregation(
-                    "terms",
-                    "gcm",
-                    { size: 1000000 },
-                    "facetGcm"
-                ),
-            };
-        },
-    },
-    {
-        id: "filterPrincipals",
-        facetApplicationFn: (formState, query) => {
-            if (formState.filterPrincipals.length === 0) {
-                return query;
-            }
-
-            // NOTE: This is a filter that does not affect which query to run,
-            // so the `modified` flag does not change
-            return {
-                ...query,
-                bodyBuilder: query.bodyBuilder.filter(
-                    "terms",
-                    "allowed_principals",
-                    formState.filterPrincipals
-                ),
-            };
-        },
-    },
-];
-
 export default function IndexPage() {
-    const router = useRouter();
-
-    /**
-     * Extracts the current page parameters from the URL query parameter values.
-     */
-    const formState = useMemo<FormState>(() => {
-        const {
-            pageSize = "10",
-            pageStart = "0",
-            searchQuery = "",
-            filterPrincipals = [],
-            facetYearMin = "",
-            facetYearMax = "",
-            facetTimeDomain = [],
-            facetSpatialDomain = [],
-            facetResolution = [],
-            facetScientificType = [],
-            facetDomain = [],
-            facetCollection = [],
-            facetGcm = [],
-        } = router.query as QueryParameters;
-
-        return {
-            // Pagination
-            pageSize: parseInt(pageSize, 10) || 10,
-            pageStart: parseInt(pageStart, 10) || 0,
-
-            // String search query
-            searchQuery,
-
-            // Principals
-            filterPrincipals: normaliseAsReadonlyStringArray(filterPrincipals),
-
-            // Facets
-            facetYearMin: parseInt(facetYearMin, 10), // Value may be NaN
-            facetYearMax: parseInt(facetYearMax, 10), // Value may be NaN
-            facetTimeDomain: normaliseAsReadonlyStringArray(facetTimeDomain),
-            facetSpatialDomain:
-                normaliseAsReadonlyStringArray(facetSpatialDomain),
-            facetResolution: normaliseAsReadonlyStringArray(facetResolution),
-            facetScientificType:
-                normaliseAsReadonlyStringArray(facetScientificType),
-            facetDomain: normaliseAsReadonlyStringArray(facetDomain),
-            facetCollection: normaliseAsReadonlyStringArray(facetCollection),
-            facetGcm: normaliseAsReadonlyStringArray(facetGcm),
-        };
-    }, [router.query]);
-
-    const updateFormState = useCallback(
-        (formState: Partial<FormState>) => {
-            // Copy out state and replace NaN values with empty strings
-            //
-            // This means that those keys with NaN values are removed from the
-            // query params when it gets passed through
-            // `stripEmptyStringQueryParams()` below
-            const state = { ...formState };
-
-            for (const key of Object.keys(state) as (keyof typeof state)[]) {
-                if (Number.isNaN(state[key])) {
-                    // Deliberately set the value as empty string
-                    state[key] = "" as any;
-                }
-            }
-
-            // Update query params for this page, which will update `formState`
-            // above
-            router.push({
-                query: stripEmptyStringQueryParams({
-                    ...router.query,
-                    ...state,
-                }),
-            });
-        },
-        [router.query]
-    );
-
-    const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
-        facets: FACETS,
-        url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
-    });
-
-    const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
-
-    const searchQuery = useEsIndividualFacetFreeText(esFacetRoot, {
-        id: "searchQuery",
-        label: "Search",
-        placeholder: "Search datasets...",
-    });
-
-    const facetYearRange = useEsIndividualFacetNumberRange(esFacetRoot, {
-        minId: "facetYearMin",
-        maxId: "facetYearMax",
-        label: "Year",
-    });
-
-    const facetCollection = useEsIndividualFacetArray(esFacetRoot, {
-        id: "facetCollection",
-        label: "Collection",
-        placeholder: "Filter by collection...",
-        itemSortFn: itemSortKeyAlpha,
-    });
-
-    const facetTimeDomain = useEsIndividualFacetArray(esFacetRoot, {
-        id: "facetTimeDomain",
-        label: "Time domain",
-        placeholder: "Filter by time domain...",
-        itemSortFn: itemSortKeyAlpha,
-    });
-
-    const facetSpatialDomain = useEsIndividualFacetArray(esFacetRoot, {
-        id: "facetSpatialDomain",
-        label: "Spatial domain",
-        placeholder: "Filter by spatial domain...",
-        itemSortFn: itemSortKeyAlpha,
-    });
-
-    const facetResolution = useEsIndividualFacetArray(esFacetRoot, {
-        id: "facetResolution",
-        label: "Resolution",
-        placeholder: "Filter by resolution...",
-        itemSortFn: (a, b) => {
-            const aName = a?.key;
-            const bName = b?.key;
-
-            if (aName === undefined || bName === undefined) {
-                return 0;
-            }
-
-            // Parse "arcmin"/"arcsec" names
-            const parseArcSecValueFromName = (x: string) => {
-                const parts = x
-                    .split(" ")
-                    .filter((s) => s.trim().length !== 0)
-                    .map((s) => s.toLowerCase());
-
-                // Assume first is number, second is unit
-                // e.g. "36 arcsec (...)"
-                if (parts[1] === "arcsec") {
-                    return Number.parseFloat(parts[0]);
-                }
-
-                if (parts[1] === "arcmin") {
-                    return Number.parseFloat(parts[0]) * 60;
-                }
-
-                // Return NaN if we don't know what we're dealing with rather
-                // than throwing as we don't want to completely crash the sort
-                return Number.NaN;
-            };
-
-            const aValue = parseArcSecValueFromName(aName);
-            const bValue = parseArcSecValueFromName(bName);
-
-            if (aValue < bValue) {
-                return -1;
-            }
-
-            if (aValue > bValue) {
-                return 1;
-            }
-
-            return 0;
-        },
-    });
-
-    const facetScientificType = useEsIndividualFacetArray(esFacetRoot, {
-        id: "facetScientificType",
-        label: "Scientific type",
-        placeholder: "Filter by scientific type...",
-        itemSortFn: itemSortKeyAlpha,
-    });
-
-    const facetDomain = useEsIndividualFacetArray(esFacetRoot, {
-        id: "facetDomain",
-        label: "Domain",
-        placeholder: "Filter by domain...",
-        itemSortFn: itemSortKeyAlpha,
-    });
-
-    const facetGcm = useEsIndividualFacetArray(esFacetRoot, {
-        id: "facetGcm",
-        label: "GCM",
-        placeholder: "Filter by GCM...",
-        itemSortFn: itemSortKeyAlpha,
-    });
+    /** Hide the blue outline when mouse down. Only show the switch's blue outline for accessibility when users using keyboard tab. */
+    FocusStyleManager.onlyShowFocusOnTabs();
 
     const { keycloak } = useKeycloakInfo();
+    const router = useRouter();
 
-    const filterPrincipalsItems = useMemo(() => {
-        // If user is signed in, provide option for viewing own data
-        const userId = keycloak?.subject;
+    const keycloakToken = keycloak?.token;
 
-        return [
-            { key: "all", label: "Show all datasets", disabled: false },
-            {
-                key: userId ?? "",
-                label: "Show only my datasets",
-                disabled: userId === undefined || userId.length === 0,
-            },
-        ];
-    }, [keycloak?.subject]);
+    let initialTab = router.query.tab as string | undefined;
+    
+    const [currentTab, setCurrentTab] = useState("eco-tab")
+    console.log(router)
 
-    const filterPrincipals = useEsIndividualFacetFixedArray(esFacetRoot, {
-        id: "filterPrincipals",
-        label: "Privacy",
-        items: filterPrincipalsItems,
-        mapFromState: (allItems, itemKeys) => {
-            const selectedItemKeys = [...itemKeys];
+    //TO REVIEW: 
+    useEffect(() => {
+       if(router.asPath === "/") {
+        router.push("/?tab=eco-data", undefined, { shallow: true })
+       }
+    }, [router.asPath])
 
-            // Actively select "all" option if there is nothing in the item keys
-            // array
-            if (itemKeys.length === 0) {
-                selectedItemKeys.push("all");
-            }
 
-            return selectedItemKeys.map((key) =>
-                allItems.find((x) => x.key === key)
-            );
-        },
-        mapToState: (items) => {
-            // Drop "all" value as we don't need to store it in the state as
-            // we won't need to include it in the query
-            return items.map((x) => x.key).filter((x) => x !== "all");
-        },
-    });
+    useEffect(() => {
+        const tab = router.query.tab;
 
-    const currentPageIndex = useMemo(
-        () => Math.floor(formState.pageStart / formState.pageSize),
-        [formState.pageStart, formState.pageSize]
-    );
+        // TODO: Look up/validate the tab name
 
-    const maxPages = useMemo(
-        () => Math.ceil(totalNumberOfResults / formState.pageSize),
-        [totalNumberOfResults, formState.pageSize]
-    );
+        // Set the tab
+        setCurrentTab(tab as string);
+    }, [router.query]);
 
-    /**
-     * Handler to change page query parameter values via URL query parameters.
-     */
-    const onPageSelect = useCallback(
-        (pageIndex: number) => {
-            updateFormState({
-                pageSize: formState.pageSize,
-                pageStart: pageIndex * formState.pageSize,
+    useEffect(() => {
+        // Set default tab
+        
+    }, []);
+
+    console.log('init router', router)
+    /** Updates URL in browser with current tab without affecting history */
+    const updateTabQueryParam = useCallback(
+        
+        (newTabId: string) => {
+            console.log({newTabId, ...router.query})
+            router.replace({
+                query: { ...router.query, tab: newTabId },
             });
         },
-        [updateFormState, formState.pageSize]
+        [router]
     );
 
     return (
@@ -630,178 +186,24 @@ export default function IndexPage() {
                 subBarLinks={subBarLinks}
                 subBarActiveKey="explore"
             />
-            <FixedContainer>
-                <Row>
-                    <Col xs={2}>
-                        <Row disableDefaultMargins>
-                            <Col>
-                                <FacetFreeTextFacetState2
-                                    facet={searchQuery}
-                                    data-testid="search-field"
-                                    type="search"
-                                    leftIcon="search"
-                                    rightElement={
-                                        searchQuery.value.length > 0 ? (
-                                            <Button
-                                                icon="small-cross"
-                                                minimal
-                                                onClick={() =>
-                                                    searchQuery.onValueChange(
-                                                        ""
-                                                    )
-                                                }
-                                                style={{
-                                                    borderRadius: "100%",
-                                                }}
-                                            />
-                                        ) : undefined
-                                    }
-                                    id="dataset-search"
-                                />
-                            </Col>
-                        </Row>
-                        <form
-                            onSubmit={suppressEvent}
-                            data-testid="facet-fields"
-                        >
-                            <Row>
-                                <Col>
-                                    <FacetNumberRangeFacetState2
-                                        facet={facetYearRange}
-                                        defaultMin={1990}
-                                        defaultMax={2010}
-                                        numberParseMode="integer"
-                                    />
-                                </Col>
-                            </Row>
-                            {[
-                                facetCollection,
-                                facetTimeDomain,
-                                facetSpatialDomain,
-                                facetResolution,
-                                facetScientificType,
-                                facetDomain,
-                                facetGcm,
-                            ].map((facet) => (
-                                <Row key={facet.id}>
-                                    <Col>
-                                        <H6>{facet.label}</H6>
-                                        <FacetMultiSelectFacetState2
-                                            facet={facet}
-                                            // When there is a free text search
-                                            // query, disable showing document
-                                            // counts as they are misleading
-                                            disableDocCountLabel={
-                                                searchQuery.value.length !== 0
-                                            }
-                                        />
-                                    </Col>
-                                </Row>
-                            ))}
-                            <FacetSelectFacetState2 facet={filterPrincipals} />
-                            {/* <Row>
-                                <Col>
-                                    <H6>Privacy</H6>
-                                    <select
-                                        value={
-                                            filterPrincipals.length === 1 &&
-                                            keycloak?.subject ===
-                                                filterPrincipals[0]
-                                                ? "private"
-                                                : "all"
-                                        }
-                                        onChange={handlePrivacySelectChange}
-                                    >
-                                        <option value="all">All</option>
-                                        <option
-                                            value="private"
-                                            disabled={
-                                                keycloak?.subject === undefined
-                                            }
-                                        >
-                                            Private
-                                        </option>
-                                    </select>
-                                </Col>
-                            </Row> */}
-                        </form>
-                    </Col>
-                    <Col xs={10}>
-                        <Row disableDefaultMargins align="center">
-                            <Col
-                                xs="content"
-                                className="bp3-ui-text bp3-text-disabled"
-                                data-testid="results-count"
-                            >
-                                {queryInProgress ? (
-                                    <Spinner size={Spinner.SIZE_SMALL} />
-                                ) : (
-                                    <>
-                                        {totalNumberOfResults} result
-                                        {totalNumberOfResults !== 1 && "s"}
-                                    </>
-                                )}
-                            </Col>
-                            <Col
-                                style={{ textAlign: "right" }}
-                                data-testid="pagination-buttons"
-                            >
-                                <Pagination
-                                    currentIndex={currentPageIndex}
-                                    max={maxPages}
-                                    onSelect={onPageSelect}
-                                />
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                {queryResult?.hits.hits.map(
-                                    ({ _id, _source }) => (
-                                        <DatasetCard
-                                            data-testid="dataset-card"
-                                            key={_id}
-                                            datasetId={_source.uuid}
-                                            title={_source.title}
-                                            description={_source.description}
-                                            status={_source.status}
-                                            failureMessage={
-                                                _source.status === "FAILED"
-                                                    ? _source.message
-                                                    : undefined
-                                            }
-                                            type={
-                                                _source.status === "SUCCESS"
-                                                    ? // TODO: Clarify values for "scientific_type"
-                                                      ({
-                                                          type: _source
-                                                              .scientific_type[0],
-                                                          subtype:
-                                                              _source
-                                                                  .scientific_type[1],
-                                                      } as unknown as DatasetType)
-                                                    : undefined
-                                            }
-                                            // TODO: Add modification date into ES index
-                                            // lastUpdated={lastUpdated}
-                                            ownerId={
-                                                _source.allowed_principals as string[]
-                                            }
-                                        />
-                                    )
-                                )}
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col style={{ textAlign: "right" }}>
-                                <Pagination
-                                    currentIndex={currentPageIndex}
-                                    max={maxPages}
-                                    onSelect={onPageSelect}
-                                />
-                            </Col>
-                        </Row>
-                    </Col>
-                </Row>
+            <FixedContainer style={{ padding: "1rem" }}>
+                <Tabs
+                        animate
+                        renderActiveTabPanelOnly
+                        defaultSelectedTabId={initialTab}
+                        onChange={updateTabQueryParam}
+                    >
+                        <Tab
+                            id="eco-data"
+                            title="Explore EcoCommons Data"
+                            panel={<ExploreEcoData />}
+                        />
+                        <Tab
+                            id="knowledge-data"
+                            title="Explore Knowledge Network Data"
+                            panel={<ExploreKnowledgeData />}
+                        />
+                </Tabs>
             </FixedContainer>
         </>
     );

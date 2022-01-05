@@ -10,7 +10,7 @@ export interface Props {
     datasetId: string;
 }
 
-export default function MetadataView({ datasetId }: Props) {
+export default function MetadataViewKN({ datasetId }: Props) {
     const { keycloak } = useKeycloakInfo();
     const keycloakToken = keycloak?.token;
 
@@ -35,11 +35,12 @@ export default function MetadataView({ datasetId }: Props) {
                     const {
                         data,
                     } = await axios.get(
-                        `${getDataExplorerBackendServerUrl()}/api/dataset/${datasetId}`,
+                        `https://knowledgenet.co/api/v0/registry/records/${datasetId}?aspect=dcat-dataset-strings&optionalAspect=dcat-dataset-strings&optionalAspect=dataset-publisher&optionalAspect=source&dereference=true`,
                         { headers }
                     );
 
                     setMetadata({ type: "dataset", data });
+                    console.log('kn data meta', metadata)
                 } catch (e) {
                     // Ignore cancellation
                     if (axios.isCancel(e)) {
@@ -76,58 +77,38 @@ export default function MetadataView({ datasetId }: Props) {
 
         case "dataset": {
             const data = metadata.data;
-            const bccvlMetadata = data["bccvl:metadata"];
+            
+            console.log('kn data', data, data.aspects["dataset-publisher"].publisher.aspects["organization-details"]);
 
-            const description = bccvlMetadata.description;
+            const generalDetails = data.aspects["dcat-dataset-strings"]
+            const orgDetails = data.aspects["dataset-publisher"].publisher.aspects["organization-details"]
+            const title = data.aspects["dcat-dataset-strings"].title;
+            const description = data.aspects["dcat-dataset-strings"].description;
+            const source = data.aspects.source;
 
             const displayedMetadata = {
-                // Species
-                "Scientific name": bccvlMetadata.scientificName?.join(" "),
-                // Raster
-                Resolution: bccvlMetadata.resolution,
-                Layers: data.rangeAlternates["dmgr:tiff"] && (
-                    <ul>
-                        {Object.entries(data.rangeAlternates["dmgr:tiff"]).map(
-                            ([layer, data]) => (
-                                <li key={layer}>
-                                    <b>{layer}</b>
-                                    <Pre>{JSON.stringify(data, null, 2)}</Pre>
-                                </li>
-                            )
-                        )}
-                    </ul>
-                ),
-                // Dataset
-                "Year range":
-                    bccvlMetadata.year_range &&
-                    `${bccvlMetadata.year_range[0]} to ${bccvlMetadata.year_range[1]}`,
-                Domain: bccvlMetadata.domain,
-                Genre: bccvlMetadata.genre,
-                Categories: bccvlMetadata.categories.join(" "),
-                // Citation, referencing and licensing
-                DOI: bccvlMetadata.doi,
-                Attributions: bccvlMetadata.attributions && (
-                    <ul>
-                        {bccvlMetadata.attributions.map(({ type, value }) => (
-                            <li key={type + value}>
-                                <b>{type}</b>
-                                <p>{value}</p>
-                            </li>
-                        ))}
-                    </ul>
-                ),
-                Acknowledgement: bccvlMetadata.acknowledgement,
-                License: bccvlMetadata.license,
-                "Landing page": bccvlMetadata.landingpage && (
-                    <a href={bccvlMetadata.landingpage} target="_blank">
-                        {bccvlMetadata.landingpage}
-                    </a>
-                ),
-            };
+                
+                "Source name": source.name,
+                "Publisher": generalDetails.publisher,
+                "Organization Details": <ul>
+                    <li><b>Organization name: </b>{orgDetails?.name || " - "}</li>
+                    <li><b>Email: </b>{orgDetails?.email || " - "}</li>
+                    <li>
+                        <p><b>Address</b></p>
+                        <p><b>Street: </b>{orgDetails?.addrStreet || " - "}</p>
+                        <p><b>Suburb: </b>{orgDetails?.addrSuburb || " - "}</p>
+                        <p><b>State: </b>{orgDetails?.addrState || " - "}</p>
+                        <p><b>Postcode: </b>{orgDetails?.addrPostCode || " - "}</p>
+                        <p><b>Country: </b>{orgDetails?.addrCountry || " - "}</p>
+                    </li>
 
+                </ul>,
+                "Contact point": generalDetails.contactPoint
+            }
+            
             return (
                 <div data-testid="metadata-view">
-                    {description && <p>{description}</p>}
+                    {description && <><h4>{"Description"}</h4><p>{description}</p></>}
                     <ul>
                         {Object.entries(displayedMetadata).map(
                             ([field, value]) =>
