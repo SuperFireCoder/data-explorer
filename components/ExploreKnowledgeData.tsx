@@ -24,7 +24,7 @@ import Header from "./Header";
 import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
 import FacetMultiSelectFacetState from "./FacetMultiSelectFacetState";
-import { EsDataset } from "../interfaces/EsDataset";
+import { EsDatasetKN, DataStatusKN } from "../interfaces/EsDatasetKN";
 import { DatasetType } from "../interfaces/DatasetType";
 import { useFacetState } from "../hooks/FacetState";
 import {
@@ -139,7 +139,7 @@ export default function ExploreKnowledgeData() {
     const router = useRouter();
 
     const keycloakToken = keycloak?.token;
-    const [ knDataStatus, setknDataStatus ] = useState({status: "", message: ""}); 
+    const [ knDataStatus, setknDataStatus ] = useState({} as DataStatusKN); 
     /**
      * "Restricted" set of publishers which are determined to contain
      * environmental data; this is delivered from our own CSV data source
@@ -150,12 +150,12 @@ export default function ExploreKnowledgeData() {
 
     /** Elasticsearch search response result data */
     const [results, setResults] = useState<
-        SearchResponse<EsDataset> | undefined
+        SearchResponse<EsDatasetKN> | undefined
     >(undefined);
 
     /** Elasticsearch data */
     const [globalBucket, setGlobalBucket] = useState<
-        SearchResponse<EsDataset> | undefined
+        SearchResponse<EsDatasetKN> | undefined
     >(undefined);
 
     /**
@@ -362,7 +362,7 @@ export default function ExploreKnowledgeData() {
             const esQueryCancelToken = axios.CancelToken.source();
             
             axios
-                .post<SearchResponse<EsDataset>>(
+                .post<SearchResponse<EsDatasetKN>>(
                     `https://knowledgenet.co/api/v0/es-query/datasets`,
                     query,
                     { headers, cancelToken: esQueryCancelToken.token }
@@ -481,7 +481,7 @@ export default function ExploreKnowledgeData() {
             const esQueryCancelToken = axios.CancelToken.source();
 
             axios
-                .post<SearchResponse<EsDataset>>(
+                .post<SearchResponse<EsDatasetKN>>(
                     `https://knowledgenet.co/api/v0/es-query/datasets`,
                     query,
                     { headers, cancelToken: esQueryCancelToken.token }
