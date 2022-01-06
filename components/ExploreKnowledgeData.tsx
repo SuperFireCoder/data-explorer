@@ -7,6 +7,7 @@ import { ParsedUrlQueryInput } from "querystring";
 
 import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
+import { EsDatasetKN } from "../interfaces/EsDatasetKN";
 import {
     EsFacetRootConfig,
     QueryState,
@@ -257,10 +258,14 @@ export default function ExploreKnowledgeData() {
     );
 
     // Facets
-    const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
-        facets: FACETS,
-        url: "https://knowledgenet.co/api/v0/es-query/datasets",
-    });
+    const esFacetRoot = useEsFacetRoot<FormState, EsDatasetKN>(
+        formState,
+        updateFormState,
+        {
+            facets: FACETS,
+            url: "https://knowledgenet.co/api/v0/es-query/datasets",
+        }
+    );
 
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
 

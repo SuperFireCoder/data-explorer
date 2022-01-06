@@ -4,7 +4,7 @@ import { H4, H6, Icon, Pre } from "@blueprintjs/core";
 
 import { useKeycloakInfo } from "../util/keycloak";
 import { getDataExplorerBackendServerUrl } from "../util/env";
-import { Dataset } from "../interfaces/Dataset";
+import { DatasetKN } from "../interfaces/DatasetKN";
 
 export interface Props {
     datasetId: string;
@@ -15,7 +15,7 @@ export default function MetadataViewKN({ datasetId }: Props) {
     const keycloakToken = keycloak?.token;
 
     const [metadata, setMetadata] = useState<
-        | { type: "dataset"; data: Dataset }
+        | { type: "dataset"; data: DatasetKN }
         | { type: "error"; error: any }
         | undefined
     >(undefined);
@@ -35,11 +35,12 @@ export default function MetadataViewKN({ datasetId }: Props) {
                     const {
                         data,
                     } = await axios.get(
-                        `https://knowledgenet.co/api/v0/registry/records/${datasetId}?aspect=dcat-dataset-strings&optionalAspect=dcat-dataset-strings&optionalAspect=dataset-publisher&optionalAspect=source&dereference=true`,
+                        `https://knowledgenet.co/api/v0/registry/records/${datasetId}?aspect=dcat-dataset-strings&optionalAspect=organization-details&optionalAspect=dataset-publisher&optionalAspect=source&dereference=true`,
                         { headers }
                     );
 
                     setMetadata({ type: "dataset", data });
+                    
                     console.log('kn data meta', metadata)
                 } catch (e) {
                     // Ignore cancellation
@@ -77,19 +78,16 @@ export default function MetadataViewKN({ datasetId }: Props) {
 
         case "dataset": {
             const data = metadata.data;
-            
-            console.log('kn data', data, data.aspects["dataset-publisher"].publisher.aspects["organization-details"]);
 
-            const generalDetails = data.aspects["dcat-dataset-strings"]
-            const orgDetails = data.aspects["dataset-publisher"].publisher.aspects["organization-details"]
-            const title = data.aspects["dcat-dataset-strings"].title;
-            const description = data.aspects["dcat-dataset-strings"].description;
-            const source = data.aspects.source;
+            const generalDetails = data?.aspects["dcat-dataset-strings"]
+            const orgDetails = data?.aspects["dataset-publisher"]?.publisher?.aspects["organization-details"];
+            const description = data.aspects["dcat-dataset-strings"]?.description;
+            const source = data?.aspects?.source;
 
             const displayedMetadata = {
                 
-                "Source name": source.name,
-                "Publisher": generalDetails.publisher,
+                "Source name": source?.name,
+                "Publisher": generalDetails?.publisher,
                 "Organization Details": <ul>
                     <li><b>Organization name: </b>{orgDetails?.name || " - "}</li>
                     <li><b>Email: </b>{orgDetails?.email || " - "}</li>
@@ -103,7 +101,7 @@ export default function MetadataViewKN({ datasetId }: Props) {
                     </li>
 
                 </ul>,
-                "Contact point": generalDetails.contactPoint
+                "Contact point": generalDetails?.contactPoint
             }
             
             return (
