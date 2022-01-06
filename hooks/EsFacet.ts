@@ -25,6 +25,9 @@ export interface EsFacetRootConfig<T> {
         id: keyof T;
         facetApplicationFn: (formState: T, query: QueryState) => QueryState;
         aggregationApplicationFn?: (query: QueryState) => QueryState;
+        aggregationExtractFn?: (
+            aggregation: unknown
+        ) => readonly EsAggregationBucket[] | undefined;
     }[];
 
     /** ES endpoint URL */
@@ -227,10 +230,19 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
                         EsAggregationBucket[]
                     > = Object.fromEntries(
                         Object.entries(rawAggregations).map(
-                            ([aggName, aggResult]) => [
-                                aggName,
-                                (aggResult as any).buckets,
-                            ]
+                            ([aggName, aggResult]) => {
+                                // Look up if there is special mapping function
+                                // for this aggregation
+                                const extractFn = config.facets.find(
+                                    (x) => x.id === aggName
+                                )?.aggregationExtractFn;
+
+                                if (extractFn !== undefined) {
+                                    return [aggName, extractFn(aggResult)];
+                                }
+
+                                return [aggName, (aggResult as any).buckets];
+                            }
                         )
                     );
 
@@ -252,7 +264,12 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
                 esQueryCancelToken.cancel();
             };
         },
-        [keycloakToken, constructEsGlobalAggregationFetchQueryObject]
+        [
+            keycloakToken,
+            constructEsGlobalAggregationFetchQueryObject,
+            config.url,
+            config.facets,
+        ]
     );
 
     useEffect(
