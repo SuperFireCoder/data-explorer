@@ -62,13 +62,10 @@ function normaliseAsReadonlyStringArray(
  * whether the query has had filters applied such as prior facets or some string
  * query.)
  *
- * @param queryBuilder
- * @param isEmptyQuery
+ * @param queryState
  * @param facetEsTerm String identifier for the term used in Elasticsearch query
  * @param facetValues
  * @param queryType bool || nested
- *
- * @returns Array of [new bodyBuilder query instance, `isEmptyQuery` boolean]
  */
 function addTermAggregationFacetStateToQuery(
     queryState: QueryState,
@@ -91,11 +88,14 @@ function addTermAggregationFacetStateToQuery(
     let newQueryBuilder = queryState.bodyBuilder;
 
     if (queryType === "bool") {
-        newQueryBuilder = innerQuery;
+        newQueryBuilder = newQueryBuilder.query(
+            "bool",
+            (innerQuery.build() as any).query.bool
+        );
     }
 
     if (queryType === "nested") {
-        newQueryBuilder = newQueryBuilder.orQuery(
+        newQueryBuilder = newQueryBuilder.query(
             "nested",
             "path",
             "distributions",
