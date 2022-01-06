@@ -90,8 +90,6 @@ function normaliseAsReadonlyStringArray(
  * @param queryState
  * @param facetEsTerm String identifier for the term used in Elasticsearch query
  * @param facetValues
- *
- * @returns Array of [new bodyBuilder query instance, `isEmptyQuery` boolean]
  */
 function addTermAggregationFacetStateToQuery(
     queryState: QueryState,
