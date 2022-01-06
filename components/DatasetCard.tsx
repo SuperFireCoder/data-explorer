@@ -39,12 +39,12 @@ export interface Props {
     /** Date the dataset was last updated */
     lastUpdated?: Date;
     /** User ID of the owner of the dataset */
-    ownerId: string | string[];
+    ownerId?: string | string[];
     /** Status of the dataset import */
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
     /** Import failure message */
     failureMessage?: string;
-    exploreDataType: "dataExplorer" | "knowledgeNetwork"; 
+    exploreDataType: "dataExplorer" | "knowledgeNetwork";
 }
 
 export default function DatasetCard({
@@ -56,7 +56,7 @@ export default function DatasetCard({
     ownerId,
     status,
     failureMessage,
-    exploreDataType
+    exploreDataType,
 }: Props) {
     const { keycloak } = useKeycloakInfo();
     const dataManager = useDataManager();
@@ -204,21 +204,34 @@ export default function DatasetCard({
                                             onClick={downloadDataset}
                                             disabled={disabledDataset}
                                         />
-                                        <MenuItem
-                                            icon="share"
-                                            text="Share..."
-                                            onClick={openSharingDrawer}
-                                            disabled={
-                                                disabledDataset ||
-                                                // Disable sharing when user is not owner
-                                                currentUserId === undefined ||
-                                                typeof ownerId === "string"
-                                                    ? ownerId !== currentUserId
-                                                    : !ownerId.includes(
-                                                          currentUserId
-                                                      )
-                                            }
-                                        />
+                                        {
+                                            // KN data is not shareable at this
+                                            // stage
+                                            exploreDataType ===
+                                                "dataExplorer" &&
+                                                ownerId !== undefined && (
+                                                    <MenuItem
+                                                        icon="share"
+                                                        text="Share..."
+                                                        onClick={
+                                                            openSharingDrawer
+                                                        }
+                                                        disabled={
+                                                            disabledDataset ||
+                                                            // Disable sharing when user is not owner
+                                                            currentUserId ===
+                                                                undefined ||
+                                                            typeof ownerId ===
+                                                                "string"
+                                                                ? ownerId !==
+                                                                  currentUserId
+                                                                : !ownerId.includes(
+                                                                      currentUserId
+                                                                  )
+                                                        }
+                                                    />
+                                                )
+                                        }
                                     </Menu>
                                 }
                                 position={Position.BOTTOM_RIGHT}
