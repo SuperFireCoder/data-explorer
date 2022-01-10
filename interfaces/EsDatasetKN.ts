@@ -16,7 +16,7 @@ export interface EsDatasetKN {
     indexed: string;
     issued: string;
     keywords: string[];
-    landingPage: unknown;
+    landingPage?: string | null;
     language: string[];
     modified: string;
     provenance: unknown;

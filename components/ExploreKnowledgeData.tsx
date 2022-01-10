@@ -397,6 +397,9 @@ export default function ExploreKnowledgeData() {
                                 description={_source.description}
                                 status="SUCCESS"
                                 exploreDataType="knowledgeNetwork"
+                                landingPageUrl={
+                                    _source.landingPage ?? undefined
+                                }
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
                             />
