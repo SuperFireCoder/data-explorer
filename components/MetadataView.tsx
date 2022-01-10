@@ -23,7 +23,7 @@ export default function MetadataView({ datasetId }: Props) {
     useEffect(
         function loadMetadata() {
             const cancellationToken = axios.CancelToken.source();
-            console.log("datasetId", datasetId);
+            // console.log("datasetId", datasetId);
             (async () => {
                 try {
                     const headers: Record<string, string> = {};

@@ -23,7 +23,7 @@ export default function MetadataViewKN({ datasetId }: Props) {
     useEffect(
         function loadMetadata() {
             const cancellationToken = axios.CancelToken.source();
-            console.log("datasetId", datasetId);
+            // console.log("datasetId", datasetId);
             (async () => {
                 try {
                     const headers: Record<string, string> = {};
@@ -41,7 +41,7 @@ export default function MetadataViewKN({ datasetId }: Props) {
 
                     setMetadata({ type: "dataset", data });
                     
-                    console.log('kn data meta', metadata)
+                    // console.log('kn data meta', metadata)
                 } catch (e) {
                     // Ignore cancellation
                     if (axios.isCancel(e)) {

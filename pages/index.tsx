@@ -141,7 +141,7 @@ export default function IndexPage() {
     let initialTab = router.query.tab as string | undefined;
     
     const [currentTab, setCurrentTab] = useState("eco-tab")
-    console.log(router)
+    // console.log(router)
 
     //TO REVIEW: 
     useEffect(() => {
@@ -165,12 +165,12 @@ export default function IndexPage() {
         
     }, []);
 
-    console.log('init router', router)
+    // console.log('init router', router)
     /** Updates URL in browser with current tab without affecting history */
     const updateTabQueryParam = useCallback(
         
         (newTabId: string) => {
-            console.log({newTabId, ...router.query})
+            // console.log({newTabId, ...router.query})
             router.replace({
                 query: { ...router.query, tab: newTabId },
             });

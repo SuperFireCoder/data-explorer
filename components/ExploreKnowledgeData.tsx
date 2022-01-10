@@ -110,7 +110,7 @@ function addTermAggregationFacetStateToQuery(
         );
     }
 
-    console.log("new query", newQueryBuilder.build(), facetValues);
+    // console.log("new query", newQueryBuilder.build(), facetValues);
     return {
         bodyBuilder: newQueryBuilder,
         modified: true,
