@@ -126,7 +126,7 @@ describe("IndexPage", () => {
         });
 
         // 1 for query, 1 for aggregations
-        expect(mockAxios.post).toHaveBeenCalledTimes(2);
+        expect(mockAxios.post).toHaveBeenCalledTimes(3);
 
         // Once all results come back
 
@@ -206,7 +206,7 @@ describe("IndexPage", () => {
         await renderPage();
 
         // 1 for query, 1 for aggregations
-        expect(mockAxios.post).toHaveBeenCalledTimes(2);
+        expect(mockAxios.post).toHaveBeenCalledTimes(3);
 
         expect(mockAxios.post.mock.calls[0][2]).toHaveProperty(
             ["headers", "Authorization"],
@@ -245,10 +245,10 @@ describe("IndexPage", () => {
             },
         });
 
-        // 3rd POST due to new query should have the text we filled into the
+        // 4th POST due to new query should have the text we filled into the
         // search field
-        expect(mockAxios.post).toBeCalledTimes(3);
-        expect(mockAxios.post.mock.calls[2][1]).toMatchObject({
+        expect(mockAxios.post).toBeCalledTimes(4);
+        expect(mockAxios.post.mock.calls[3][1]).toMatchObject({
             query: {
                 bool: {
                     should: [
@@ -372,8 +372,8 @@ describe("IndexPage", () => {
         });
 
         // Note that every time we select a facet, a new POST is called
-        expect(mockAxios.post).toBeCalledTimes(5);
-        expect(mockAxios.post.mock.calls[4][1]).toMatchObject({
+        expect(mockAxios.post).toBeCalledTimes(6);
+        expect(mockAxios.post.mock.calls[5][1]).toMatchObject({
             query: {
                 bool: {
                     must: [

@@ -35,5 +35,6 @@ services:
       - ./public:/srv/app/public
       - ./tests:/srv/app/tests
       - ./util:/srv/app/util
+
     networks:
       backend:
