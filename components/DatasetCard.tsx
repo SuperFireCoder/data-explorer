@@ -23,6 +23,8 @@ import DatasetTypeIndicator from "./DatasetTypeIndicator";
 import MetadataDrawer from "./MetadataDrawer";
 import VisualiserDrawer from "./VisualiserDrawer";
 
+import { useTheme } from "@ecocommons-australia/ui-library";
+
 import styles from "./DatasetCard.module.css";
 import DatasetSharingDrawer from "./DatasetSharingDrawer";
 import { useKeycloakInfo } from "../util/keycloak";
@@ -58,7 +60,10 @@ export default function DatasetCard({
 }: Props) {
     const { keycloak } = useKeycloakInfo();
     const dataManager = useDataManager();
+    const { mergeStyles } = useTheme();
 
+    const themedStyles = mergeStyles(styles, "Styles::DatasetCard");
+    
     const currentUserId = keycloak?.tokenParsed?.sub;
 
     const [downloadInProgress, setDownloadInProgress] =
@@ -118,7 +123,7 @@ export default function DatasetCard({
     // for users of browsers not supporting the `line-clamp` CSS property
     return (
         <>
-            <Card className={styles.datasetCard}>
+            <Card className={themedStyles.datasetCard}>
                 <Row justify="between">
                     <Col>
                         <H5
@@ -131,7 +136,7 @@ export default function DatasetCard({
                         {status === "IMPORTING" && (
                             <p
                                 className={classnames(
-                                    styles.description,
+                                    themedStyles.description,
                                     Classes.TEXT_DISABLED
                                 )}
                             >
@@ -142,7 +147,7 @@ export default function DatasetCard({
                             <>
                                 <p
                                     className={classnames(
-                                        styles.description,
+                                        themedStyles.description,
                                         Classes.TEXT_DISABLED
                                     )}
                                 >
@@ -153,7 +158,7 @@ export default function DatasetCard({
                         )}
                         <p
                             className={classnames(
-                                styles.description,
+                                themedStyles.description,
                                 "bp3-ui-text"
                             )}
                         >
