@@ -86,6 +86,7 @@ describe("DatasetCard", () => {
                 title="Test dataset ID"
                 description=""
                 status="SUCCESS"
+                exploreDataType="dataExplorer"
             />
         );
 
@@ -105,6 +106,7 @@ describe("DatasetCard", () => {
                 datasetId="test-dataset-id"
                 title="Test dataset ID"
                 description=""
+                exploreDataType="dataExplorer"
             />
         );
 

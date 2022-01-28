@@ -1,4 +1,5 @@
 import {
+    AnchorButton,
     Button,
     ButtonGroup,
     Card,
@@ -41,11 +42,17 @@ export interface Props {
     /** Date the dataset was last updated */
     lastUpdated?: Date;
     /** User ID of the owner of the dataset */
-    ownerId: string | string[];
+    ownerId?: string | string[];
     /** Status of the dataset import */
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
     /** Import failure message */
     failureMessage?: string;
+    exploreDataType: "dataExplorer" | "knowledgeNetwork";
+    /**
+     * URL to resource landing page; should only be used with Knowledge Network
+     * data
+     */
+    landingPageUrl?: string;
 }
 
 export default function DatasetCard({
@@ -57,6 +64,8 @@ export default function DatasetCard({
     ownerId,
     status,
     failureMessage,
+    exploreDataType,
+    landingPageUrl,
 }: Props) {
     const { keycloak } = useKeycloakInfo();
     const dataManager = useDataManager();
@@ -180,15 +189,32 @@ export default function DatasetCard({
                     </Col>
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
-                            <Button
-                                icon="eye-open"
-                                data-testid="view-button"
-                                intent="success"
-                                onClick={openVisualiserDrawer}
-                                disabled={disabledDataset}
-                            >
-                                View
-                            </Button>
+                            {exploreDataType === "dataExplorer" && (
+                                <Button
+                                    icon="eye-open"
+                                    data-testid="view-button"
+                                    intent="success"
+                                    onClick={openVisualiserDrawer}
+                                    disabled={disabledDataset}
+                                >
+                                    View
+                                </Button>
+                            )}
+                            {exploreDataType === "knowledgeNetwork" && (
+                                <AnchorButton
+                                    icon="eye-open"
+                                    data-testid="view-button"
+                                    intent="success"
+                                    href={landingPageUrl}
+                                    target="_blank"
+                                    disabled={
+                                        landingPageUrl === undefined ||
+                                        disabledDataset
+                                    }
+                                >
+                                    View
+                                </AnchorButton>
+                            )}
                             <Button
                                 icon="info-sign"
                                 data-testid="info-button"
@@ -198,42 +224,57 @@ export default function DatasetCard({
                             >
                                 Info
                             </Button>
-                            <Popover
-                                content={
-                                    <Menu>
-                                        <MenuItem
-                                            icon="download"
-                                            text="Download"
-                                            onClick={downloadDataset}
-                                            disabled={disabledDataset}
-                                        />
-                                        <MenuItem
-                                            icon="share"
-                                            text="Share..."
-                                            onClick={openSharingDrawer}
-                                            disabled={
-                                                disabledDataset ||
-                                                // Disable sharing when user is not owner
-                                                currentUserId === undefined ||
-                                                typeof ownerId === "string"
-                                                    ? ownerId !== currentUserId
-                                                    : !ownerId.includes(
-                                                          currentUserId
-                                                      )
+                            {exploreDataType === "dataExplorer" && (
+                                <Popover
+                                    content={
+                                        <Menu>
+                                            <MenuItem
+                                                icon="download"
+                                                text="Download"
+                                                onClick={downloadDataset}
+                                                disabled={disabledDataset}
+                                            />
+                                            {
+                                                // KN data is not shareable at this
+                                                // stage
+                                                exploreDataType ===
+                                                    "dataExplorer" &&
+                                                    ownerId !== undefined && (
+                                                        <MenuItem
+                                                            icon="share"
+                                                            text="Share..."
+                                                            onClick={
+                                                                openSharingDrawer
+                                                            }
+                                                            disabled={
+                                                                disabledDataset ||
+                                                                // Disable sharing when user is not owner
+                                                                currentUserId ===
+                                                                    undefined ||
+                                                                typeof ownerId ===
+                                                                    "string"
+                                                                    ? ownerId !==
+                                                                      currentUserId
+                                                                    : !ownerId.includes(
+                                                                          currentUserId
+                                                                      )
+                                                            }
+                                                        />
+                                                    )
                                             }
-                                        />
-                                    </Menu>
-                                }
-                                position={Position.BOTTOM_RIGHT}
-                            >
-                                <Button
-                                    icon="more"
-                                    intent="none"
-                                    disabled={disabledDataset}
+                                        </Menu>
+                                    }
+                                    position={Position.BOTTOM_RIGHT}
                                 >
-                                    More
-                                </Button>
-                            </Popover>
+                                    <Button
+                                        icon="more"
+                                        intent="none"
+                                        disabled={disabledDataset}
+                                    >
+                                        More
+                                    </Button>
+                                </Popover>
+                            )}
                         </ButtonGroup>
                     </Col>
                 </Row>
@@ -243,6 +284,7 @@ export default function DatasetCard({
                 datasetId={datasetId}
                 isOpen={metadataDrawerOpen}
                 onClose={closeMetadataDrawer}
+                exploreDataType={exploreDataType} // TODO metaview
             />
             <VisualiserDrawer
                 drawerTitle={title}

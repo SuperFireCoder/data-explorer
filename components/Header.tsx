@@ -1,7 +1,10 @@
-import { ComponentProps } from "react";
-import { Header as EcHeader } from "@ecocommons-australia/ui-library";
-import SignInOutButton from "./SignInOutButton";
+import {
+    Header as EcHeader,
+    Constants as UiLibraryConstants,
+} from "@ecocommons-australia/ui-library";
 import getConfig from "next/config";
+import { ComponentProps } from "react";
+import SignInOutButton from "./SignInOutButton";
 
 const config = getConfig();
 
@@ -14,6 +17,7 @@ export default function Header(
         <EcHeader
             signInOutButton={<SignInOutButton />}
             tabLinks={{
+                ...UiLibraryConstants.Urls,
                 ECOCOMMONS_ROOT:
                     config.publicRuntimeConfig
                         .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ROOT ?? "#",
@@ -30,6 +34,10 @@ export default function Header(
                         .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ANALYSIS_HUB ??
                     "#",
             }}
+            useYellowStripedBackground={
+                config.publicRuntimeConfig.NEXT_PUBLIC_DEPLOYMENT !==
+                "production"
+            }
             {...props}
         />
     );

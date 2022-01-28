@@ -31,30 +31,50 @@ jest.mock("next/router", () => require("next-router-mock"));
 // Convenience function to get router mock directly
 const getRouterMock = () => require("next-router-mock").default;
 
+const resolveXhr = async (xhrResponse) => {
+    await act(async () => {
+        mockAxios.mockResponse(xhrResponse);
+
+        // Arbitrarily wait for all Promises to complete for state change to
+        // be applied as a result of axios XHR above
+        await Promise.resolve();
+    });
+};
+
 // Convenience function to load page initially with no content
 // Note that the page itself loads XHR once on mount
 const renderPage = async (initialMockXhrResponse) => {
     render(<IndexPage />);
 
     // Clear queued up initial XHR
-    await act(async () => {
-        mockAxios.mockResponse(
-            initialMockXhrResponse || {
-                data: {
-                    hits: {
-                        total: {
-                            value: 0,
-                        },
-                        hits: [],
-                    },
-                },
-            }
-        );
 
-        // Arbitrarily wait for all Promises to complete for state change to
-        // be applied as a result of axios XHR above
-        await Promise.resolve();
-    });
+    // Aggregation occurs on mount
+    await resolveXhr(
+        initialMockXhrResponse || {
+            data: {
+                hits: {
+                    total: {
+                        value: 0,
+                    },
+                    hits: [],
+                },
+            },
+        }
+    );
+
+    // Query
+    await resolveXhr(
+        initialMockXhrResponse || {
+            data: {
+                hits: {
+                    total: {
+                        value: 0,
+                    },
+                    hits: [],
+                },
+            },
+        }
+    );
 };
 
 beforeEach(() => {
@@ -105,7 +125,8 @@ describe("IndexPage", () => {
             },
         });
 
-        expect(mockAxios.post).toHaveBeenCalledTimes(1);
+        // 1 for query, 1 for aggregations
+        expect(mockAxios.post).toHaveBeenCalledTimes(3);
 
         // Once all results come back
 
@@ -184,9 +205,15 @@ describe("IndexPage", () => {
 
         await renderPage();
 
-        expect(mockAxios.post).toHaveBeenCalledTimes(1);
+        // 1 for query, 1 for aggregations
+        expect(mockAxios.post).toHaveBeenCalledTimes(3);
 
         expect(mockAxios.post.mock.calls[0][2]).toHaveProperty(
+            ["headers", "Authorization"],
+            "Bearer TEST_KEYCLOAK_TOKEN_USUALLY_BASE64_ENCODED"
+        );
+
+        expect(mockAxios.post.mock.calls[1][2]).toHaveProperty(
             ["headers", "Authorization"],
             "Bearer TEST_KEYCLOAK_TOKEN_USUALLY_BASE64_ENCODED"
         );
@@ -202,15 +229,26 @@ describe("IndexPage", () => {
             });
         });
 
-        // Fire new query by clicking the search button
+        // Fire new query by hitting ENTER to trigger submit
         act(() => {
-            fireEvent.click(screen.getByTestId("search-submit-button"));
+            fireEvent.submit(screen.getByTestId("search-field"));
         });
 
-        // 2nd POST due to new query should have the text we filled into the
+        await resolveXhr({
+            data: {
+                hits: {
+                    total: {
+                        value: 0,
+                    },
+                    hits: [],
+                },
+            },
+        });
+
+        // 4th POST due to new query should have the text we filled into the
         // search field
-        expect(mockAxios.post).toBeCalledTimes(2);
-        expect(mockAxios.post.mock.calls[1][1]).toMatchObject({
+        expect(mockAxios.post).toBeCalledTimes(4);
+        expect(mockAxios.post.mock.calls[3][1]).toMatchObject({
             query: {
                 bool: {
                     should: [
@@ -234,9 +272,20 @@ describe("IndexPage", () => {
             });
         });
 
-        // Fire new query by clicking the search button
+        // Fire new query by hitting ENTER to trigger submit
         act(() => {
-            fireEvent.click(screen.getByTestId("search-submit-button"));
+            fireEvent.submit(screen.getByTestId("search-field"));
+        });
+
+        await resolveXhr({
+            data: {
+                hits: {
+                    total: {
+                        value: 0,
+                    },
+                    hits: [],
+                },
+            },
         });
 
         expect(router.query).toMatchObject({
@@ -300,8 +349,9 @@ describe("IndexPage", () => {
 
         await waitFor(() => screen.getByText("MIROC3.2-MEDRES"));
 
-        act(() => {
+        await act(async () => {
             fireEvent.click(screen.getByText("MIROC3.2-MEDRES"));
+            await Promise.resolve();
         });
 
         // Select "Australia" and "Regional" in spatial domain
@@ -311,20 +361,19 @@ describe("IndexPage", () => {
 
         await waitFor(() => screen.getByText("Regional"));
 
-        act(() => {
+        await act(async () => {
             fireEvent.click(screen.getByText("Regional"));
+            await Promise.resolve();
+        });
+
+        await act(async () => {
             fireEvent.click(screen.getByText("Australia"));
+            await Promise.resolve();
         });
 
-        // Fire new query by clicking the search button
-        act(() => {
-            fireEvent.click(screen.getByTestId("search-submit-button"));
-        });
-
-        // 2nd POST due to new query should have the text we filled into the
-        // search field
-        expect(mockAxios.post).toBeCalledTimes(2);
-        expect(mockAxios.post.mock.calls[1][1]).toMatchObject({
+        // Note that every time we select a facet, a new POST is called
+        expect(mockAxios.post).toBeCalledTimes(6);
+        expect(mockAxios.post.mock.calls[5][1]).toMatchObject({
             query: {
                 bool: {
                     must: [

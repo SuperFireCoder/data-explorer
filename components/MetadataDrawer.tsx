@@ -1,11 +1,14 @@
 import { Drawer, Classes, Position } from "@blueprintjs/core";
+import React from "react";
 import MetadataView from "./MetadataView";
+import MetadataViewKN from "./MetadataViewKN";
 
 export interface Props {
     drawerTitle: string;
     datasetId: string;
     isOpen: boolean;
     onClose?: () => void;
+    exploreDataType: string;
 }
 
 export default function MetadataDrawer({
@@ -13,7 +16,28 @@ export default function MetadataDrawer({
     datasetId,
     isOpen,
     onClose,
+    exploreDataType
 }: Props) {
+
+    const renderMetaView = () => {
+        switch (exploreDataType) {
+            case "dataExplorer": {
+                return (
+                    <>
+                        <MetadataView datasetId={datasetId} /> 
+                    </>
+                )
+            }
+            case "knowledgeNetwork": {
+                return (
+                    <>
+                        <MetadataViewKN datasetId={datasetId} /> 
+                    </>
+                )
+            }
+        }
+    }
+
     return (
         <Drawer
             icon="info-sign"
@@ -24,14 +48,14 @@ export default function MetadataDrawer({
             canOutsideClickClose
             enforceFocus
             hasBackdrop
-            isOpen={isOpen}
+            isOpen={isOpen} // isOpen by default. set to true temp.
             position={Position.RIGHT}
             size="50%"
             usePortal
         >
             <div className={Classes.DRAWER_BODY} data-testid="metadata-drawer">
                 <div className={Classes.DIALOG_BODY}>
-                    <MetadataView datasetId={datasetId} />
+                    {renderMetaView()}
                 </div>
             </div>
             {/* <div className={Classes.DRAWER_FOOTER}>Footer</div> */}

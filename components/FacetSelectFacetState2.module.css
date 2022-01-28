@@ -1,0 +1,3 @@
+.selectButton > :global(.bp3-button-text) {
+    flex-grow: 1;
+}

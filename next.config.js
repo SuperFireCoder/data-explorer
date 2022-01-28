@@ -8,6 +8,9 @@ module.exports = withTM();
 
 // Will be available on both server and client
 module.exports.publicRuntimeConfig = {
+    NEXT_PUBLIC_DEPLOYMENT:
+        process.env.NEXT_PUBLIC_DEPLOYMENT,
+
     NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ROOT:
         process.env.NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ROOT,
     NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_WORKSPACE:
