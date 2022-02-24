@@ -39,16 +39,16 @@ function MyApp({ Component, pageProps, cookies }: Props) {
     const ThemeWrapper = buildThemeWrapper(theme);
 
     return (
-        <ThemeWrapper>
-            <LinkContext.Provider value={{ Link }}>
-                <SSRKeycloakProvider
-                    keycloakConfig={keycloakConfig}
-                    persistor={SSRCookies(cookies)}
-                >
+        <LinkContext.Provider value={{ Link }}>
+            <SSRKeycloakProvider
+                keycloakConfig={keycloakConfig}
+                persistor={SSRCookies(cookies)}
+            >
+                <ThemeWrapper>
                     <Component {...pageProps} />
-                </SSRKeycloakProvider>
-            </LinkContext.Provider>
-        </ThemeWrapper>
+                </ThemeWrapper>
+            </SSRKeycloakProvider>
+        </LinkContext.Provider>
     );
 }
 
