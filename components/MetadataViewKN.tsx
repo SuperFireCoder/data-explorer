@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { H4, H6, Icon, Pre } from "@blueprintjs/core";
+import { H4, Icon } from "@blueprintjs/core";
 
-import { useKeycloakInfo } from "../util/keycloak";
-import { getDataExplorerBackendServerUrl } from "../util/env";
 import { DatasetKN } from "../interfaces/DatasetKN";
 
 export interface Props {
@@ -11,9 +9,6 @@ export interface Props {
 }
 
 export default function MetadataViewKN({ datasetId }: Props) {
-    const { keycloak } = useKeycloakInfo();
-    const keycloakToken = keycloak?.token;
-
     const [metadata, setMetadata] = useState<
         | { type: "dataset"; data: DatasetKN }
         | { type: "error"; error: any }
@@ -27,10 +22,6 @@ export default function MetadataViewKN({ datasetId }: Props) {
             (async () => {
                 try {
                     const headers: Record<string, string> = {};
-
-                    if (keycloakToken && keycloakToken.length > 0) {
-                        headers["Authorization"] = `Bearer ${keycloakToken}`;
-                    }
 
                     const {
                         data,
@@ -57,7 +48,7 @@ export default function MetadataViewKN({ datasetId }: Props) {
                 cancellationToken.cancel();
             };
         },
-        [keycloakToken, datasetId]
+        [datasetId]
     );
 
     switch (metadata?.type) {
