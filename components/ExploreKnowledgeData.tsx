@@ -5,7 +5,7 @@ import bodybuilder from "bodybuilder";
 import { Button, H6, Spinner } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 
-import DatasetCard from "./DatasetCard";
+import DatasetCardKN from "./DatasetCardKN";
 import Pagination from "./Pagination";
 import { EsDatasetKN } from "../interfaces/EsDatasetKN";
 import {
@@ -389,19 +389,16 @@ export default function ExploreKnowledgeData() {
                 <Row>
                     <Col>
                         {queryResult?.hits.hits.map(({ _id, _source }) => (
-                            <DatasetCard
+                            <DatasetCardKN
                                 data-testid="dataset-card"
                                 key={_id}
                                 datasetId={_source.identifier}
                                 title={_source.title}
                                 description={_source.description}
-                                status="SUCCESS"
-                                exploreDataType="knowledgeNetwork"
                                 landingPageUrl={
                                     _source.landingPage ?? undefined
                                 }
-                                // TODO: Add modification date into ES index
-                                // lastUpdated={lastUpdated}
+                                distributions={_source.distributions}
                             />
                         ))}
                     </Col>
