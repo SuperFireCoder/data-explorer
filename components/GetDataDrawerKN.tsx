@@ -1,6 +1,8 @@
 import { Drawer, Classes, Position } from "@blueprintjs/core";
+import { Col, Row } from "@ecocommons-australia/ui-library";
 import React from "react";
 import { EsDatasetKN } from "../interfaces/EsDatasetKN";
+import GetDataDrawerCardKN from "./GetDataDrawerCardKN";
 
 export interface Props {
     drawerTitle: string;
@@ -33,6 +35,19 @@ export default function GetDataDrawerKN({
         >
             <div className={Classes.DRAWER_BODY} data-testid="metadata-drawer">
                 <div className={Classes.DIALOG_BODY}>
+                    {distributions?.map((d) => (
+                        <Row key={d.identifier}>
+                            <Col xs={12}>
+                                <GetDataDrawerCardKN distribution={d} />
+                            </Col>
+                        </Row>
+                    ))}
+                    {/* 
+
+
+
+
+
                     <ul>
                         {distributions?.map((d) => (
                             <li key={d.identifier}>
@@ -43,7 +58,7 @@ export default function GetDataDrawerKN({
                                 <div>download: {d.downloadURL}</div>
                             </li>
                         ))}
-                    </ul>
+                    </ul> */}
                 </div>
             </div>
         </Drawer>
