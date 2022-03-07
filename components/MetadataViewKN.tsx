@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { H4, H6, Icon, Pre } from "@blueprintjs/core";
+import { H4, Icon } from "@blueprintjs/core";
 
-import { useKeycloakInfo } from "../util/keycloak";
-import { getDataExplorerBackendServerUrl } from "../util/env";
 import { DatasetKN } from "../interfaces/DatasetKN";
 
 export interface Props {
@@ -11,9 +9,6 @@ export interface Props {
 }
 
 export default function MetadataViewKN({ datasetId }: Props) {
-    const { keycloak } = useKeycloakInfo();
-    const keycloakToken = keycloak?.token;
-
     const [metadata, setMetadata] = useState<
         | { type: "dataset"; data: DatasetKN }
         | { type: "error"; error: any }
@@ -26,21 +21,17 @@ export default function MetadataViewKN({ datasetId }: Props) {
             // console.log("datasetId", datasetId);
             (async () => {
                 try {
-                    const headers: Record<string, string> = {};
+                    // The dataset ID should be escaped as it can contain some
+                    // characters like colons (:) and slashes (/)
+                    const escapedDatasetId =
+                        window.encodeURIComponent(datasetId);
 
-                    if (keycloakToken && keycloakToken.length > 0) {
-                        headers["Authorization"] = `Bearer ${keycloakToken}`;
-                    }
-
-                    const {
-                        data,
-                    } = await axios.get(
-                        `https://knowledgenet.co/api/v0/registry/records/${datasetId}?aspect=dcat-dataset-strings&optionalAspect=organization-details&optionalAspect=dataset-publisher&optionalAspect=source&dereference=true`,
-                        { headers }
+                    const { data } = await axios.get(
+                        `https://knowledgenet.co/api/v0/registry/records/${escapedDatasetId}?aspect=dcat-dataset-strings&optionalAspect=organization-details&optionalAspect=dataset-publisher&optionalAspect=source&dereference=true`
                     );
 
                     setMetadata({ type: "dataset", data });
-                    
+
                     // console.log('kn data meta', metadata)
                 } catch (e) {
                     // Ignore cancellation
@@ -57,7 +48,7 @@ export default function MetadataViewKN({ datasetId }: Props) {
                 cancellationToken.cancel();
             };
         },
-        [keycloakToken, datasetId]
+        [datasetId]
     );
 
     switch (metadata?.type) {
@@ -79,34 +70,66 @@ export default function MetadataViewKN({ datasetId }: Props) {
         case "dataset": {
             const data = metadata.data;
 
-            const generalDetails = data?.aspects["dcat-dataset-strings"]
-            const orgDetails = data?.aspects["dataset-publisher"]?.publisher?.aspects["organization-details"];
-            const description = data.aspects["dcat-dataset-strings"]?.description;
+            const generalDetails = data?.aspects["dcat-dataset-strings"];
+            const orgDetails =
+                data?.aspects["dataset-publisher"]?.publisher?.aspects[
+                    "organization-details"
+                ];
+            const description =
+                data.aspects["dcat-dataset-strings"]?.description;
             const source = data?.aspects?.source;
 
             const displayedMetadata = {
-                
                 "Source name": source?.name,
-                "Publisher": generalDetails?.publisher,
-                "Organization Details": <ul>
-                    <li><b>Organization name: </b>{orgDetails?.name || " - "}</li>
-                    <li><b>Email: </b>{orgDetails?.email || " - "}</li>
-                    <li>
-                        <p><b>Address</b></p>
-                        <p><b>Street: </b>{orgDetails?.addrStreet || " - "}</p>
-                        <p><b>Suburb: </b>{orgDetails?.addrSuburb || " - "}</p>
-                        <p><b>State: </b>{orgDetails?.addrState || " - "}</p>
-                        <p><b>Postcode: </b>{orgDetails?.addrPostCode || " - "}</p>
-                        <p><b>Country: </b>{orgDetails?.addrCountry || " - "}</p>
-                    </li>
+                Publisher: generalDetails?.publisher,
+                "Organization Details": (
+                    <ul>
+                        <li>
+                            <b>Organization name: </b>
+                            {orgDetails?.name || " - "}
+                        </li>
+                        <li>
+                            <b>Email: </b>
+                            {orgDetails?.email || " - "}
+                        </li>
+                        <li>
+                            <p>
+                                <b>Address</b>
+                            </p>
+                            <p>
+                                <b>Street: </b>
+                                {orgDetails?.addrStreet || " - "}
+                            </p>
+                            <p>
+                                <b>Suburb: </b>
+                                {orgDetails?.addrSuburb || " - "}
+                            </p>
+                            <p>
+                                <b>State: </b>
+                                {orgDetails?.addrState || " - "}
+                            </p>
+                            <p>
+                                <b>Postcode: </b>
+                                {orgDetails?.addrPostCode || " - "}
+                            </p>
+                            <p>
+                                <b>Country: </b>
+                                {orgDetails?.addrCountry || " - "}
+                            </p>
+                        </li>
+                    </ul>
+                ),
+                "Contact point": generalDetails?.contactPoint,
+            };
 
-                </ul>,
-                "Contact point": generalDetails?.contactPoint
-            }
-            
             return (
                 <div data-testid="metadata-view">
-                    {description && <><h4>{"Description"}</h4><p>{description}</p></>}
+                    {description && (
+                        <>
+                            <h4>{"Description"}</h4>
+                            <p>{description}</p>
+                        </>
+                    )}
                     <ul>
                         {Object.entries(displayedMetadata).map(
                             ([field, value]) =>

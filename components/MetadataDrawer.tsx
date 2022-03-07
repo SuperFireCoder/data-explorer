@@ -8,7 +8,7 @@ export interface Props {
     datasetId: string;
     isOpen: boolean;
     onClose?: () => void;
-    exploreDataType: string;
+    exploreDataType: "dataExplorer" | "knowledgeNetwork";
 }
 
 export default function MetadataDrawer({
