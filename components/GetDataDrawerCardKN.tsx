@@ -118,9 +118,8 @@ export default function GetDataDrawerCardKN({ distribution }: Props) {
                     <Row>
                         <Col xs={12}>
                             <Callout intent="warning" icon="warning-sign">
-                                Download code generated might not work as URL
-                                might only be accessible as a web page in a web
-                                browser
+                                Download code might not work as URL might only
+                                be accessible as a web page in a web browser
                             </Callout>
                         </Col>
                     </Row>
@@ -129,9 +128,8 @@ export default function GetDataDrawerCardKN({ distribution }: Props) {
                     <Row>
                         <Col xs={12}>
                             <Callout intent="warning" icon="warning-sign">
-                                Download code generated might not work for this
-                                data type ("
-                                {distribution.format ?? "UNKNOWN FORMAT"}")
+                                Download code might not work for this data type
+                                ("{distribution.format ?? "UNKNOWN FORMAT"}")
                             </Callout>
                         </Col>
                     </Row>
