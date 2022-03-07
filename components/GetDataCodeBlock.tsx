@@ -1,5 +1,5 @@
-import { Button, Pre } from "@blueprintjs/core";
-import { useRef } from "react";
+import { Button, Pre, Toaster } from "@blueprintjs/core";
+import { useCallback, useRef } from "react";
 
 /**
  * Generates code snippet text for a given data URL
@@ -7,24 +7,21 @@ import { useRef } from "react";
  * @param {string} language Target language to generate snippet for
  * @param {string} url URL of source data for snippet
  * @param {string} filename Filename for downloaded file in snippet
- * @param {string} [publisher] Publisher of source data
- * @param {string} [contact] Contact point (e.g. email address) for source data
- * @param {string} [license] License governing use of source data
+ * @param {string} title Title to be provided for this snippet
+ * @param {string} [source] Publisher/source of data
  * @param {string} [landingPage] URL to landing page related to source data
  */
 function generateSnippetText(
     language: "python" | "r" | "bash" | "web-access",
     url: string,
     filename: string,
-    publisher?: string,
-    contact?: string,
-    license?: string,
+    title: string,
+    source?: string,
     landingPage?: string
 ) {
     const commentBlockContents = [
-        publisher && `Publisher: ${publisher}`,
-        contact && `Contact point: ${contact}`,
-        license && `License: ${license}`,
+        `Data: ${title}`,
+        source && `Source: ${source}`,
         landingPage && `Full page: ${landingPage}`,
     ].filter((line) => line); // Removes lines which we don't have any info for
 
@@ -139,9 +136,8 @@ export interface Props {
     url: string;
     language: "python" | "r" | "bash" | "web-access";
     filename: string;
-    publisher?: string;
-    contact?: string;
-    license?: string;
+    title: string;
+    source?: string;
     landingPage?: string;
 }
 
@@ -149,24 +145,38 @@ export default function GetDataCodeBlock({
     url,
     language,
     filename,
-    publisher,
-    contact,
+    title,
+    source,
     landingPage,
-    license,
 }: Props) {
     const snippetText = generateSnippetText(
         language,
         url,
         filename,
-        publisher,
-        contact,
-        license,
+        title,
+        source,
         landingPage
     );
 
     // Creating a reference so that the actual <code> element may be
     // referred to for copying text
     const snippetTextElementRef = useRef<HTMLElement | null>(null);
+
+    const handleCopyToClipboardButtonClick = useCallback(
+        (e) => {
+            selectElementText(snippetTextElementRef.current);
+            copyTextToClipboard(snippetText).then(() => {
+                Toaster.create().show({
+                    intent: "success",
+                    icon: "clipboard",
+                    message: "Copied to clipboard",
+                });
+            });
+
+            e.preventDefault();
+        },
+        [snippetText]
+    );
 
     return (
         <div>
@@ -180,13 +190,8 @@ export default function GetDataCodeBlock({
                 <Button
                     type="button"
                     className="float-right source"
-                    onClick={(e) => {
-                        selectElementText(snippetTextElementRef.current);
-                        copyTextToClipboard(snippetText);
-                        e.preventDefault();
-                    }}
+                    onClick={handleCopyToClipboardButtonClick}
                     small
-                    minimal
                     icon="clipboard"
                 >
                     Copy

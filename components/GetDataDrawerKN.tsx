@@ -42,23 +42,6 @@ export default function GetDataDrawerKN({
                             </Col>
                         </Row>
                     ))}
-                    {/* 
-
-
-
-
-
-                    <ul>
-                        {distributions?.map((d) => (
-                            <li key={d.identifier}>
-                                <div>{d.title}</div>
-                                <div>format: {d.format}</div>
-                                <div>mime type: {d.mediaType}</div>
-                                <div>access: {d.accessURL}</div>
-                                <div>download: {d.downloadURL}</div>
-                            </li>
-                        ))}
-                    </ul> */}
                 </div>
             </div>
         </Drawer>
