@@ -39,10 +39,7 @@ function MyApp({ Component, pageProps, cookies }: Props) {
 
     // Google analytices for the tracking page view.
     useEffect(() => {
-
-        console.log("entered here in effect")
         const handleRouteChange = (url: URL) => {
-        console.log("entered here"+url)
           gtag.pageview(url);
         };
         router.events.on("routeChangeComplete", handleRouteChange);
