@@ -26,3 +26,8 @@ export function getKeycloakAuthParameters() {
             .NEXT_PUBLIC_KEYCLOAK_AUTH_CLIENT_ID as string,
     };
 }
+
+export function getGoogleAnalyticsTrackingId() {
+    return config.publicRuntimeConfig
+        .NEXT_PUBLIC_GOOGLE_ANALYTICS_TRACKING_ID as string;
+}
