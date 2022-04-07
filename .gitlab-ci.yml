@@ -15,6 +15,9 @@ stages:
   - build
   - publish
 
+before_script:
+  - echo "${CI_JOB_TOKEN}" | docker login -u "${CI_REGISTRY_USER}" "${CI_REGISTRY}" --password-stdin
+
 unit test:
   stage: test
   image: node:12-alpine
@@ -35,6 +38,8 @@ sonarqube-check:
   image: 
     name: sonarsource/sonar-scanner-cli:latest
     entrypoint: [""]
+  # Don't run Docker related prep
+  before_script: []
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
     GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
@@ -55,7 +60,6 @@ build image:
   script:
     - echo "building ${IMAGE_SHORT_SHA}"
     - cat ${DOT_ENV_DOT_LOCAL_ECOCOMMONS_DEV} > .env.local
-    - echo "${CI_JOB_TOKEN}" | docker login -u "${CI_REGISTRY_USER}" "${CI_REGISTRY}" --password-stdin
     - docker pull ${IMAGE_SHORT_SHA} || true
     - docker build --tag ${IMAGE_SHORT_SHA} --build-arg NPM_AUTHTOKEN=$NPM_AUTHTOKEN --build-arg NODE_ENV=production .
     - docker push ${IMAGE_SHORT_SHA}
@@ -69,7 +73,6 @@ publish latest image:
   stage: publish
   script:
     - echo "publishing ${IMAGE_LATEST}"
-    - echo "${CI_JOB_TOKEN}" | docker login -u "${CI_REGISTRY_USER}" "${CI_REGISTRY}" --password-stdin
     - docker pull ${IMAGE_SHORT_SHA} || true
     - docker tag ${IMAGE_SHORT_SHA} ${IMAGE_LATEST}
     - docker push ${IMAGE_LATEST}
@@ -84,7 +87,6 @@ publish tagged image:
   script:
     - IMAGE_TAG=${CI_REGISTRY_IMAGE}:${CI_COMMIT_TAG}
     - echo "publishing ${IMAGE_TAG}"
-    - echo "${CI_JOB_TOKEN}" | docker login -u "${CI_REGISTRY_USER}" "${CI_REGISTRY}" --password-stdin
     - docker pull ${IMAGE_SHORT_SHA} || true
     - docker tag ${IMAGE_SHORT_SHA} ${IMAGE_TAG}
     - docker push ${IMAGE_TAG}
