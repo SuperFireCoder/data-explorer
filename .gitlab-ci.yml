@@ -30,6 +30,8 @@ unit test:
   artifacts:
     reports:
       junit: junit.xml
+    paths:
+      - coverage/**
 
 sonarqube-check:
   stage: sonar
@@ -46,8 +48,6 @@ sonarqube-check:
   script: 
     - sonar-scanner
   allow_failure: true
-  before_script:
-    - ls -latr /builds/ecocommons-australia/ecocommons-platform/data-explorer-ui/coverage/lcov.info
   only:
     - master
   dependencies:
