@@ -35,6 +35,8 @@ unit test:
 
 sonarqube-check:
   stage: sonar
+  services:
+    - docker:dind
   image: 
     name: sonarsource/sonar-scanner-cli:latest
     entrypoint: [""]
