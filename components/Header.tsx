@@ -1,6 +1,7 @@
 import {
     Header as EcHeader,
     Constants as UiLibraryConstants,
+    useTheme
 } from "@ecocommons-australia/ui-library";
 import getConfig from "next/config";
 import { ComponentProps } from "react";
@@ -13,10 +14,13 @@ const config = getConfig();
 export default function Header(
     props: Omit<ComponentProps<typeof EcHeader>, "tabLinks">
 ) {
+
+    const { getThemeValue } = useTheme();
+
     return (
         <EcHeader
             signInOutButton={<SignInOutButton />}
-            tabLinks={{
+            tabLinks={getThemeValue("Object::Platform.HeaderTabLinks") ?? {
                 ...UiLibraryConstants.Urls,
                 ECOCOMMONS_ROOT:
                     config.publicRuntimeConfig

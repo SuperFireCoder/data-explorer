@@ -12,7 +12,7 @@
     "@blueprintjs/core": "3.35.0",
     "@blueprintjs/select": "3.15.8",
     "@blueprintjs/table": "3.8.26",
-    "@ecocommons-australia/ui-library": "1.4.7",
+    "@ecocommons-australia/ui-library": "1.6.3",
     "@ecocommons-australia/visualiser": "1.0.1",
     "@ecocommons-australia/visualiser-client-geospatial": "1.5.0",
     "@react-keycloak/ssr": "3.3.0",
