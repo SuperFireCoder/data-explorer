@@ -723,7 +723,6 @@ export default function IndexPage() {
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
                                 ownerId={_source.allowed_principals as string[]}
-                                exploreDataType="dataExplorer"
                             />
                         ))}
                     </Col>

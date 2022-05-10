@@ -7,6 +7,7 @@ import { SSRKeycloakProvider, SSRCookies } from "@react-keycloak/ssr";
 import { LinkContext, buildThemeWrapper } from "@ecocommons-australia/ui-library";
 import { ECMapVisualiserRequest } from "@ecocommons-australia/visualiser-client-geospatial";
 import { getKeycloakAuthParameters } from "../util/env";
+import * as gtag from "../util/gtag";
 
 // Blueprint required CSS
 import "@blueprintjs/icons/lib/css/blueprint-icons.css";
@@ -15,6 +16,8 @@ import "@blueprintjs/core/lib/css/blueprint.css";
 import "@ecocommons-australia/ui-library/src/styles/global.css";
 
 import "ol/ol.css";
+import { useEffect } from "react";
+import router from "next/router";
 
 import { theme } from "../themes/default/theme";
 import "../themes/default/styles/global.css";
@@ -35,6 +38,18 @@ interface Props extends AppProps {
 function MyApp({ Component, pageProps, cookies }: Props) {
     /** react-keycloak configuration */
     const keycloakConfig = getKeycloakAuthParameters();
+    
+
+    // Google analytices for the tracking page view.
+    useEffect(() => {
+        const handleRouteChange = (url: URL) => {
+          gtag.pageview(url);
+        };
+        router.events.on("routeChangeComplete", handleRouteChange);
+        return () => {
+          router.events.off("routeChangeComplete", handleRouteChange);
+        };
+      }, [router.events]);
 
     const ThemeWrapper = buildThemeWrapper(theme);
 

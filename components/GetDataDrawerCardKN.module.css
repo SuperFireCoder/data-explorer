@@ -1,0 +1,8 @@
+.methodLabelTab {
+    cursor: inherit;
+}
+
+.methodLabelTab:hover,
+.methodLabelTab:not([aria-disabled="true"]):hover {
+    color: inherit;
+}

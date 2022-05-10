@@ -47,7 +47,6 @@ export interface Props {
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
     /** Import failure message */
     failureMessage?: string;
-    exploreDataType: "dataExplorer" | "knowledgeNetwork";
     /**
      * URL to resource landing page; should only be used with Knowledge Network
      * data
@@ -64,7 +63,6 @@ export default function DatasetCard({
     ownerId,
     status,
     failureMessage,
-    exploreDataType,
     landingPageUrl,
 }: Props) {
     const { keycloak } = useKeycloakInfo();
@@ -189,7 +187,6 @@ export default function DatasetCard({
                     </Col>
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
-                            {exploreDataType === "dataExplorer" && (
                                 <Button
                                     icon="eye-open"
                                     data-testid="view-button"
@@ -199,22 +196,6 @@ export default function DatasetCard({
                                 >
                                     View
                                 </Button>
-                            )}
-                            {exploreDataType === "knowledgeNetwork" && (
-                                <AnchorButton
-                                    icon="eye-open"
-                                    data-testid="view-button"
-                                    intent="success"
-                                    href={landingPageUrl}
-                                    target="_blank"
-                                    disabled={
-                                        landingPageUrl === undefined ||
-                                        disabledDataset
-                                    }
-                                >
-                                    View
-                                </AnchorButton>
-                            )}
                             <Button
                                 icon="info-sign"
                                 data-testid="info-button"
@@ -224,7 +205,6 @@ export default function DatasetCard({
                             >
                                 Info
                             </Button>
-                            {exploreDataType === "dataExplorer" && (
                                 <Popover
                                     content={
                                         <Menu>
@@ -235,10 +215,6 @@ export default function DatasetCard({
                                                 disabled={disabledDataset}
                                             />
                                             {
-                                                // KN data is not shareable at this
-                                                // stage
-                                                exploreDataType ===
-                                                    "dataExplorer" &&
                                                     ownerId !== undefined && (
                                                         <MenuItem
                                                             icon="share"
@@ -274,7 +250,6 @@ export default function DatasetCard({
                                         More
                                     </Button>
                                 </Popover>
-                            )}
                         </ButtonGroup>
                     </Col>
                 </Row>
@@ -284,7 +259,7 @@ export default function DatasetCard({
                 datasetId={datasetId}
                 isOpen={metadataDrawerOpen}
                 onClose={closeMetadataDrawer}
-                exploreDataType={exploreDataType} // TODO metaview
+                exploreDataType="dataExplorer"
             />
             <VisualiserDrawer
                 drawerTitle={title}
