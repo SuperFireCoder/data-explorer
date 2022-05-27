@@ -30,6 +30,9 @@ ECMapVisualiserRequest.MAP_VISUALISER_BACKEND_SERVER_URL =
         .NEXT_PUBLIC_VISUALISER_CLIENT_GEOSPATIAL_ECMAPVISUALISERREQUEST_BACKEND_SERVER_URL ??
     "#";
 
+// Build ThemeWrapper component once, to be used inside the root component
+const ThemeWrapper = buildThemeWrapper(theme);
+
 interface Props extends AppProps {
     /** Cookies in request */
     cookies: unknown;
@@ -50,8 +53,6 @@ function MyApp({ Component, pageProps, cookies }: Props) {
           router.events.off("routeChangeComplete", handleRouteChange);
         };
       }, [router.events]);
-
-    const ThemeWrapper = buildThemeWrapper(theme);
 
     return (
         <LinkContext.Provider value={{ Link }}>
