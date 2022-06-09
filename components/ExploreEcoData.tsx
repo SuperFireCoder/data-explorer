@@ -335,7 +335,18 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
         id: "filterPrincipals",
         facetApplicationFn: (formState, query) => {
             if (formState.filterPrincipals.length === 0) {
-                return query;
+                return query;           
+            }
+
+            if (formState.filterPrincipals.length > 0 && formState.filterPrincipals[0].startsWith("shared-")) {
+                const userId = formState.filterPrincipals[0].replace('shared-','');
+                return {
+                    ...query,
+                    bodyBuilder: query.bodyBuilder.notFilter(
+                        "terms",
+                        "allowed_principals",[userId]
+                    ),
+                };
             }
 
             // NOTE: This is a filter that does not affect which query to run,
@@ -432,6 +443,11 @@ export default function IndexPage() {
     const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
         facets: FACETS,
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
+    });
+
+    const esFacetForSharedDataset = useEsFacetRoot(formState, updateFormState, {
+        facets: FACETS,
+        url: `${getDataExplorerBackendServerUrl()}/api/shareddataset`,
     });
 
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
@@ -552,6 +568,11 @@ export default function IndexPage() {
                 label: "Show only my datasets",
                 disabled: userId === undefined || userId.length === 0,
             },
+            {
+                key: `shared-${userId}`,
+                label: "Show shared datasets",
+                disabled: userId === undefined || userId.length === 0,
+            },
         ];
     }, [keycloak?.subject]);
 
@@ -559,7 +580,7 @@ export default function IndexPage() {
         id: "filterPrincipals",
         label: "Privacy",
         items: filterPrincipalsItems,
-        mapFromState: (allItems, itemKeys) => {
+        mapFromState: (allItems, itemKeys) => {       
             const selectedItemKeys = [...itemKeys];
 
             // Actively select "all" option if there is nothing in the item keys
@@ -567,7 +588,7 @@ export default function IndexPage() {
             if (itemKeys.length === 0) {
                 selectedItemKeys.push("all");
             }
-
+ 
             return selectedItemKeys.map((key) =>
                 allItems.find((x) => x.key === key)
             );
