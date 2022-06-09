@@ -344,7 +344,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                     ...query,
                     bodyBuilder: query.bodyBuilder.notFilter(
                         "terms",
-                        "allowed_principals",[userId]
+                        "allowed_principals",[userId,"role:admin"]
                     ),
                 };
             }
@@ -445,11 +445,7 @@ export default function IndexPage() {
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
     });
 
-    const esFacetForSharedDataset = useEsFacetRoot(formState, updateFormState, {
-        facets: FACETS,
-        url: `${getDataExplorerBackendServerUrl()}/api/shareddataset`,
-    });
-
+  
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
 
     const searchQuery = useEsIndividualFacetFreeText(esFacetRoot, {
