@@ -5,6 +5,7 @@
 	"chromeWebSecurity": false,
 	"trashAssetsBeforeRuns": true,
 	"requestTimeout": 10000,
+	"defaultCommandTimeout": 10000,
 	"video": false,
 	"reporter": "cypress-sonarqube-reporter",
     "reporterOptions": {
