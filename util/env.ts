@@ -2,6 +2,8 @@ import getConfig from "next/config";
 
 const config = getConfig();
 
+export const IS_DEVELOPMENT = config.publicRuntimeConfig.NEXT_PUBLIC_DEPLOYMENT !== "production";
+
 export function getDataExplorerBackendServerUrl() {
     return config.publicRuntimeConfig
         .NEXT_PUBLIC_DATA_EXPLORER_BACKEND_SERVER_URL as string;
@@ -30,4 +32,9 @@ export function getKeycloakAuthParameters() {
 export function getGoogleAnalyticsTrackingId() {
     return config.publicRuntimeConfig
         .NEXT_PUBLIC_GOOGLE_ANALYTICS_TRACKING_ID as string;
+}
+
+export function getWorkFlowUrl() {
+    return config.publicRuntimeConfig
+        .NEXT_PUBLIC_WORKFLOW_URL as string;
 }

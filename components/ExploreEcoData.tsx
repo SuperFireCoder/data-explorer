@@ -355,6 +355,8 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
 export default function IndexPage() {
     const router = useRouter();
 
+    const isEmbed = router.query.embed as unknown as number;
+    
     /**
      * Extracts the current page parameters from the URL query parameter values.
      */
@@ -723,6 +725,7 @@ export default function IndexPage() {
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
                                 ownerId={_source.allowed_principals as string[]}
+                                allowSelect={Boolean(isEmbed)}
                             />
                         ))}
                     </Col>

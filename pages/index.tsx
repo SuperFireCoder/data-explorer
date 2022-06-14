@@ -136,6 +136,8 @@ export default function IndexPage() {
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
 
+    const isEmbed = router.query.embed as unknown as number;
+
     const keycloakToken = keycloak?.token;
 
     let initialTab = router.query.tab as string | undefined;
@@ -178,6 +180,37 @@ export default function IndexPage() {
         [router]
     );
 
+    const tabs = useMemo(() => {
+        return (
+                <Tabs
+                    animate
+                    renderActiveTabPanelOnly
+                    defaultSelectedTabId={initialTab}
+                    onChange={updateTabQueryParam}
+                >
+                    <Tab
+                        id="eco-data"
+                        title="Explore EcoCommons Data"
+                        panel={<ExploreEcoData />}
+                    />
+                    <Tab
+                        id="knowledge-data"
+                        title="Explore Knowledge Network Data"
+                        panel={<ExploreKnowledgeData />}
+                    />
+            </Tabs>
+            );
+    }, []);
+
+    if (Boolean(isEmbed)){
+        return (
+            <>
+                <HtmlHead title={["Datasets", "Explore data"]} />
+                {tabs}
+            </>
+        );
+    }
+       
     return (
         <>
             <HtmlHead title={["Datasets", "Explore data"]} />
@@ -187,23 +220,7 @@ export default function IndexPage() {
                 subBarActiveKey="explore"
             />
             <FixedContainer style={{ padding: "1rem" }}>
-                <Tabs
-                        animate
-                        renderActiveTabPanelOnly
-                        defaultSelectedTabId={initialTab}
-                        onChange={updateTabQueryParam}
-                    >
-                        <Tab
-                            id="eco-data"
-                            title="Explore EcoCommons Data"
-                            panel={<ExploreEcoData />}
-                        />
-                        <Tab
-                            id="knowledge-data"
-                            title="Explore Knowledge Network Data"
-                            panel={<ExploreKnowledgeData />}
-                        />
-                </Tabs>
+                {tabs}
             </FixedContainer>
         </>
     );

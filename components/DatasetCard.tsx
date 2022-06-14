@@ -17,6 +17,8 @@ import axios from "axios";
 
 import { DatasetType } from "../interfaces/DatasetType";
 import { getDDMMMYYYY } from "../util/date";
+import { sendDatasetId } from "../util/sendDatasetId";
+
 import { useDataManager } from "../hooks/DataManager";
 import { useOpenableOpen } from "../hooks/Openable";
 
@@ -50,6 +52,8 @@ export interface Props {
      * data
      */
     landingPageUrl?: string;
+    /** Allow dataset cards to be selected */
+    allowSelect?: boolean;
 }
 
 export default function DatasetCard({
@@ -62,6 +66,7 @@ export default function DatasetCard({
     status,
     failureMessage,
     landingPageUrl,
+    allowSelect = false
 }: Props) {
     const { keycloak } = useKeycloakInfo();
     const dataManager = useDataManager();
@@ -119,6 +124,11 @@ export default function DatasetCard({
             setDownloadInProgress(false);
         }
     }, [datasetId, dataManager]);
+
+    const selectDataset = useCallback(async () => {
+        sendDatasetId(datasetId);
+    }, [datasetId]);
+
 
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
@@ -182,10 +192,21 @@ export default function DatasetCard({
                     </Col>
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
+                                {allowSelect ? 
+                                <Button
+                                    icon="select"
+                                    data-testid="select-button"
+                                    intent="success"
+                                    onClick={selectDataset}
+                                    disabled={disabledDataset}
+                                >
+                                    Select
+                                </Button>
+                                : ''}
                                 <Button
                                     icon="eye-open"
                                     data-testid="view-button"
-                                    intent="success"
+                                    intent={allowSelect ? 'primary' : 'success'}
                                     onClick={openVisualiserDrawer}
                                     disabled={disabledDataset}
                                 >
