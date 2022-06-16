@@ -20,7 +20,7 @@ cypress test:
     CYPRESS_BASE_URL: "http://127.0.0.1:3000"
     #CYPRESS_CACHE_FOLDER: "${CI_PROJECT_DIR}/cache/Cypress" 
     #DEBUG: cypress:network:*,
-    DEBUG: cypress:*,
+    #DEBUG: cypress:*,
     REPORTER_CONFIG: |
       {
         "reporterEnabled": "spec, cypress-sonarqube-reporter",
@@ -33,6 +33,7 @@ cypress test:
     # TODO build this into a container.. see Git issue
     # TODO Hack because .babelrc { env: { "e2e": { "plugins": ["istanbul"] }}} is failing.. somewhere.
     - cp ./.babelrc.cypress ./.babelrc || true
+    - cp ./.env.development ./.env.local
     - echo ${REPORTER_CONFIG} > ./reporter-config.json
     - npm ci --no-optional
     - npm i cypress-multi-reporters cypress-sonarqube-reporter @cypress/code-coverage istanbul-lib-coverage
