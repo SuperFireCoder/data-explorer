@@ -19,7 +19,8 @@ cypress test:
     CYPRESS_API_VIS_DEV: 'https://api.visualiser.dev.ecocommons.org.au'
     CYPRESS_BASE_URL: "http://127.0.0.1:3000"
     #CYPRESS_CACHE_FOLDER: "${CI_PROJECT_DIR}/cache/Cypress" 
-    DEBUG: cypress:network:*,
+    #DEBUG: cypress:network:*,
+    DEBUG: cypress:*,
     REPORTER_CONFIG: |
       {
         "reporterEnabled": "spec, cypress-sonarqube-reporter",
@@ -37,6 +38,7 @@ cypress test:
     - npm i cypress-multi-reporters cypress-sonarqube-reporter @cypress/code-coverage istanbul-lib-coverage
     - npx cypress install
     #- npm run dev &
+    - npx next telemetry disable
     - npm run build
     - npm run start &
     - npx wait-on $CYPRESS_BASE_URL
