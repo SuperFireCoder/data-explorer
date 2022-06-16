@@ -1,7 +1,7 @@
 {
 	"baseUrl": "http://localhost:3000",
 	"ignoreTestFiles": "**/examples/*.spec.js",
-	"experimentalSessionAndOrigin": true,
+	"experimentalSessionAndOrigin": false,
 	"chromeWebSecurity": false,
 	"trashAssetsBeforeRuns": true,
 	"requestTimeout": 10000,

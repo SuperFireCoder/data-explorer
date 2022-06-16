@@ -27,11 +27,16 @@
 Cypress.Commands.add('login', (username, password) => {
 	//cy.session([username, password], () => {
 		cy.visit('/?tab=eco-data?');
-		cy.get('button').contains('Sign in / Register', { timeout: 5000 }).click({ force: true });
-		cy.get('#zocial-keycloak-local-account', { timeout: 5000 }).click();
-		cy.get('#username').type(username ?? Cypress.env('EC_USER'));
-		cy.get('#password').type(password ?? Cypress.env('EC_PASS'));
-		cy.get('#kc-form-login').submit();
+		cy.get('body').then(($body) => {
+			// TODO: add data-cy tags to login button indicating logged in state
+			if ($body.text().includes('Sign in / Register')) {
+				cy.get('button').contains('Sign in / Register', { timeout: 5000 }).click({ force: true });
+				cy.get('#zocial-keycloak-local-account', { timeout: 5000 }).click();
+				cy.get('#username').type(username ?? Cypress.env('EC_USER'));
+				cy.get('#password').type(password ?? Cypress.env('EC_PASS'));
+				cy.get('#kc-form-login').submit();
+			}
+		});
 	//});
 });
 
