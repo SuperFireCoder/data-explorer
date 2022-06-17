@@ -32,6 +32,14 @@ interface Props extends AppProps {
     cookies: unknown;
 }
 
+function SafeHydrate({ children }: any) {
+  return (
+    <div suppressHydrationWarning>
+      {typeof window === 'undefined' ? null : children}
+    </div>
+  )
+}
+
 function MyApp({ Component, pageProps, cookies }: Props) {
     /** react-keycloak configuration */
     const keycloakConfig = getKeycloakAuthParameters();
@@ -49,15 +57,17 @@ function MyApp({ Component, pageProps, cookies }: Props) {
       }, [router.events]);
 
     return (
-        <LinkContext.Provider value={{ Link }}>
-            <SSRKeycloakProvider
-                keycloakConfig={keycloakConfig}
-                persistor={SSRCookies(cookies)}
-                initOptions={{ checkLoginIframe: false }}
-            >
-                <Component {...pageProps} />
-            </SSRKeycloakProvider>
-        </LinkContext.Provider>
+        <SafeHydrate>
+            <LinkContext.Provider value={{ Link }}>
+                <SSRKeycloakProvider
+                    keycloakConfig={keycloakConfig}
+                    persistor={SSRCookies(cookies)}
+                    initOptions={{ checkLoginIframe: false }}
+                >
+                    <Component {...pageProps} />
+                </SSRKeycloakProvider>
+            </LinkContext.Provider>
+        </SafeHydrate>
     );
 }
 
