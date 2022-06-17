@@ -11,5 +11,7 @@
     "reporterOptions": {
         "overwrite": true
 	},
-	"viewportHeight":800
+	"scrollBehavior": "nearest",
+	"viewportWidth": 1200,
+	"viewportHeight": 1024
 }
