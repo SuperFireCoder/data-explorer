@@ -2,7 +2,7 @@
 
 const specTitle = require('cypress-sonarqube-reporter/specTitle');
 
-describe(specTitle('login and show fitering on the basis of users on datasets'), () => {
+describe(specTitle('login and show filtering on the basis of users on datasets'), () => {
     beforeEach(() => {
         cy.login();
         cy.get('[data-cy="explore-eco-data"]', { timeout: 5000 })

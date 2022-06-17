@@ -26,6 +26,7 @@
 
 Cypress.Commands.add('login', (username, password) => {
 	cy.visit('/');
+	cy.wait(2000)
 	cy.get('body').then(($body) => {
 		if ($body.find('button[data-cy=root-signin]').length) {
 			cy.log('Attempting to login');
