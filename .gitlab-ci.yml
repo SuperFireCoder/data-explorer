@@ -22,7 +22,7 @@ cypress test:
     REPORTER_CONFIG: |
       {
         "reporterEnabled": "spec, cypress-sonarqube-reporter",
-        "cypressSonarqubeReporterReporterOptions": {
+        "cypressSonarqubeReporterOptions": {
           "mergeOutputDir": "./"
         }
       }
