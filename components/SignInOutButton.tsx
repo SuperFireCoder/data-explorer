@@ -80,6 +80,7 @@ export default function SignInOutButton() {
             >
                 <Button
                     key={forceUpdateKey}
+                    data-cy="root-logged-in"
                     intent="none"
                     icon="user"
                     rightIcon="caret-down"
@@ -93,6 +94,7 @@ export default function SignInOutButton() {
         return (
             <Button
                 key={forceUpdateKey}
+                data-cy="root-signin"
                 intent="success"
                 outlined
                 onClick={() => router.push(keycloak.createLoginUrl())}
