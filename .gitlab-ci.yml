@@ -3,51 +3,6 @@ include:
     file: '/v1/supported_ci_ui.yml'
     ref: develop
 
-include:
-  - local: v1/.supported_ci.yml
-
-variables:
-  BUILD_ARGS: "--build-arg NPM_AUTHTOKEN=${CI_JOB_TOKEN} --build-arg NODE_ENV=production"
-  TEST_ENV_FILE: ".env.development"
-  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
-
-# cache:
-#   key: ${CI_COMMIT_REF_SLUG}
-#   paths:
-#     - node_modules/
-#     - .npm/
-#     - .next/cache
-
-.npm:
-  before_script:
-    - echo -e "@ecocommons-australia:registry=https://gitlab.com/api/v4/packages/npm/\n//gitlab.com/api/v4/packages/npm/:_authToken=${CI_JOB_TOKEN}" > .npmrc
-
-unit test:
-  extends: .npm
-  image: node:12-alpine
-  stage: unit test
-  script:
-    - npm ci --no-optional
-    - npm test -- --colors --coverage --coverageDirectory=jest-coverage --reporters=default --reporters=jest-junit
-  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
-  artifacts:
-    reports:
-      junit: junit.xml
-    paths:
-      - jest-coverage/**
-  rules:
-    # Run this if Jest is set up (either with JS or JSON config file), and previous steps completed successfully
-    - if: '$CI_PIPELINE_SOURCE =~ /push|web/'
-    - exists:
-      - jest.config.js
-      - jest.config.json
-      when: on_success
-    # Otherwise don't run this
-    - when: never
-
-build image:
-  extends: .build image
-
 cypress test:
   extends: .npm
   tags:
