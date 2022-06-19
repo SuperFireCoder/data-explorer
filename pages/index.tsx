@@ -196,6 +196,7 @@ export default function IndexPage() {
                         <Tab
                             id="eco-data"
                             title="Explore EcoCommons Data"
+                            data-cy="explore-eco-data"
                             panel={<ExploreEcoData />}
                         />
                         <Tab
