@@ -1,0 +1,17 @@
+{
+	"baseUrl": "http://localhost:3000",
+	"ignoreTestFiles": "**/examples/*.spec.js",
+	"experimentalSessionAndOrigin": false,
+	"chromeWebSecurity": false,
+	"trashAssetsBeforeRuns": true,
+	"requestTimeout": 10000,
+	"defaultCommandTimeout": 10000,
+	"video": true,
+	"reporter": "cypress-sonarqube-reporter",
+    "reporterOptions": {
+        "overwrite": true
+	},
+	"scrollBehavior": "nearest",
+	"viewportWidth": 1200,
+	"viewportHeight": 1024
+}

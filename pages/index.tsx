@@ -183,22 +183,23 @@ export default function IndexPage() {
     const tabs = useMemo(() => {
         return (
                 <Tabs
-                    animate
-                    renderActiveTabPanelOnly
-                    defaultSelectedTabId={initialTab}
-                    onChange={updateTabQueryParam}
-                >
-                    <Tab
-                        id="eco-data"
-                        title="Explore EcoCommons Data"
-                        panel={<ExploreEcoData />}
-                    />
-                    <Tab
-                        id="knowledge-data"
-                        title="Explore Knowledge Network Data"
-                        panel={<ExploreKnowledgeData />}
-                    />
-            </Tabs>
+                        animate
+                        renderActiveTabPanelOnly
+                        defaultSelectedTabId={initialTab}
+                        onChange={updateTabQueryParam}
+                    >
+                        <Tab
+                            id="eco-data"
+                            title="Explore EcoCommons Data"
+                            data-cy="explore-eco-data"
+                            panel={<ExploreEcoData />}
+                        />
+                        <Tab
+                            id="knowledge-data"
+                            title="Explore Knowledge Network Data"
+                            panel={<ExploreKnowledgeData />}
+                        />
+                </Tabs>
             );
     }, []);
 
