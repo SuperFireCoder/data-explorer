@@ -6,10 +6,12 @@
 	"trashAssetsBeforeRuns": true,
 	"requestTimeout": 10000,
 	"defaultCommandTimeout": 10000,
-	"video": false,
+	"video": true,
 	"reporter": "cypress-sonarqube-reporter",
     "reporterOptions": {
         "overwrite": true
 	},
-	"viewportHeight":800
+	"scrollBehavior": "nearest",
+	"viewportWidth": 1200,
+	"viewportHeight": 1024
 }
