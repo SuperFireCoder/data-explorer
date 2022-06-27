@@ -25,8 +25,6 @@ import { itemSortKeyAlpha } from "./FacetMultiSelect";
 import FacetNumberRangeFacetState2 from "./FacetNumberRangeFacetState2";
 import FacetSelectFacetState2 from "./FacetSelectFacetState2";
 
-const queryParamEmbed = router.query.embed;
-
 interface QueryParameters {
     /** Results per page */
     pageSize?: string;
@@ -368,7 +366,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
 export default function IndexPage() {
     const router = useRouter();
 
-    const isEmbed = queryParamEmbed === "1";
+    const isEmbed = router.query.embed === "1";
     
     /**
      * Extracts the current page parameters from the URL query parameter values.
