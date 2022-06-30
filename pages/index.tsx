@@ -136,7 +136,7 @@ export default function IndexPage() {
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
 
-    const isEmbed = router.query.embed as unknown as number;
+    const isEmbed = router.query.embed === "1";
 
     const keycloakToken = keycloak?.token;
 
