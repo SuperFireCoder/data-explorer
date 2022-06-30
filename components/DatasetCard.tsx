@@ -17,6 +17,7 @@ import axios from "axios";
 
 import { DatasetType } from "../interfaces/DatasetType";
 import { getDDMMMYYYY } from "../util/date";
+
 import { useDataManager } from "../hooks/DataManager";
 import { useOpenableOpen } from "../hooks/Openable";
 
@@ -52,6 +53,9 @@ export interface Props {
      * data
      */
     landingPageUrl?: string;
+    /** Allow dataset cards to be selected */
+    selected?: boolean;
+    onSelect?: (uuid: string) => void;
 }
 
 export default function DatasetCard({
@@ -64,6 +68,8 @@ export default function DatasetCard({
     status,
     failureMessage,
     landingPageUrl,
+    selected,
+    onSelect
 }: Props) {
     const { keycloak } = useKeycloakInfo();
     const dataManager = useDataManager();
@@ -130,7 +136,10 @@ export default function DatasetCard({
     // for users of browsers not supporting the `line-clamp` CSS property
     return (
         <>
-            <Card className={themedStyles.datasetCard}>
+            <Card className={classnames({
+                                [themedStyles.datasetCard]: true,
+                                [themedStyles.datasetCardSelected]: selected === true
+                            })}>
                 <Row justify="between">
                     <Col>
                         <H5
@@ -188,10 +197,21 @@ export default function DatasetCard({
                     </Col>
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
+                                {onSelect ? 
+                                <Button
+                                    icon={selected ? 'tick-circle' : 'circle'}
+                                    data-testid="select-button"
+                                    intent={selected ? 'success' : 'none'}
+                                    onClick={() => onSelect(datasetId)}
+                                    disabled={disabledDataset}
+                                >
+                                    Select
+                                </Button>
+                                : ''}
                                 <Button
                                     icon="eye-open"
                                     data-testid="view-button"
-                                    intent="success"
+                                    intent={onSelect ? 'primary' : 'success'}
                                     onClick={openVisualiserDrawer}
                                     disabled={disabledDataset}
                                 >
@@ -206,6 +226,7 @@ export default function DatasetCard({
                             >
                                 Info
                             </Button>
+                                { onSelect === undefined ? 
                                 <Popover
                                     content={
                                         <Menu>
@@ -251,6 +272,7 @@ export default function DatasetCard({
                                         More
                                     </Button>
                                 </Popover>
+                                : ''}
                         </ButtonGroup>
                     </Col>
                 </Row>
