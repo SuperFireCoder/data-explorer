@@ -2,6 +2,10 @@
     margin-top: 1rem;
 }
 
+.datasetCardSelected {
+    background: #efffed;
+}
+
 .description {
     white-space: pre-wrap;
 

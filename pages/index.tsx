@@ -181,6 +181,12 @@ export default function IndexPage() {
     );
 
     const tabs = useMemo(() => {
+
+        // Embed mode only currently supports selection of EcoData
+        if (isEmbed){
+             return (<ExploreEcoData />);
+        }
+
         return (
                 <Tabs
                         animate
