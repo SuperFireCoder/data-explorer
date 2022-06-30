@@ -134,6 +134,7 @@ export default function DatasetCard({
                 <Row justify="between">
                     <Col>
                         <H5
+                            data-cy="dataset-heading-data"
                             className={classnames({
                                 [Classes.TEXT_DISABLED]: status === "FAILED",
                             })}

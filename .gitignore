@@ -6,7 +6,15 @@
 .pnp.js
 
 # testing
+/cypress-sonarqube-reports.all.xml
+/dist
 /coverage
+/*-coverage
+/cypress/screenshots/
+/cypress/videos/
+/cypress/result.xml
+/.nyc_output/
+/junit.xml
 
 # next.js
 /.next/

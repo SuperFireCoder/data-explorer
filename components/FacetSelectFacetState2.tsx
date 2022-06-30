@@ -29,7 +29,7 @@ export default function FacetSelectFacetState2<T>({ facet }: Props<T>) {
         <div>
             <Row>
                 <Col>
-                    <H6>{label}</H6>
+                    <H6 data-cy="show-privacy">{label}</H6>
                     <Select
                         items={items as Item[]}
                         itemRenderer={(
@@ -42,6 +42,7 @@ export default function FacetSelectFacetState2<T>({ facet }: Props<T>) {
                                 onClick={handleClick}
                                 active={modifiers.active}
                                 text={label}
+                                data-cy="show-datasets"
                             />
                         )}
                         onItemSelect={handleSelectChange}
@@ -53,6 +54,7 @@ export default function FacetSelectFacetState2<T>({ facet }: Props<T>) {
                             fill
                             rightIcon="caret-down"
                             text={selectedItems[0]?.label}
+                            data-cy="show-all-data-set"
                         />
                     </Select>
                 </Col>
