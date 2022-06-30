@@ -136,7 +136,7 @@ export default function IndexPage() {
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
 
-    const isEmbed = router.query.embed as unknown as number;
+    const isEmbed = router.query.embed === "1";
 
     const keycloakToken = keycloak?.token;
 
@@ -181,6 +181,12 @@ export default function IndexPage() {
     );
 
     const tabs = useMemo(() => {
+
+        // Embed mode only currently supports selection of EcoData
+        if (isEmbed){
+             return (<ExploreEcoData />);
+        }
+
         return (
                 <Tabs
                         animate

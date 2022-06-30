@@ -17,7 +17,6 @@ import axios from "axios";
 
 import { DatasetType } from "../interfaces/DatasetType";
 import { getDDMMMYYYY } from "../util/date";
-import { sendDatasetId } from "../util/sendDatasetId";
 
 import { useDataManager } from "../hooks/DataManager";
 import { useOpenableOpen } from "../hooks/Openable";
@@ -53,7 +52,8 @@ export interface Props {
      */
     landingPageUrl?: string;
     /** Allow dataset cards to be selected */
-    allowSelect?: boolean;
+    selected?: boolean;
+    onSelect?: (uuid: string) => void;
 }
 
 export default function DatasetCard({
@@ -66,7 +66,8 @@ export default function DatasetCard({
     status,
     failureMessage,
     landingPageUrl,
-    allowSelect = false
+    selected,
+    onSelect
 }: Props) {
     const { keycloak } = useKeycloakInfo();
     const dataManager = useDataManager();
@@ -125,17 +126,15 @@ export default function DatasetCard({
         }
     }, [datasetId, dataManager]);
 
-    const selectDataset = useCallback(async () => {
-        sendDatasetId(datasetId);
-    }, [datasetId]);
-
-
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
     // for users of browsers not supporting the `line-clamp` CSS property
     return (
         <>
-            <Card className={styles.datasetCard}>
+            <Card className={classnames({
+                                [styles.datasetCard]: true,
+                                [styles.datasetCardSelected]: selected === true
+                            })}>
                 <Row justify="between">
                     <Col>
                         <H5
@@ -193,12 +192,12 @@ export default function DatasetCard({
                     </Col>
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
-                                {allowSelect ? 
+                                {onSelect ? 
                                 <Button
-                                    icon="select"
+                                    icon={selected ? 'tick-circle' : 'circle'}
                                     data-testid="select-button"
-                                    intent="success"
-                                    onClick={selectDataset}
+                                    intent={selected ? 'success' : 'none'}
+                                    onClick={() => onSelect(datasetId)}
                                     disabled={disabledDataset}
                                 >
                                     Select
@@ -207,7 +206,7 @@ export default function DatasetCard({
                                 <Button
                                     icon="eye-open"
                                     data-testid="view-button"
-                                    intent={allowSelect ? 'primary' : 'success'}
+                                    intent={onSelect ? 'primary' : 'success'}
                                     onClick={openVisualiserDrawer}
                                     disabled={disabledDataset}
                                 >
@@ -222,6 +221,7 @@ export default function DatasetCard({
                             >
                                 Info
                             </Button>
+                                { onSelect === undefined ? 
                                 <Popover
                                     content={
                                         <Menu>
@@ -267,6 +267,7 @@ export default function DatasetCard({
                                         More
                                     </Button>
                                 </Popover>
+                                : ''}
                         </ButtonGroup>
                     </Col>
                 </Row>

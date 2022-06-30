@@ -8,8 +8,11 @@ import { ParsedUrlQueryInput } from "querystring";
 import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
 import { DatasetType } from "../interfaces/DatasetType";
+
 import { getDataExplorerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
+import { sendDatasetId } from "../util/messages";
+
 import {
     EsFacetRootConfig,
     QueryState,
@@ -32,7 +35,8 @@ interface QueryParameters {
     pageStart?: string;
     /** Search query string */
     searchQuery?: string;
-
+    /** Selected Dataset **/
+    selectedDataset?: string;
     /** Array of users/subjects to filter results by */
     filterPrincipals?: string | string[];
 
@@ -51,6 +55,7 @@ interface FormState {
     pageSize: number;
     pageStart: number;
     searchQuery: string;
+    selectedDataset: string;
     filterPrincipals: readonly string[];
     facetYearMin: number;
     facetYearMax: number;
@@ -366,7 +371,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
 export default function IndexPage() {
     const router = useRouter();
 
-    const isEmbed = router.query.embed as unknown as number;
+    const isEmbed = router.query.embed === "1";
     
     /**
      * Extracts the current page parameters from the URL query parameter values.
@@ -376,6 +381,7 @@ export default function IndexPage() {
             pageSize = "10",
             pageStart = "0",
             searchQuery = "",
+            selectedDataset = "",
             filterPrincipals = [],
             facetYearMin = "",
             facetYearMax = "",
@@ -395,6 +401,9 @@ export default function IndexPage() {
 
             // String search query
             searchQuery,
+
+            // Selected Dataset
+            selectedDataset,
 
             // Principals
             filterPrincipals: normaliseAsReadonlyStringArray(filterPrincipals),
@@ -621,6 +630,16 @@ export default function IndexPage() {
         [updateFormState, formState.pageSize]
     );
 
+    const onDatasetSelect = useCallback(
+        (uuid: string) => {
+            sendDatasetId(uuid);
+            updateFormState({
+                selectedDataset: uuid
+            });
+        },
+        [updateFormState]
+    );
+
     return (
         <Row>
             <Col xs={2}>
@@ -742,7 +761,8 @@ export default function IndexPage() {
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
                                 ownerId={_source.allowed_principals as string[]}
-                                allowSelect={Boolean(isEmbed)}
+                                selected={formState.selectedDataset === _source.uuid}
+                                onSelect={Boolean(isEmbed) ? onDatasetSelect : undefined}
                             />
                         ))}
                     </Col>
