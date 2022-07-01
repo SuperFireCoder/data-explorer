@@ -136,6 +136,8 @@ export default function IndexPage() {
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
 
+    const isEmbed = router.query.embed === "1";
+
     const keycloakToken = keycloak?.token;
 
     let initialTab = router.query.tab as string | undefined;
@@ -178,15 +180,14 @@ export default function IndexPage() {
         [router]
     );
 
-    return (
-        <>
-            <HtmlHead title={["Datasets", "Explore data"]} />
-            <Header
-                activeTab="datasets"
-                subBarLinks={subBarLinks}
-                subBarActiveKey="explore"
-            />
-            <FixedContainer style={{ padding: "1rem" }}>
+    const tabs = useMemo(() => {
+
+        // Embed mode only currently supports selection of EcoData
+        if (isEmbed){
+             return (<ExploreEcoData />);
+        }
+
+        return (
                 <Tabs
                         animate
                         renderActiveTabPanelOnly
@@ -205,6 +206,28 @@ export default function IndexPage() {
                             panel={<ExploreKnowledgeData />}
                         />
                 </Tabs>
+            );
+    }, []);
+
+    if (Boolean(isEmbed)){
+        return (
+            <>
+                <HtmlHead title={["Datasets", "Explore data"]} />
+                {tabs}
+            </>
+        );
+    }
+       
+    return (
+        <>
+            <HtmlHead title={["Datasets", "Explore data"]} />
+            <Header
+                activeTab="datasets"
+                subBarLinks={subBarLinks}
+                subBarActiveKey="explore"
+            />
+            <FixedContainer style={{ padding: "1rem" }}>
+                {tabs}
             </FixedContainer>
         </>
     );
