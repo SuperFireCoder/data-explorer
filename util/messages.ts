@@ -5,7 +5,7 @@ export const sendDatasetId = (dataUuid: string) => {
 
     if (window.parent){
         try { 
-            console.log("sendDatasetId: datauuid", EVENT_NAME, dataUuid);
+            console.log("sendDatasetId: datauuid", EVENT_NAME, dataUuid, getWorkFlowUrl());
             window.parent.postMessage({
                 event_id: EVENT_NAME,
                 dataset_data: {
