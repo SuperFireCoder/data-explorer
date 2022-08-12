@@ -18,6 +18,9 @@ export function getDataExplorerSubbarImportData() {
     return config.publicRuntimeConfig
         .NEXT_PUBLIC_DATA_EXPLORER_SUBBAR_IMPORT_DATA as string | undefined;
 }
+export function getDataManagerBackendServerUrl() {
+    return config.publicRuntimeConfig.NEXT_PUBLIC_DATA_MANAGER_BACKEND_SERVER_URL as string;
+}
 
 export function getKeycloakAuthParameters() {
     return {
