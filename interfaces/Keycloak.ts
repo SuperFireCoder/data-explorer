@@ -1,6 +1,8 @@
-import { useKeycloak } from "@react-keycloak/ssr";
-import { KeycloakInstance } from "../interfaces/Keycloak";
+import { KeycloakInstance as _KeycloakInstance } from "keycloak-js";
 
-export function useKeycloakInfo() {
-    return useKeycloak<KeycloakInstance>();
+export interface KeycloakInstance extends _KeycloakInstance {
+    tokenParsed?: _KeycloakInstance["tokenParsed"] & {
+        name?: string;
+        email?: string;
+    };
 }
