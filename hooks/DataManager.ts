@@ -23,7 +23,7 @@ export function useDataManager() {
         () =>
             new DataManager(
                 getDataManagerBackendServerUrl(),
-                () => keycloakInstance.current
+                keycloakInstance.current
             ),
         []
     );
