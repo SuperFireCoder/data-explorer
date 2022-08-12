@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef } from "react";
-import { KeycloakInstance } from "../interfaces/Keycloak";
 import { DataManager } from "../util/dataManager";
 import { getDataManagerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
@@ -29,7 +28,13 @@ export function useDataManager() {
         []
     );
 
-    return dataManager;
+        /** Whether a user is signed in and has an active session */
+        const userSessionActive = useMemo(
+            () => keycloak?.token !== undefined,
+            [keycloak?.authenticated, keycloak?.token]
+        );
+
+    return {dataManager, userSessionActive,}
 }
 
 
