@@ -126,6 +126,29 @@ export default function DatasetCard({
         }
     }, [datasetId, dataManager]);
 
+
+
+
+    const removeUserOwnDataset = ()=>{
+        try {
+            dataManager.removeDataset(datasetId);
+
+        } catch (e) {
+            // Ignore cancellation events
+            if (axios.isCancel(e)) {
+                return;
+            }
+
+            console.error(e);
+            alert(e.toString());
+        } finally {
+            setDownloadInProgress(false);
+        }
+    }
+
+
+
+
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
     // for users of browsers not supporting the `line-clamp` CSS property
@@ -230,6 +253,24 @@ export default function DatasetCard({
                                                 text="Download"
                                                 onClick={downloadDataset}
                                                 disabled={disabledDataset}
+                                            />
+                                            <MenuItem
+                                                icon="delete"
+                                                text="Delete"
+                                                onClick={removeUserOwnDataset}
+                                                disabled={
+                                                    disabledDataset ||
+                                                    // Disable sharing when user is not owner
+                                                    currentUserId ===
+                                                        undefined ||
+                                                    typeof ownerId ===
+                                                        "string"
+                                                        ? ownerId !==
+                                                          currentUserId
+                                                        : !ownerId.includes(
+                                                              currentUserId
+                                                          )
+                                                }
                                             />
                                             {
                                                     ownerId !== undefined && (
