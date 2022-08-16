@@ -43,10 +43,6 @@ describe(
         });
 
         it("can download 'Australia, Climate Projection, SRESA1B based on INM-CM30, 30 arcsec (~1km) - 2025' ", () => {
-            cy.intercept(
-                "GET",
-                DATA_EXPLORER_API + "/api/dataset/*/tempurl"
-            ).as("getData");
             cy.get('[data-cy="search-field"]').type(
                 `${exampleDataset.SRESA1B}{enter}`
             );
@@ -62,6 +58,13 @@ describe(
             // And I press "Download"
             cy.get('a[data-cy="download"]').click();
         });
+
+        // const path = require("path");
+
+        // it('Verify the downloaded file', () => {
+        //    const downloadsFolder = Cypress.config("downloadsFolder");
+        //    cy.readFile(path.join(downloadsFolder, "Australia,-Climate-Projection,-SRESA1B-based-on-INM-CM30,-30-arcsec-(_1km)---2025.zip")).should("exist");
+        // });
 
         /**
          * outstanding: // Then file is downloaded to my local computer
