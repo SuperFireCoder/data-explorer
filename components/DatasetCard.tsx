@@ -131,10 +131,14 @@ export default function DatasetCard({
     // for users of browsers not supporting the `line-clamp` CSS property
     return (
         <>
-            <Card className={classnames({
+            <Card
+                className={classnames({
                                 [styles.datasetCard]: true,
                                 [styles.datasetCardSelected]: selected === true
-                            })}>
+                            })}
+                data-cy="DatasetCard-card"
+                data-testid={title}
+            >
                 <Row justify="between">
                     <Col>
                         <H5
@@ -230,6 +234,7 @@ export default function DatasetCard({
                                                 text="Download"
                                                 onClick={downloadDataset}
                                                 disabled={disabledDataset}
+                                                data-cy="download"
                                             />
                                             {
                                                     ownerId !== undefined && (
@@ -263,6 +268,7 @@ export default function DatasetCard({
                                         icon="more"
                                         intent="none"
                                         disabled={disabledDataset}
+                                        data-cy="more"
                                     >
                                         More
                                     </Button>
