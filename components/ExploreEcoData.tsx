@@ -641,13 +641,14 @@ export default function IndexPage() {
     );
 
     return (
-        <Row>
+        <Row data-cy="ExploreEcoDataTab">
             <Col xs={2}>
                 <Row disableDefaultMargins>
                     <Col>
                         <FacetFreeTextFacetState2
                             facet={searchQuery}
                             data-testid="search-field"
+                            data-cy="search-field"
                             type="search"
                             leftIcon="search"
                             rightElement={
