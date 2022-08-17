@@ -254,6 +254,8 @@ export default function DatasetCard({
                                                 onClick={downloadDataset}
                                                 disabled={disabledDataset}
                                             />
+                                            {
+                                            ownerId !== undefined && (
                                             <MenuItem
                                                 icon="delete"
                                                 text="Delete"
@@ -272,6 +274,8 @@ export default function DatasetCard({
                                                           )
                                                 }
                                             />
+                                            )
+                                    }
                                             {
                                                     ownerId !== undefined && (
                                                         <MenuItem
