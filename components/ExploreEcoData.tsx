@@ -647,7 +647,6 @@ export default function IndexPage() {
                     <Col>
                         <FacetFreeTextFacetState2
                             facet={searchQuery}
-                            data-cy="facet-search-field"
                             data-testid="search-field"
                             data-cy="search-field"
                             type="search"
