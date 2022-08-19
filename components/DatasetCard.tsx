@@ -235,6 +235,7 @@ export default function DatasetCard({
                                                 text="Download"
                                                 onClick={downloadDataset}
                                                 disabled={disabledDataset}
+                                                data-cy="download"
                                             />
                                             {
                                                     ownerId !== undefined && (
@@ -268,6 +269,7 @@ export default function DatasetCard({
                                         icon="more"
                                         intent="none"
                                         disabled={disabledDataset}
+                                        data-cy="more"
                                     >
                                         More
                                     </Button>
