@@ -693,6 +693,7 @@ export default function IndexPage() {
                             <Col>
                                 <H6>{facet.label}</H6>
                                 <FacetMultiSelectFacetState2
+                                    data-cy={"facet-"+facet.id+"-select"}
                                     facet={facet}
                                     // When there is a free text search
                                     // query, disable showing document
@@ -704,7 +705,7 @@ export default function IndexPage() {
                             </Col>
                         </Row>
                     ))}
-                    <FacetSelectFacetState2 facet={filterPrincipals} />
+                    <FacetSelectFacetState2 data-cy="facet-filter-principals-select" facet={filterPrincipals} />
                 </form>
             </Col>
             <Col xs={10}>
@@ -738,6 +739,7 @@ export default function IndexPage() {
                     <Col>
                         {queryResult?.hits.hits.map(({ _id, _source }) => (
                             <DatasetCard
+                                data-cy="dataset-card"
                                 data-testid="dataset-card"
                                 key={_id}
                                 datasetId={_source.uuid}
