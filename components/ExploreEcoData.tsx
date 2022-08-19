@@ -641,7 +641,7 @@ export default function IndexPage() {
     );
 
     return (
-        <Row>
+        <Row data-cy="ExploreEcoDataTab">
             <Col xs={2}>
                 <Row disableDefaultMargins>
                     <Col>
@@ -649,6 +649,7 @@ export default function IndexPage() {
                             facet={searchQuery}
                             data-cy="facet-search-field"
                             data-testid="search-field"
+                            data-cy="search-field"
                             type="search"
                             leftIcon="search"
                             rightElement={
