@@ -28,8 +28,13 @@ export function useDataManager() {
         []
     );
 
+    const userSessionActive = useMemo(
+        () => keycloak?.token !== undefined,
+        [keycloak?.authenticated, keycloak?.token]
+    );
 
-    return dataManager
+
+    return {dataManager, userSessionActive}
 }
 
 

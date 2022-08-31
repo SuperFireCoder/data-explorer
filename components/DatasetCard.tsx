@@ -70,7 +70,7 @@ export default function DatasetCard({
     onSelect
 }: Props) {
     const { keycloak } = useKeycloakInfo();
-    const dataManager = useDataManager();
+    const { dataManager, userSessionActive } = useDataManager();
 
     const currentUserId = keycloak?.tokenParsed?.sub;
 
@@ -141,8 +141,6 @@ export default function DatasetCard({
 
             console.error(e);
             alert(e.toString());
-        } finally {
-            setDownloadInProgress(false);
         }
     }
 

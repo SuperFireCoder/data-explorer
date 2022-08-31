@@ -12,33 +12,47 @@ export class DataManager {
 
     constructor(
         public readonly serverBaseUrl: string,
-        private readonly keycloakInstance: KeycloakInstance | undefined
+        private readonly keycloakInstance:  KeycloakInstance | undefined
     ) {
-        this.axios = this.initNewAxiosInstance();
+        const { axiosInstance } = this.initNewAxiosInstance();
+        this.axios = axiosInstance;
     }
 
     public getAuthorizationHeaderValue() {
-        if (this.keycloakInstance === undefined) {
+        const token = this.keycloakInstance?.token;
+
+        if (token === undefined) {
             return undefined;
         }
 
-        return `Bearer ${this.keycloakInstance.token}`;
+        return `Bearer ${token}`;
     }
 
     private initNewAxiosInstance() {
-        const authHeaderVal = this.getAuthorizationHeaderValue();
-
-        const axiosRequestConfig: AxiosRequestConfig = {
+        const axiosInstance = axios.create({
             baseURL: this.serverBaseUrl,
-        };
+        });
 
-        if (authHeaderVal) {
-            axiosRequestConfig.headers = {
-                Authorization: this.getAuthorizationHeaderValue(),
-            };
-        }
+        const injectAuthHeaderInterceptor =
+            axiosInstance.interceptors.request.use((requestConfig) => {
+                const authHeader = this.getAuthorizationHeaderValue();
 
-        return axios.create(axiosRequestConfig);
+                // If no auth value available, just pass request through
+                if (authHeader === undefined) {
+                    return requestConfig;
+                }
+
+                // Otherwise inject the auth header
+                return {
+                    ...requestConfig,
+                    headers: {
+                        ...requestConfig.headers,
+                        Authorization: authHeader,
+                    },
+                };
+            });
+
+        return { axiosInstance, injectAuthHeaderInterceptor };
     }
 
     private getNewAxiosCancellationToken() {
