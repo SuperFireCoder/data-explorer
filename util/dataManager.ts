@@ -77,6 +77,15 @@ export class DataManager {
         return { promise, cancellationToken, axiosPromise };
     }
 
+    private xhrDelete<T>(url: string) {
+        const cancellationToken = this.getNewAxiosCancellationToken();
+        const axiosPromise = this.axios.delete<T>(url, {
+            cancelToken: cancellationToken.token,
+        });
+        const promise = axiosPromise.then((res) => res.data);
+        return { promise, cancellationToken, axiosPromise };
+    }
+
     // private xhrDelete<T>(url: string) {
     //     const cancellationToken = this.getNewAxiosCancellationToken();
     //     const axiosPromise = this.axios.delete<T>(url, {
@@ -87,10 +96,19 @@ export class DataManager {
     // }
 
     public getDatasetTemporaryUrl(uuid: string) {
+        const cancellationToken = this.getNewAxiosCancellationToken();
         return this.xhrGet<{ url: string }>(
             `${ENDPOINTS.DATASET}${uuid}/tempurl`
         );
     }
+
+
+    public removeDataset(uuid: string) {
+        return this.xhrDelete<{ url: string }>(
+            `${ENDPOINTS.DATASET}${uuid}/delete`
+        );
+    }
+
 
     public getDatasetPermissions(uuid: string) {
         return this.xhrGet<Record<string, string[]>>(

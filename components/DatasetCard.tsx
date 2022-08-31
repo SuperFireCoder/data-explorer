@@ -255,8 +255,29 @@ export default function DatasetCard({
                                                 text="Download"
                                                 onClick={downloadDataset}
                                                 disabled={disabledDataset}
-                                                data-cy="download"
                                             />
+                                            {
+                                            ownerId !== undefined && (
+                                            <MenuItem
+                                                icon="delete"
+                                                text="Delete"
+                                                onClick={removeUserOwnDataset}
+                                                disabled={
+                                                    disabledDataset ||
+                                                    // Disable sharing when user is not owner
+                                                    currentUserId ===
+                                                        undefined ||
+                                                    typeof ownerId ===
+                                                        "string"
+                                                        ? ownerId !==
+                                                          currentUserId
+                                                        : !ownerId.includes(
+                                                              currentUserId
+                                                          )
+                                                }
+                                            />
+                                            )
+                                    }
                                             {
                                                     ownerId !== undefined && (
                                                         <MenuItem
