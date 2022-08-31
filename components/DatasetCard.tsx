@@ -70,7 +70,7 @@ export default function DatasetCard({
     onSelect
 }: Props) {
     const { keycloak } = useKeycloakInfo();
-    const dataManager = useDataManager();
+    const { dataManager, userSessionActive } = useDataManager();
 
     const currentUserId = keycloak?.tokenParsed?.sub;
 
@@ -125,6 +125,27 @@ export default function DatasetCard({
             setDownloadInProgress(false);
         }
     }, [datasetId, dataManager]);
+
+
+
+
+    const removeUserOwnDataset = ()=>{
+        try {
+            dataManager.removeDataset(datasetId);
+
+        } catch (e) {
+            // Ignore cancellation events
+            if (axios.isCancel(e)) {
+                return;
+            }
+
+            console.error(e);
+            alert(e.toString());
+        }
+    }
+
+
+
 
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
@@ -234,8 +255,29 @@ export default function DatasetCard({
                                                 text="Download"
                                                 onClick={downloadDataset}
                                                 disabled={disabledDataset}
-                                                data-cy="download"
                                             />
+                                            {
+                                            ownerId !== undefined && (
+                                            <MenuItem
+                                                icon="delete"
+                                                text="Delete"
+                                                onClick={removeUserOwnDataset}
+                                                disabled={
+                                                    disabledDataset ||
+                                                    // Disable sharing when user is not owner
+                                                    currentUserId ===
+                                                        undefined ||
+                                                    typeof ownerId ===
+                                                        "string"
+                                                        ? ownerId !==
+                                                          currentUserId
+                                                        : !ownerId.includes(
+                                                              currentUserId
+                                                          )
+                                                }
+                                            />
+                                            )
+                                    }
                                             {
                                                     ownerId !== undefined && (
                                                         <MenuItem
