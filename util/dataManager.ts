@@ -59,7 +59,7 @@ export class DataManager {
         return axios.CancelToken.source();
     }
 
-    private xhrGet<T>(url: string) {
+    public xhrGet<T>(url: string) {
         const cancellationToken = this.getNewAxiosCancellationToken();
         const axiosPromise = this.axios.get<T>(url, {
             cancelToken: cancellationToken.token,
@@ -95,16 +95,22 @@ export class DataManager {
     //     return { promise, cancellationToken, axiosPromise };
     // }
 
+    public getDatasetFileStatus(url: string) {
+        const cancellationToken = this.getNewAxiosCancellationToken();
+        return this.xhrGet<{ url: string, status: string }>(url);
+    }
+
+
     public getDatasetTemporaryUrl(uuid: string) {
         const cancellationToken = this.getNewAxiosCancellationToken();
-        return this.xhrGet<{ url: string }>(
+        return this.xhrGet<{ url: string, status: string }>(
             `${ENDPOINTS.DATASET}${uuid}/tempurl`
         );
     }
 
 
     public removeDataset(uuid: string) {
-        return this.xhrDelete<{ url: string }>(
+        return this.xhrDelete<{}>(
             `${ENDPOINTS.DATASET}${uuid}/delete`
         );
     }
