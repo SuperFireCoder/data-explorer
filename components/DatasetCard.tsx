@@ -114,6 +114,8 @@ export default function DatasetCard({
             let instatus = status;
             let inurl = url;
             while (instatus == 'IN-PROGRESS') {
+                // Wait for a few seconds before prompt for status
+                await new Promise(r => setTimeout(r, 2000));
                 const { promise } = dataManager.getDatasetFileStatus(inurl);
                 const { url, status } = await promise;
                 instatus = status;
