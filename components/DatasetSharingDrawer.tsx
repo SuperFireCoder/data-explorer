@@ -51,7 +51,7 @@ export default function DatasetSharingDrawer({
     isOpen,
     onClose,
 }: Props) {
-    const {dataManager, userSessionActive} = useDataManager();
+    const dataManager = useDataManager();
 
     const {
         isOpen: discardChangesAlertOpen,

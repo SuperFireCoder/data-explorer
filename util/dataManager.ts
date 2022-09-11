@@ -12,47 +12,33 @@ export class DataManager {
 
     constructor(
         public readonly serverBaseUrl: string,
-        private readonly keycloakInstance:  KeycloakInstance | undefined
+        private readonly keycloakInstance: KeycloakInstance | undefined
     ) {
-        const { axiosInstance } = this.initNewAxiosInstance();
-        this.axios = axiosInstance;
+        this.axios = this.initNewAxiosInstance();
     }
 
     public getAuthorizationHeaderValue() {
-        const token = this.keycloakInstance?.token;
-
-        if (token === undefined) {
+        if (this.keycloakInstance === undefined) {
             return undefined;
         }
 
-        return `Bearer ${token}`;
+        return `Bearer ${this.keycloakInstance.token}`;
     }
 
     private initNewAxiosInstance() {
-        const axiosInstance = axios.create({
+        const authHeaderVal = this.getAuthorizationHeaderValue();
+
+        const axiosRequestConfig: AxiosRequestConfig = {
             baseURL: this.serverBaseUrl,
-        });
+        };
 
-        const injectAuthHeaderInterceptor =
-            axiosInstance.interceptors.request.use((requestConfig) => {
-                const authHeader = this.getAuthorizationHeaderValue();
+        if (authHeaderVal) {
+            axiosRequestConfig.headers = {
+                Authorization: this.getAuthorizationHeaderValue(),
+            };
+        }
 
-                // If no auth value available, just pass request through
-                if (authHeader === undefined) {
-                    return requestConfig;
-                }
-
-                // Otherwise inject the auth header
-                return {
-                    ...requestConfig,
-                    headers: {
-                        ...requestConfig.headers,
-                        Authorization: authHeader,
-                    },
-                };
-            });
-
-        return { axiosInstance, injectAuthHeaderInterceptor };
+        return axios.create(axiosRequestConfig);
     }
 
     private getNewAxiosCancellationToken() {
@@ -77,15 +63,6 @@ export class DataManager {
         return { promise, cancellationToken, axiosPromise };
     }
 
-    private xhrDelete<T>(url: string) {
-        const cancellationToken = this.getNewAxiosCancellationToken();
-        const axiosPromise = this.axios.delete<T>(url, {
-            cancelToken: cancellationToken.token,
-        });
-        const promise = axiosPromise.then((res) => res.data);
-        return { promise, cancellationToken, axiosPromise };
-    }
-
     // private xhrDelete<T>(url: string) {
     //     const cancellationToken = this.getNewAxiosCancellationToken();
     //     const axiosPromise = this.axios.delete<T>(url, {
@@ -96,19 +73,10 @@ export class DataManager {
     // }
 
     public getDatasetTemporaryUrl(uuid: string) {
-        const cancellationToken = this.getNewAxiosCancellationToken();
         return this.xhrGet<{ url: string }>(
             `${ENDPOINTS.DATASET}${uuid}/tempurl`
         );
     }
-
-
-    public removeDataset(uuid: string) {
-        return this.xhrDelete<{ url: string }>(
-            `${ENDPOINTS.DATASET}${uuid}/delete`
-        );
-    }
-
 
     public getDatasetPermissions(uuid: string) {
         return this.xhrGet<Record<string, string[]>>(
