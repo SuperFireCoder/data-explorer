@@ -255,6 +255,7 @@ export default function DatasetCard({
                                                 text="Download"
                                                 onClick={downloadDataset}
                                                 disabled={disabledDataset}
+                                                data-cy="download"
                                             />
                                             {
                                             ownerId !== undefined && (
