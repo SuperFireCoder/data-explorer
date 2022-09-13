@@ -124,7 +124,7 @@ export default function DatasetCard({
 
             // Go to returned URL to trigger download
             if (instatus == 'COMPLETED') {
-                window.location.href = url;
+                window.location.href = inurl;
             }
         } catch (e) {
             // Ignore cancellation events
