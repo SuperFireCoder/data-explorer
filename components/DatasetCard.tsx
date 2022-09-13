@@ -114,10 +114,23 @@ export default function DatasetCard({
 
             setDownloadInProgress(true);
 
-            const { url } = await promise;
+            const { url, status } = await promise;
+
+            let instatus = status;
+            let inurl = url;
+            while (instatus == 'IN-PROGRESS') {
+                // Wait for a few seconds before prompt for status
+                await new Promise(r => setTimeout(r, 2000));
+                const { promise } = dataManager.getDatasetFileStatus(inurl);
+                const { url, status } = await promise;
+                instatus = status;
+                inurl = url;
+            }
 
             // Go to returned URL to trigger download
-            window.location.href = url;
+            if (instatus == 'COMPLETED') {
+                window.location.href = inurl;
+            }
         } catch (e) {
             // Ignore cancellation events
             if (axios.isCancel(e)) {
@@ -130,6 +143,27 @@ export default function DatasetCard({
             setDownloadInProgress(false);
         }
     }, [datasetId, dataManager]);
+
+
+
+
+    const removeUserOwnDataset = ()=>{
+        try {
+            dataManager.removeDataset(datasetId);
+
+        } catch (e) {
+            // Ignore cancellation events
+            if (axios.isCancel(e)) {
+                return;
+            }
+
+            console.error(e);
+            alert(e.toString());
+        }
+    }
+
+
+
 
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
@@ -239,8 +273,29 @@ export default function DatasetCard({
                                                 text="Download"
                                                 onClick={downloadDataset}
                                                 disabled={disabledDataset}
-                                                data-cy="download"
                                             />
+                                            {
+                                            ownerId !== undefined && (
+                                            <MenuItem
+                                                icon="delete"
+                                                text="Delete"
+                                                onClick={removeUserOwnDataset}
+                                                disabled={
+                                                    disabledDataset ||
+                                                    // Disable sharing when user is not owner
+                                                    currentUserId ===
+                                                        undefined ||
+                                                    typeof ownerId ===
+                                                        "string"
+                                                        ? ownerId !==
+                                                          currentUserId
+                                                        : !ownerId.includes(
+                                                              currentUserId
+                                                          )
+                                                }
+                                            />
+                                            )
+                                    }
                                             {
                                                     ownerId !== undefined && (
                                                         <MenuItem

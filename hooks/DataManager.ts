@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useRef } from "react";
+import { useMemo, useRef, useEffect } from "react";
 import { DataManager } from "../util/dataManager";
 import { getDataExplorerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
@@ -14,12 +14,20 @@ export function useDataManager() {
     );
 
     /** Data Manager object handling XHR calls to the server */
-    const dataManager = useMemo(() => {
-        return new DataManager(
-            getDataExplorerBackendServerUrl(),
-            keycloak?.authenticated ? keycloak : undefined
-        );
-    }, [keycloak, keycloak?.authenticated]);
+    const dataManager = useMemo(
+        () =>
+            new DataManager(
+                getDataExplorerBackendServerUrl(),
+                keycloakInstance.current
+            ),
+        []
+    );
 
-    return dataManager;
+    const userSessionActive = useMemo(
+        () => keycloak?.token !== undefined,
+        [keycloak?.authenticated, keycloak?.token]
+    );
+
+
+    return {dataManager, userSessionActive}
 }
