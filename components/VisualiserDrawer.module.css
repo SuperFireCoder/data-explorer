@@ -17,5 +17,7 @@
 .legendImageContainer {
     position: absolute;
     bottom: 40px;
-    right: 0;
+    right: 0.7em;
+    max-height: 20em;
+    overflow-y: scroll;
 }

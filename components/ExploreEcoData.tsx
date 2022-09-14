@@ -22,7 +22,7 @@ import {
     useEsIndividualFacetFreeText,
     useEsIndividualFacetNumberRange,
 } from "../hooks/EsFacet";
-import FacetMultiSelectFacetState2 from "./FacetMultiSelectFacetState2";
+import FacetMultiSelectFacetState2, { NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL } from "./FacetMultiSelectFacetState2";
 import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
 import { itemSortKeyAlpha } from "./FacetMultiSelect";
 import FacetNumberRangeFacetState2 from "./FacetNumberRangeFacetState2";
@@ -218,12 +218,21 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
     },
     {
         id: "facetTimeDomain",
-        facetApplicationFn: (formState, query) =>
-            addTermAggregationFacetStateToQuery(
+        facetApplicationFn: (formState, query) => {
+            let newTimeDomain: string[] = [];
+            if (formState.facetTimeDomain[0] === NEW_TIME_DOMAIN_VAL) {
+                newTimeDomain = [OLD_TIME_DOMAIN_VAL]
+            } else {
+                formState.facetTimeDomain.map(item => {
+                    newTimeDomain.push(item)
+                })
+            }
+            return addTermAggregationFacetStateToQuery(
                 query,
                 "time_domain",
-                formState.facetTimeDomain
-            ),
+                newTimeDomain
+            )
+        },
         aggregationApplicationFn: (query) => {
             return {
                 ...query,
