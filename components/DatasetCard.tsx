@@ -72,7 +72,7 @@ export default function DatasetCard({
     onSelect
 }: Props) {
     const { keycloak } = useKeycloakInfo();
-    const dataManager = useDataManager();
+    const { dataManager } = useDataManager();
     const { mergeStyles } = useTheme();
 
     const themedStyles = mergeStyles(styles, "Styles::DatasetCard");
