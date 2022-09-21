@@ -109,10 +109,23 @@ export default function DatasetCard({
 
             setDownloadInProgress(true);
 
-            const { url } = await promise;
+            const { url, status } = await promise;
+
+            let instatus = status;
+            let inurl = url;
+            while (instatus == 'IN-PROGRESS') {
+                // Wait for a few seconds before prompt for status
+                await new Promise(r => setTimeout(r, 2000));
+                const { promise } = dataManager.getDatasetFileStatus(inurl);
+                const { url, status } = await promise;
+                instatus = status;
+                inurl = url;
+            }
 
             // Go to returned URL to trigger download
-            window.location.href = url;
+            if (instatus == 'COMPLETED') {
+                window.location.href = inurl;
+            }
         } catch (e) {
             // Ignore cancellation events
             if (axios.isCancel(e)) {
