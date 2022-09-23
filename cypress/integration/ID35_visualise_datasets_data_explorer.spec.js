@@ -75,28 +75,28 @@ describe(specTitle("Visualise datasets on a map"), () => {
          * instead test for getting back a good response
          */
         var examples = [
-            {
-                data: "Australia, Climate Projection, SRESA1B based on INM-CM30, 30 arcsec (~1km) - 2025",
-                variables: [
-                    {
-                        label: "Bioclim 02: Mean Diurnal Range (Mean of monthly (max temp - min temp))"
-                    },
-                    {
-                        label: "Bioclim 03: Isothermality (BIO2/BIO7) (* 100)"
-                    }
-                ]
-            },
-            {
-                data: "WorldClim2.1, precipitation December (1996), 2.5 arcmin (~5km)",
-                variables: [
-                    {
-                        label: "Average maximum temperature"
-                    },
-                    {
-                        label: "Average minimum temperature"
-                    }
-                ]
-            },
+            // {
+            //     data: "Australia, Climate Projection, SRESA1B based on INM-CM30, 30 arcsec (~1km) - 2025",
+            //     variables: [
+            //         {
+            //             label: "Bioclim 02: Mean Diurnal Range (Mean of monthly (max temp - min temp))"
+            //         },
+            //         {
+            //             label: "Bioclim 03: Isothermality (BIO2/BIO7) (* 100)"
+            //         }
+            //     ]
+            // },
+            // {
+            //     data: "WorldClim2.1, precipitation December (1996), 2.5 arcmin (~5km)",
+            //     variables: [
+            //         {
+            //             label: "Average maximum temperature"
+            //         },
+            //         {
+            //             label: "Average minimum temperature"
+            //         }
+            //     ]
+            // },
             {
                 data: "Australian NDVI (Normalised Difference Vegetation Index) April 2013",
                 variables: [
@@ -109,6 +109,20 @@ describe(specTitle("Visualise datasets on a map"), () => {
                 ]
             }
         ];
+
+        var firstParameter = "";
+
+        function isFirstParameterInTestCase(variables, response) {
+            cy.log("variables", variables, "response", response);
+            cy.wrap(Object.keys(response.body.parameters)[0]).as(
+                "test4firstParameter"
+            );
+            firstParameter = Object.keys(response.body.parameters)[0];
+            cy.log("firstParameter", firstParameter);
+            cy.get(test4firstParameter)
+            return variables.filter((v) => v.id == firstParameter).length > 0;
+        }
+
         examples.forEach((example) => {
             cy.get('[data-cy="search-field"]')
                 .clear({ force: true })
@@ -124,6 +138,7 @@ describe(specTitle("Visualise datasets on a map"), () => {
             cy.wait("@newData")
                 .its("response")
                 .then((r) => {
+                    cy.log("firstParameter", firstParameter);
                     expect(r.statusCode).to.be.oneOf([200, 201]);
                     example.variables.map(
                         (v) =>
@@ -133,14 +148,44 @@ describe(specTitle("Visualise datasets on a map"), () => {
                                         .en == v.label
                             )[0])
                     );
+                    /**
+                     * To handle @newVisualiser for the first layer called by default
+                     *
+                     * 1. check if the first parameter/layer is in the test case (isFirstParameterInTestCase(variables, response))
+                     * 2. yes - remove from test case and test seperately (removeFirstParameter)
+                     * 3. no - only expect statusCode for the first @newVisualiser
+                     *
+                     */
+                    if (isFirstParameterInTestCase(example.variables, r)) {
+                        // test the first layer as it's in the test case
+                        cy.wait("@newVisualiser")
+                            .its("response")
+                            .then((r) => {
+                                expect(r.statusCode).to.be.oneOf([200, 201]);
+                                expect(r.body.source_data[0].name).to.equal(
+                                    firstParameter
+                                );
+                            });
+                        cy.wait(5000);
+                    } else {
+                        // only expect statusCode for the first @newVisualiser
+                        cy.wait("@newVisualiser")
+                            .its("response")
+                            .then((r) => {
+                                expect(r.statusCode).to.be.oneOf([200, 201]);
+                            });
+                    }
                 });
-            // skip the default newVisualiser
-            cy.wait("@newVisualiser")
-                .its("response")
-                .then((r) => {
-                    expect(r.statusCode).to.be.oneOf([200, 201]);
-                });
-            example.variables.forEach((variable) => {
+
+            // remove the first layer if it's in the test case as the @newVisualiser for it has been used
+            cy.log("example", example, "firstParameter", firstParameter);
+            const testVariables = isFirstParameterInTestCase
+                ? example.variables.filter((v) => v.id !== firstParameter)
+                : example.variables;
+
+            // test the rest of the test case
+            cy.log("testVariables", testVariables);
+            testVariables.forEach((variable) => {
                 cy.get(
                     `input[type=radio][data-cy="layers-radio"][data-testid="${variable.label}"]`
                 ).check({ force: true });
