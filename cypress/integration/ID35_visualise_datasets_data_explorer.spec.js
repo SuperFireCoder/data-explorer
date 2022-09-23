@@ -96,18 +96,18 @@ describe(specTitle("Visualise datasets on a map"), () => {
                         label: "Average minimum temperature"
                     }
                 ]
-            },
-            {
-                data: "Australian NDVI (Normalised Difference Vegetation Index) April 2013",
-                variables: [
-                    {
-                        label: "Standardised Anomaly Normalised Difference Vegetation Index (NDVI)"
-                    },
-                    {
-                        label: "Average Normalised Difference Vegetation Index (NDVI)"
-                    }
-                ]
             }
+            // {
+            //     data: "Australian NDVI (Normalised Difference Vegetation Index) April 2013",
+            //     variables: [
+            //         {
+            //             label: "Standardised Anomaly Normalised Difference Vegetation Index (NDVI)"
+            //         },
+            //         {
+            //             label: "Average Normalised Difference Vegetation Index (NDVI)"
+            //         }
+            //     ]
+            // }
         ];
 
         var firstParameter = "";
