@@ -1,4 +1,4 @@
-import { Tabs, Tab } from "@blueprintjs/core";
+import { Tabs, Tab, Popover, Icon, Position, PopoverInteractionKind } from "@blueprintjs/core";
 import {
     FixedContainer,
     HtmlHead,
@@ -36,6 +36,23 @@ import { useKeycloakInfo } from "../util/keycloak";
 import { Select } from "@blueprintjs/select";
 import ExploreEcoData from "../components/ExploreEcoData";
 import ExploreKnowledgeData from "../components/ExploreKnowledgeData";
+import styles from "../components/FacetSelectFacetState2.module.css"
+
+
+const renderTabLabel = (id: string) => {
+    return <>{id === "eco-data" ? "Explore EcoCommons Data" : "Explore Knowledge Network Data"}&nbsp;
+        <Popover position={Position.TOP_LEFT}
+            autoFocus={false}
+            interactionKind={PopoverInteractionKind.HOVER}
+            content={<span className={styles.toolTip}>
+                {id === "eco-data" 
+                ? "Data ready for use in modelling wizards." 
+                : "Find data with a description and download it from CSIRO’s catalogue."}
+            </span>}>
+            <a><Icon icon="info-sign" iconSize={15} /></a>
+        </Popover>
+    </>;
+}
 
 const subBarLinks = [
     { key: "explore", href: "/", label: "Explore data" },
@@ -196,13 +213,13 @@ export default function IndexPage() {
                     >
                         <Tab
                             id="eco-data"
-                            title="Explore EcoCommons Data"
+                            title={renderTabLabel("eco-data")}
                             data-cy="explore-eco-data"
                             panel={<ExploreEcoData />}
                         />
                         <Tab
                             id="knowledge-data"
-                            title="Explore Knowledge Network Data"
+                            title={renderTabLabel("knowledge-data")}
                             panel={<ExploreKnowledgeData />}
                         />
                 </Tabs>
