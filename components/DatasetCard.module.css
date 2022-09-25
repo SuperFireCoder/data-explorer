@@ -17,3 +17,9 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
 }
+
+.toolTip {
+    font-size: 0.8rem;
+    padding: 0.5em 0.75em;
+    background-color: #eee;
+}
