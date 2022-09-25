@@ -78,9 +78,9 @@ describe(specTitle("Visualise datasets on a map"), () => {
             {
                 data: "Australia, Climate Projection, SRESA1B based on INM-CM30, 30 arcsec (~1km) - 2025",
                 variables: [
-                    {
-                        label: "Bioclim 02: Mean Diurnal Range (Mean of monthly (max temp - min temp))"
-                    },
+                    // {
+                    //     label: "Bioclim 02: Mean Diurnal Range (Mean of monthly (max temp - min temp))"
+                    // },
                     {
                         label: "Bioclim 03: Isothermality (BIO2/BIO7) (* 100)"
                     }
@@ -89,9 +89,9 @@ describe(specTitle("Visualise datasets on a map"), () => {
             {
                 data: "WorldClim2.1, precipitation December (1996), 2.5 arcmin (~5km)",
                 variables: [
-                    {
-                        label: "Average maximum temperature"
-                    },
+                    // {
+                    //     label: "Average maximum temperature"
+                    // },
                     {
                         label: "Average minimum temperature"
                     }
