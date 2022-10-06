@@ -161,8 +161,7 @@ export default function VisualiserDrawer({
                         const mapRequest = getNewEcMapVisualiserRequest(
                             layerUrl,
                             layerName,
-                            dataType,
-                            datasetId,
+                            dataType
                         );
                         mapRequest.getBearerToken = getBearerTokenFn;
 
