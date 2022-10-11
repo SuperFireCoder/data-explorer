@@ -76,7 +76,7 @@ export default function DatasetCard({
     const { mergeStyles } = useTheme();
 
     const themedStyles = mergeStyles(styles, "Styles::DatasetCard");
-    
+
     const currentUserId = keycloak?.tokenParsed?.sub;
 
     const [downloadInProgress, setDownloadInProgress] =
@@ -85,6 +85,11 @@ export default function DatasetCard({
     const disabledDataset = useMemo(() => {
         return status !== "SUCCESS";
     }, [status]);
+
+    const disableDelete = useMemo(() => {
+        return !['SUCCESS', 'FAILED'].includes(status)
+    }, [status]);
+
 
     const {
         isOpen: metadataDrawerOpen,
@@ -147,7 +152,7 @@ export default function DatasetCard({
 
 
 
-    const removeUserOwnDataset = ()=>{
+    const removeUserOwnDataset = () => {
         try {
             dataManager.removeDataset(datasetId);
 
@@ -172,9 +177,9 @@ export default function DatasetCard({
         <>
             <Card
                 className={classnames({
-                                [themedStyles.datasetCard]: true,
-                                [themedStyles.datasetCardSelected]: selected === true
-                            })}
+                    [themedStyles.datasetCard]: true,
+                    [themedStyles.datasetCardSelected]: selected === true
+                })}
                 data-cy="DatasetCard-card"
                 data-testid={title}
             >
@@ -235,7 +240,7 @@ export default function DatasetCard({
                     </Col>
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
-                                {onSelect ? 
+                            {onSelect ?
                                 <Button
                                     icon={selected ? 'tick-circle' : 'circle'}
                                     data-testid="select-button"
@@ -246,15 +251,15 @@ export default function DatasetCard({
                                     Select
                                 </Button>
                                 : ''}
-                                <Button
-                                    icon="eye-open"
-                                    data-testid="view-button"
-                                    intent={onSelect ? 'primary' : 'success'}
-                                    onClick={openVisualiserDrawer}
-                                    disabled={disabledDataset}
-                                >
-                                    View
-                                </Button>
+                            <Button
+                                icon="eye-open"
+                                data-testid="view-button"
+                                intent={onSelect ? 'primary' : 'success'}
+                                onClick={openVisualiserDrawer}
+                                disabled={disabledDataset}
+                            >
+                                View
+                            </Button>
                             <Button
                                 icon="info-sign"
                                 data-testid="info-button"
@@ -264,7 +269,7 @@ export default function DatasetCard({
                             >
                                 Info
                             </Button>
-                                { onSelect === undefined ? 
+                            {onSelect === undefined ?
                                 <Popover
                                     content={
                                         <Menu>
@@ -276,50 +281,50 @@ export default function DatasetCard({
                                                 data-cy="download"
                                             />
                                             {
-                                            ownerId !== undefined && (
-                                            <MenuItem
-                                                icon="delete"
-                                                text="Delete"
-                                                onClick={removeUserOwnDataset}
-                                                disabled={
-                                                    disabledDataset ||
-                                                    // Disable sharing when user is not owner
-                                                    currentUserId ===
-                                                        undefined ||
-                                                    typeof ownerId ===
-                                                        "string"
-                                                        ? ownerId !==
-                                                          currentUserId
-                                                        : !ownerId.includes(
-                                                              currentUserId
-                                                          )
-                                                }
-                                            />
-                                            )
-                                    }
-                                            {
-                                                    ownerId !== undefined && (
-                                                        <MenuItem
-                                                            icon="share"
-                                                            text="Share..."
-                                                            onClick={
-                                                                openSharingDrawer
-                                                            }
-                                                            disabled={
-                                                                disabledDataset ||
+                                                ownerId !== undefined && (
+                                                    <MenuItem
+                                                        icon="delete"
+                                                        text="Delete"
+                                                        onClick={removeUserOwnDataset}
+                                                        disabled={
+                                                            disableDelete ||
                                                                 // Disable sharing when user is not owner
                                                                 currentUserId ===
-                                                                    undefined ||
+                                                                undefined ||
                                                                 typeof ownerId ===
-                                                                    "string"
-                                                                    ? ownerId !==
-                                                                      currentUserId
-                                                                    : !ownerId.includes(
-                                                                          currentUserId
-                                                                      )
-                                                            }
-                                                        />
-                                                    )
+                                                                "string"
+                                                                ? ownerId !==
+                                                                currentUserId
+                                                                : !ownerId.includes(
+                                                                    currentUserId
+                                                                )
+                                                        }
+                                                    />
+                                                )
+                                            }
+                                            {
+                                                ownerId !== undefined && (
+                                                    <MenuItem
+                                                        icon="share"
+                                                        text="Share..."
+                                                        onClick={
+                                                            openSharingDrawer
+                                                        }
+                                                        disabled={
+                                                            disabledDataset ||
+                                                                // Disable sharing when user is not owner
+                                                                currentUserId ===
+                                                                undefined ||
+                                                                typeof ownerId ===
+                                                                "string"
+                                                                ? ownerId !==
+                                                                currentUserId
+                                                                : !ownerId.includes(
+                                                                    currentUserId
+                                                                )
+                                                        }
+                                                    />
+                                                )
                                             }
                                         </Menu>
                                     }
