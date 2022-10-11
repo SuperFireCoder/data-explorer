@@ -86,6 +86,11 @@ export default function DatasetCard({
         return status !== "SUCCESS";
     }, [status]);
 
+    const disableDelete = useMemo(() => {
+        return !['SUCCESS', 'FAILED'].includes(status)
+    }, [status]);
+
+
     const {
         isOpen: metadataDrawerOpen,
         open: openMetadataDrawer,
@@ -282,7 +287,7 @@ export default function DatasetCard({
                                                 text="Delete"
                                                 onClick={removeUserOwnDataset}
                                                 disabled={
-                                                    disabledDataset ||
+                                                    disableDelete ||
                                                     // Disable sharing when user is not owner
                                                     currentUserId ===
                                                         undefined ||
