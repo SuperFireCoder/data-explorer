@@ -755,6 +755,7 @@ export default function IndexPage() {
                                 title={_source.title}
                                 description={_source.description}
                                 status={_source.status}
+                                downloadable={_source.downloadable}
                                 failureMessage={
                                     _source.status === "FAILED"
                                         ? _source.message

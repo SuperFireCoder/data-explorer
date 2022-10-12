@@ -42,6 +42,8 @@ export interface Props {
     type?: DatasetType;
     /** Date the dataset was last updated */
     lastUpdated?: Date;
+    /** Indicate if a dataset is downloadable or not */
+    downloadable?: boolean | undefined
     /** User ID of the owner of the dataset */
     ownerId?: string | string[];
     /** Status of the dataset import */
@@ -66,6 +68,7 @@ export default function DatasetCard({
     lastUpdated,
     ownerId,
     status,
+    downloadable,
     failureMessage,
     landingPageUrl,
     selected,
@@ -85,6 +88,10 @@ export default function DatasetCard({
     const disabledDataset = useMemo(() => {
         return status !== "SUCCESS";
     }, [status]);
+
+    const disableDownload = useMemo(() => {
+        return ![true, undefined].includes(downloadable);
+    }, [downloadable]);
 
     const disableDelete = useMemo(() => {
         return !['SUCCESS', 'FAILED'].includes(status)
@@ -277,31 +284,31 @@ export default function DatasetCard({
                                                 icon="download"
                                                 text="Download"
                                                 onClick={downloadDataset}
-                                                disabled={disabledDataset}
+                                                disabled={disableDownload}
                                                 data-cy="download"
                                             />
                                             {
-                                                ownerId !== undefined && (
-                                                    <MenuItem
-                                                        icon="delete"
-                                                        text="Delete"
-                                                        onClick={removeUserOwnDataset}
-                                                        disabled={
-                                                            disableDelete ||
-                                                                // Disable sharing when user is not owner
-                                                                currentUserId ===
-                                                                undefined ||
-                                                                typeof ownerId ===
-                                                                "string"
-                                                                ? ownerId !==
-                                                                currentUserId
-                                                                : !ownerId.includes(
-                                                                    currentUserId
-                                                                )
-                                                        }
-                                                    />
-                                                )
-                                            }
+                                            ownerId !== undefined && (
+                                            <MenuItem
+                                                icon="delete"
+                                                text="Delete"
+                                                onClick={removeUserOwnDataset}
+                                                disabled={
+                                                    disableDelete ||
+                                                    // Disable sharing when user is not owner
+                                                    currentUserId ===
+                                                        undefined ||
+                                                    typeof ownerId ===
+                                                        "string"
+                                                        ? ownerId !==
+                                                          currentUserId
+                                                        : !ownerId.includes(
+                                                              currentUserId
+                                                          )
+                                                }
+                                            />
+                                            )
+                                    }
                                             {
                                                 ownerId !== undefined && (
                                                     <MenuItem
@@ -333,7 +340,7 @@ export default function DatasetCard({
                                     <Button
                                         icon="more"
                                         intent="none"
-                                        disabled={disabledDataset}
+                                        disabled={disableDelete}
                                         data-cy="more"
                                     >
                                         More
