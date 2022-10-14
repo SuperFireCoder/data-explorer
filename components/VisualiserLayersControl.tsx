@@ -115,6 +115,8 @@ export default function VisualiserLayersControl<
 
                                 return (
                                     <Radio
+                                        data-cy="layers-radio"
+                                        data-testid={label}
                                         key={key}
                                         label={label}
                                         value={key}
