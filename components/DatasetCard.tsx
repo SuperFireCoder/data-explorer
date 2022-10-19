@@ -85,15 +85,15 @@ export default function DatasetCard({
     const [downloadInProgress, setDownloadInProgress] =
         useState<boolean>(false);
 
-    const disabledDataset = useMemo(() => {
-        //Return True if upload status is not success
+    const disabledDataset =() => {
+        //Return True if upload status is not succes
         return status !== "SUCCESS";
-    }, [status]);
+    };
 
-    const disabledDelete = useMemo(() => {
+    const disabledDelete = () => {
         //Return True if upload status is not SUCCESS or FAILED
         return !['SUCCESS', 'FAILED'].includes(status)
-    }, [status]);
+    };
 
 
     const {
@@ -251,7 +251,7 @@ export default function DatasetCard({
                                     data-testid="select-button"
                                     intent={selected ? 'success' : 'none'}
                                     onClick={() => onSelect(datasetId)}
-                                    disabled={disabledDataset}
+                                    disabled={disabledDataset()}
                                 >
                                     Select
                                 </Button>
@@ -261,7 +261,7 @@ export default function DatasetCard({
                                 data-testid="view-button"
                                 intent={onSelect ? 'primary' : 'success'}
                                 onClick={openVisualiserDrawer}
-                                disabled={disabledDataset}
+                                disabled={disabledDataset()}
                             >
                                 View
                             </Button>
@@ -270,7 +270,7 @@ export default function DatasetCard({
                                 data-testid="info-button"
                                 intent="primary"
                                 onClick={openMetadataDrawer}
-                                disabled={disabledDataset}
+                                disabled={disabledDataset()}
                             >
                                 Info
                             </Button>
@@ -292,7 +292,7 @@ export default function DatasetCard({
                                                 text="Delete"
                                                 onClick={removeUserOwnDataset}
                                                 disabled={
-                                                    disabledDelete ||
+                                                    disabledDelete() ||
                                                     // Disable deleting when user is not owner
                                                     currentUserId ===
                                                         undefined ||
@@ -316,7 +316,7 @@ export default function DatasetCard({
                                                             openSharingDrawer
                                                         }
                                                         disabled={
-                                                            disabledDataset ||
+                                                            disabledDataset() ||
                                                                 // Disable sharing when user is not owner
                                                                 currentUserId ===
                                                                 undefined ||
@@ -338,7 +338,7 @@ export default function DatasetCard({
                                     <Button
                                         icon="more"
                                         intent="none"
-                                        disabled={disabledDelete}
+                                        disabled={disabledDelete()}
                                         data-cy="more"
                                     >
                                         More
