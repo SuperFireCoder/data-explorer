@@ -43,7 +43,7 @@ export interface Props {
     /** Date the dataset was last updated */
     lastUpdated?: Date;
     /** Indicate if a dataset is downloadable or not */
-    downloadable?: boolean | undefined
+    downloadable?: boolean
     /** User ID of the owner of the dataset */
     ownerId?: string | string[];
     /** Status of the dataset import */
@@ -86,14 +86,12 @@ export default function DatasetCard({
         useState<boolean>(false);
 
     const disabledDataset = useMemo(() => {
+        //Return True if upload status is not success
         return status !== "SUCCESS";
     }, [status]);
 
-    const disableDownload = useMemo(() => {
-        return ![true, undefined].includes(downloadable);
-    }, [downloadable]);
-
-    const disableDelete = useMemo(() => {
+    const disabledDelete = useMemo(() => {
+        //Return True if upload status is not SUCCESS or FAILED
         return !['SUCCESS', 'FAILED'].includes(status)
     }, [status]);
 
@@ -284,7 +282,7 @@ export default function DatasetCard({
                                                 icon="download"
                                                 text="Download"
                                                 onClick={downloadDataset}
-                                                disabled={disableDownload}
+                                                disabled={!downloadable}
                                                 data-cy="download"
                                             />
                                             {
@@ -294,8 +292,8 @@ export default function DatasetCard({
                                                 text="Delete"
                                                 onClick={removeUserOwnDataset}
                                                 disabled={
-                                                    disableDelete ||
-                                                    // Disable sharing when user is not owner
+                                                    disabledDelete ||
+                                                    // Disable deleting when user is not owner
                                                     currentUserId ===
                                                         undefined ||
                                                     typeof ownerId ===
@@ -340,7 +338,7 @@ export default function DatasetCard({
                                     <Button
                                         icon="more"
                                         intent="none"
-                                        disabled={disableDelete}
+                                        disabled={disabledDelete}
                                         data-cy="more"
                                     >
                                         More
