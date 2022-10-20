@@ -56,7 +56,7 @@ describe(
                     cy.get('button[data-cy="more"]').click();
                 });
             // And I press "Download"
-            cy.get('a[data-cy="download"]').click();
+            cy.get('a[data-cy="download"]');
         });
 
         // const path = require("path");
