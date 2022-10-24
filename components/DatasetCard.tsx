@@ -42,6 +42,8 @@ export interface Props {
     type?: DatasetType;
     /** Date the dataset was last updated */
     lastUpdated?: Date;
+    /** Indicate if a dataset is downloadable or not */
+    downloadable?: boolean
     /** User ID of the owner of the dataset */
     ownerId?: string | string[];
     /** Status of the dataset import */
@@ -66,6 +68,7 @@ export default function DatasetCard({
     lastUpdated,
     ownerId,
     status,
+    downloadable,
     failureMessage,
     landingPageUrl,
     selected,
@@ -76,19 +79,21 @@ export default function DatasetCard({
     const { mergeStyles } = useTheme();
 
     const themedStyles = mergeStyles(styles, "Styles::DatasetCard");
-    
+
     const currentUserId = keycloak?.tokenParsed?.sub;
 
     const [downloadInProgress, setDownloadInProgress] =
         useState<boolean>(false);
 
-    const disabledDataset = useMemo(() => {
+    const disabledDataset =() => {
+        //Return True if upload status is not succes
         return status !== "SUCCESS";
-    }, [status]);
+    };
 
-    const disableDelete = useMemo(() => {
+    const disabledDelete = () => {
+        //Return True if upload status is not SUCCESS or FAILED
         return !['SUCCESS', 'FAILED'].includes(status)
-    }, [status]);
+    };
 
 
     const {
@@ -152,7 +157,7 @@ export default function DatasetCard({
 
 
 
-    const removeUserOwnDataset = ()=>{
+    const removeUserOwnDataset = () => {
         try {
             dataManager.removeDataset(datasetId);
 
@@ -177,9 +182,9 @@ export default function DatasetCard({
         <>
             <Card
                 className={classnames({
-                                [themedStyles.datasetCard]: true,
-                                [themedStyles.datasetCardSelected]: selected === true
-                            })}
+                    [themedStyles.datasetCard]: true,
+                    [themedStyles.datasetCardSelected]: selected === true
+                })}
                 data-cy="DatasetCard-card"
                 data-testid={title}
             >
@@ -240,36 +245,36 @@ export default function DatasetCard({
                     </Col>
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
-                                {onSelect ? 
+                            {onSelect ?
                                 <Button
                                     icon={selected ? 'tick-circle' : 'circle'}
                                     data-testid="select-button"
                                     intent={selected ? 'success' : 'none'}
                                     onClick={() => onSelect(datasetId)}
-                                    disabled={disabledDataset}
+                                    disabled={disabledDataset()}
                                 >
                                     Select
                                 </Button>
                                 : ''}
-                                <Button
-                                    icon="eye-open"
-                                    data-testid="view-button"
-                                    intent={onSelect ? 'primary' : 'success'}
-                                    onClick={openVisualiserDrawer}
-                                    disabled={disabledDataset}
-                                >
-                                    View
-                                </Button>
+                            <Button
+                                icon="eye-open"
+                                data-testid="view-button"
+                                intent={onSelect ? 'primary' : 'success'}
+                                onClick={openVisualiserDrawer}
+                                disabled={disabledDataset()}
+                            >
+                                View
+                            </Button>
                             <Button
                                 icon="info-sign"
                                 data-testid="info-button"
                                 intent="primary"
                                 onClick={openMetadataDrawer}
-                                disabled={disabledDataset}
+                                disabled={disabledDataset()}
                             >
                                 Info
                             </Button>
-                                { onSelect === undefined ? 
+                            {onSelect === undefined ?
                                 <Popover
                                     content={
                                         <Menu>
@@ -277,7 +282,7 @@ export default function DatasetCard({
                                                 icon="download"
                                                 text="Download"
                                                 onClick={downloadDataset}
-                                                disabled={disabledDataset}
+                                                disabled={!downloadable}
                                                 data-cy="download"
                                             />
                                             {
@@ -287,8 +292,8 @@ export default function DatasetCard({
                                                 text="Delete"
                                                 onClick={removeUserOwnDataset}
                                                 disabled={
-                                                    disableDelete ||
-                                                    // Disable sharing when user is not owner
+                                                    disabledDelete() ||
+                                                    // Disable deleting when user is not owner
                                                     currentUserId ===
                                                         undefined ||
                                                     typeof ownerId ===
@@ -303,28 +308,28 @@ export default function DatasetCard({
                                             )
                                     }
                                             {
-                                                    ownerId !== undefined && (
-                                                        <MenuItem
-                                                            icon="share"
-                                                            text="Share..."
-                                                            onClick={
-                                                                openSharingDrawer
-                                                            }
-                                                            disabled={
-                                                                disabledDataset ||
+                                                ownerId !== undefined && (
+                                                    <MenuItem
+                                                        icon="share"
+                                                        text="Share..."
+                                                        onClick={
+                                                            openSharingDrawer
+                                                        }
+                                                        disabled={
+                                                            disabledDataset() ||
                                                                 // Disable sharing when user is not owner
                                                                 currentUserId ===
-                                                                    undefined ||
+                                                                undefined ||
                                                                 typeof ownerId ===
-                                                                    "string"
-                                                                    ? ownerId !==
-                                                                      currentUserId
-                                                                    : !ownerId.includes(
-                                                                          currentUserId
-                                                                      )
-                                                            }
-                                                        />
-                                                    )
+                                                                "string"
+                                                                ? ownerId !==
+                                                                currentUserId
+                                                                : !ownerId.includes(
+                                                                    currentUserId
+                                                                )
+                                                        }
+                                                    />
+                                                )
                                             }
                                         </Menu>
                                     }
@@ -333,7 +338,7 @@ export default function DatasetCard({
                                     <Button
                                         icon="more"
                                         intent="none"
-                                        disabled={disabledDataset}
+                                        disabled={disabledDelete()}
                                         data-cy="more"
                                     >
                                         More
