@@ -334,7 +334,7 @@ describe("IndexPage", () => {
         // Find GCM and spatial domain fields, and pick options
         const facetFields = screen.getByTestId("facet-fields");
         const gcmTextbox = getByRole(
-            getByText(facetFields, "GCM").parentElement!,
+            getByText(facetFields, "Global Circulation Models").parentElement!,
             "textbox"
         );
         const spatialDomainTextbox = getByRole(
