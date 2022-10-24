@@ -649,6 +649,21 @@ export default function IndexPage() {
         [updateFormState]
     );
 
+    const resetAll = useCallback(() => {
+        updateFormState({
+            "facetYearMin": NaN,
+            "facetYearMax": NaN,
+            "facetCollection": [],
+            "facetTimeDomain": [],
+            "facetSpatialDomain": [],
+            "facetResolution": [],
+            "facetScientificType": [],
+            "facetDomain": [],
+            "facetGcm": [],
+            "filterPrincipals": []
+        })
+    },[])
+
     return (
         <Row data-cy="ExploreEcoDataTab">
             <Col xs={2}>
@@ -716,6 +731,18 @@ export default function IndexPage() {
                     ))}
                     <FacetSelectFacetState2 data-cy="facet-filter-principals-select" facet={filterPrincipals} />
                 </form>
+                <Row>
+                    <Col style={{ textAlign: "right" }}>
+                        <Button
+                            icon="reset"
+                            data-testid="reset-all-button"
+                            intent="primary"
+                            onClick={resetAll}
+                        >
+                            Reset
+                        </Button>
+                    </Col>
+                </Row>
             </Col>
             <Col xs={10}>
                 <Row disableDefaultMargins align="center">
