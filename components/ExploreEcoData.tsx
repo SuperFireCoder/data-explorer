@@ -650,6 +650,20 @@ export default function IndexPage() {
         [updateFormState]
     );
 
+    const resetAll = useCallback(() => {
+        updateFormState({
+            "facetYearMin": NaN,
+            "facetYearMax": NaN,
+            "facetCollection": [],
+            "facetTimeDomain": [],
+            "facetSpatialDomain": [],
+            "facetResolution": [],
+            "facetScientificType": [],
+            "facetDomain": [],
+            "facetGcm": [],
+            "filterPrincipals": []
+        })
+    },[])
   
     const renderFacetLabel = (facetId: string, facetLabel: string) => {
         if (facetId === "facetGcm") {
@@ -735,6 +749,18 @@ export default function IndexPage() {
                         </Row>
                     ))}
                 </form>
+                <Row>
+                    <Col style={{ textAlign: "right" }}>
+                        <Button
+                            icon="reset"
+                            data-testid="reset-all-button"
+                            intent="primary"
+                            onClick={resetAll}
+                        >
+                            Reset
+                        </Button>
+                    </Col>
+                </Row>
             </Col>
             <Col xs={10}>
                 <Row disableDefaultMargins align="center">
