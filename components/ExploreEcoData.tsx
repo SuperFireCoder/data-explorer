@@ -2,7 +2,7 @@ import { Col, Row } from "@ecocommons-australia/ui-library";
 import { FormEvent, useCallback, useMemo } from "react";
 import { useRouter } from "next/router";
 import bodybuilder from "bodybuilder";
-import { Button, H6, Spinner } from "@blueprintjs/core";
+import { Button, H6, Spinner, Popover, Position, PopoverInteractionKind, Icon, Tooltip, Classes } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 
 import DatasetCard from "./DatasetCard";
@@ -12,6 +12,7 @@ import { DatasetType } from "../interfaces/DatasetType";
 import { getDataExplorerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
 import { sendDatasetId } from "../util/messages";
+import styles from "./FacetSelectFacetState2.module.css"
 
 import {
     EsFacetRootConfig,
@@ -465,7 +466,7 @@ export default function IndexPage() {
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
     });
 
-  
+
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
 
     const searchQuery = useEsIndividualFacetFreeText(esFacetRoot, {
@@ -566,7 +567,7 @@ export default function IndexPage() {
 
     const facetGcm = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetGcm",
-        label: "GCM",
+        label: "Global Circulation Models",
         placeholder: "Filter by GCM...",
         itemSortFn: itemSortKeyAlpha,
     });
@@ -649,6 +650,24 @@ export default function IndexPage() {
         [updateFormState]
     );
 
+  
+    const renderFacetLabel = (facetId: string, facetLabel: string) => {
+        if (facetId === "facetGcm") {
+            return <H6>{facetLabel}&nbsp;
+             <Popover  position={Position.TOP_LEFT}
+                        autoFocus={false}
+                        interactionKind={PopoverInteractionKind.HOVER}
+                        content={<span className={styles.toolTip}>
+                            For more information click <a href="https://www.ipcc-data.org/guidelines/pages/gcm_guide.html" target="_blank">here</a>!
+                        </span>}>
+                        <a><Icon icon="info-sign" iconSize={15} /></a>
+                    </Popover>
+                </H6>;
+        } else {
+            return <H6>{facetLabel}</H6>;
+        }
+    }
+
     return (
         <Row data-cy="ExploreEcoDataTab">
             <Col xs={2}>
@@ -691,17 +710,17 @@ export default function IndexPage() {
                         </Col>
                     </Row>
                     {[
-                        facetCollection,
                         facetTimeDomain,
                         facetSpatialDomain,
                         facetResolution,
                         facetScientificType,
                         facetDomain,
                         facetGcm,
+                        facetCollection,
                     ].map((facet) => (
                         <Row key={facet.id}>
                             <Col>
-                                <H6>{facet.label}</H6>
+                                {renderFacetLabel(facet.id, facet.label)}
                                 <FacetMultiSelectFacetState2
                                     data-cy={"facet-"+facet.id+"-select"}
                                     facet={facet}
