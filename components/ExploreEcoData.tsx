@@ -2,7 +2,7 @@ import { Col, Row } from "@ecocommons-australia/ui-library";
 import { FormEvent, useCallback, useMemo } from "react";
 import { useRouter } from "next/router";
 import bodybuilder from "bodybuilder";
-import { Button, H6, Spinner } from "@blueprintjs/core";
+import { Button, H6, Spinner, Popover, Position, PopoverInteractionKind, Icon, Tooltip, Classes } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 
 import DatasetCard from "./DatasetCard";
@@ -12,6 +12,7 @@ import { DatasetType } from "../interfaces/DatasetType";
 import { getDataExplorerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
 import { sendDatasetId } from "../util/messages";
+import styles from "./FacetSelectFacetState2.module.css"
 
 import {
     EsFacetRootConfig,
@@ -36,7 +37,7 @@ interface QueryParameters {
     /** Search query string */
     searchQuery?: string;
     /** Selected Dataset **/
-    selectedDataset?: string;
+    datasetId?: string;
     /** Array of users/subjects to filter results by */
     filterPrincipals?: string | string[];
 
@@ -49,13 +50,15 @@ interface QueryParameters {
     facetDomain?: string | string[];
     facetCollection?: string | string[];
     facetScientificType?: string | string[];
+    facetMonthMin?: string;
+    facetMonthMax?: string;
 }
 
 interface FormState {
     pageSize: number;
     pageStart: number;
     searchQuery: string;
-    selectedDataset: string;
+    datasetId: string;
     filterPrincipals: readonly string[];
     facetYearMin: number;
     facetYearMax: number;
@@ -66,6 +69,8 @@ interface FormState {
     facetDomain: readonly string[];
     facetCollection: readonly string[];
     facetGcm: readonly string[];
+    facetMonthMin: number;
+    facetMonthMax: number;
 }
 
 function stripEmptyStringQueryParams(
@@ -375,6 +380,70 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             };
         },
     },
+
+    {
+        id: "facetMonthMin",
+        facetApplicationFn: (formState, query) => {
+            const { facetMonthMin, facetMonthMax } = formState;
+
+            // If both range values are NaN then the query is returned unchanged
+            if (Number.isNaN(facetMonthMin) && Number.isNaN(facetMonthMax)) {
+                return query;
+            }
+
+            const monthRangeQuery: Record<string, number> = {};
+
+            if (!Number.isNaN(facetMonthMin)) {
+                monthRangeQuery["gte"] = facetMonthMin;
+            }
+
+            if (!Number.isNaN(facetMonthMax)) {
+                monthRangeQuery["lte"] = facetMonthMax;
+            }
+
+            return {
+                modified: true,
+                bodyBuilder: query.bodyBuilder.query(
+                    "range",
+                    "month",
+                    monthRangeQuery
+                ),
+            };
+        },
+    },
+    {
+        id: "facetMonthMax",
+        facetApplicationFn: (_formState, query) => {
+            return query;
+        },
+    },
+
+
+    {
+        id: "datasetId",
+        facetApplicationFn: (formState, query) => {
+            const datasetId = formState.datasetId.trim();
+
+            // If blank, don't apply this facet
+            if (datasetId === undefined || datasetId === "") {
+                return query;
+            }
+
+            // The search box value is used for a query against title
+            // and description
+            const innerQuery = bodybuilder()
+                .orQuery("match", "uuid", datasetId)
+
+            return {
+                modified: true,
+                bodyBuilder: query.bodyBuilder.query(
+                    "bool",
+                    (innerQuery.build() as any).query.bool
+                ),
+            };
+        },
+    },
+
 ];
 
 export default function IndexPage() {
@@ -390,7 +459,7 @@ export default function IndexPage() {
             pageSize = "10",
             pageStart = "0",
             searchQuery = "",
-            selectedDataset = "",
+            datasetId = "",
             filterPrincipals = [],
             facetYearMin = "",
             facetYearMax = "",
@@ -401,6 +470,8 @@ export default function IndexPage() {
             facetDomain = [],
             facetCollection = [],
             facetGcm = [],
+            facetMonthMin = "",
+            facetMonthMax = "",
         } = router.query as QueryParameters;
 
         return {
@@ -412,7 +483,7 @@ export default function IndexPage() {
             searchQuery,
 
             // Selected Dataset
-            selectedDataset,
+            datasetId,
 
             // Principals
             filterPrincipals: normaliseAsReadonlyStringArray(filterPrincipals),
@@ -429,6 +500,8 @@ export default function IndexPage() {
             facetDomain: normaliseAsReadonlyStringArray(facetDomain),
             facetCollection: normaliseAsReadonlyStringArray(facetCollection),
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
+            facetMonthMin: parseInt(facetMonthMin, 10), // Value may be NaN
+            facetMonthMax: parseInt(facetMonthMax, 10), // Value may be NaN
         };
     }, [router.query]);
 
@@ -465,7 +538,6 @@ export default function IndexPage() {
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
     });
 
-  
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
 
     const searchQuery = useEsIndividualFacetFreeText(esFacetRoot, {
@@ -566,9 +638,15 @@ export default function IndexPage() {
 
     const facetGcm = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetGcm",
-        label: "GCM",
+        label: "Global Circulation Models",
         placeholder: "Filter by GCM...",
         itemSortFn: itemSortKeyAlpha,
+    });
+
+    const facetMonthRange = useEsIndividualFacetNumberRange(esFacetRoot, {
+        minId: "facetMonthMin",
+        maxId: "facetMonthMax",
+        label: "Month",
     });
 
     const { keycloak } = useKeycloakInfo();
@@ -578,15 +656,15 @@ export default function IndexPage() {
         const userId = keycloak?.subject;
 
         return [
-            { key: "all", label: "Show all datasets", disabled: false },
+            { key: "all", label: "All datasets", disabled: false },
             {
                 key: userId ?? "",
-                label: "Show only my datasets",
+                label: "My datasets",
                 disabled: userId === undefined || userId.length === 0,
             },
             {
                 key: `shared-${userId}`,
-                label: "Show shared datasets",
+                label: "Shared datasets",
                 disabled: userId === undefined || userId.length === 0,
             },
         ];
@@ -594,7 +672,7 @@ export default function IndexPage() {
 
     const filterPrincipals = useEsIndividualFacetFixedArray(esFacetRoot, {
         id: "filterPrincipals",
-        label: "Privacy",
+        label: "Show Datasets ",
         items: filterPrincipalsItems,
         mapFromState: (allItems, itemKeys) => {       
             const selectedItemKeys = [...itemKeys];
@@ -643,7 +721,7 @@ export default function IndexPage() {
         (uuid: string) => {
             sendDatasetId(uuid);
             updateFormState({
-                selectedDataset: uuid
+                datasetId: uuid
             });
         },
         [updateFormState]
@@ -660,9 +738,28 @@ export default function IndexPage() {
             "facetScientificType": [],
             "facetDomain": [],
             "facetGcm": [],
-            "filterPrincipals": []
+            "filterPrincipals": [],
+            "facetMonthMin": NaN,
+            "facetMonthMax": NaN,
         })
     },[])
+  
+    const renderFacetLabel = (facetId: string, facetLabel: string) => {
+        if (facetId === "facetGcm") {
+            return <H6>{facetLabel}&nbsp;
+             <Popover  position={Position.TOP_LEFT}
+                        autoFocus={false}
+                        interactionKind={PopoverInteractionKind.HOVER}
+                        content={<span className={styles.toolTip}>
+                            For more information click <a href="https://www.ipcc-data.org/guidelines/pages/gcm_guide.html" target="_blank">here</a>!
+                        </span>}>
+                        <a><Icon icon="info-sign" iconSize={15} /></a>
+                    </Popover>
+                </H6>;
+        } else {
+            return <H6>{facetLabel}</H6>;
+        }
+    }
 
     return (
         <Row data-cy="ExploreEcoDataTab">
@@ -694,6 +791,7 @@ export default function IndexPage() {
                     </Col>
                 </Row>
                 <form onSubmit={suppressEvent} data-testid="facet-fields">
+                <FacetSelectFacetState2 facet={filterPrincipals} />
                     <Row>
                         <Col>
                             <FacetNumberRangeFacetState2
@@ -704,18 +802,28 @@ export default function IndexPage() {
                             />
                         </Col>
                     </Row>
+                    <Row>
+                        <Col>
+                            <FacetNumberRangeFacetState2
+                                facet={facetMonthRange}
+                                defaultMin={1}
+                                defaultMax={12}
+                                numberParseMode="integer"
+                            />
+                        </Col>
+                    </Row>
                     {[
-                        facetCollection,
                         facetTimeDomain,
                         facetSpatialDomain,
                         facetResolution,
                         facetScientificType,
                         facetDomain,
                         facetGcm,
+                        facetCollection,
                     ].map((facet) => (
                         <Row key={facet.id}>
                             <Col>
-                                <H6>{facet.label}</H6>
+                                {renderFacetLabel(facet.id, facet.label)}
                                 <FacetMultiSelectFacetState2
                                     data-cy={"facet-"+facet.id+"-select"}
                                     facet={facet}
@@ -729,7 +837,6 @@ export default function IndexPage() {
                             </Col>
                         </Row>
                     ))}
-                    <FacetSelectFacetState2 data-cy="facet-filter-principals-select" facet={filterPrincipals} />
                 </form>
                 <Row>
                     <Col style={{ textAlign: "right" }}>
@@ -801,7 +908,7 @@ export default function IndexPage() {
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
                                 ownerId={_source.allowed_principals as string[]}
-                                selected={formState.selectedDataset === _source.uuid}
+                                selected={formState.datasetId === _source.uuid}
                                 onSelect={Boolean(isEmbed) ? onDatasetSelect : undefined}
                             />
                         ))}

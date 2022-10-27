@@ -1,8 +1,9 @@
-import { H6, InputGroup, Switch } from "@blueprintjs/core";
+import { Classes, H6, Icon, InputGroup, Popover, PopoverInteractionKind, Position, Switch, Tooltip } from "@blueprintjs/core";
 import { Col, Row } from "@ecocommons-australia/ui-library";
 import { ComponentProps, FormEventHandler, useCallback, useMemo } from "react";
 import NumberInputGroup from "./NumberInputGroup";
 import { EsIndividualFacetNumberRange } from "../hooks/EsFacet";
+import styles from "./FacetSelectFacetState2.module.css"
 
 export interface Props<T> {
     facet: EsIndividualFacetNumberRange<T>;
@@ -47,7 +48,17 @@ export default function FacetNumberRangeFacetState2<T>({
         <div>
             <Row disableDefaultMargins>
                 <Col xs={6}>
-                    <H6>{label}</H6>
+                    <H6>{label}&nbsp;
+                    <Popover  position={Position.TOP_LEFT}
+                        autoFocus={false}
+                        interactionKind={PopoverInteractionKind.HOVER}
+                        content={<span className={styles.toolTip}>
+                        Select a range of {label.toLocaleLowerCase()}s by sliding all to range.
+                    </span>}>
+                        <a><Icon icon="info-sign" iconSize={15} /></a>
+                    </Popover>
+                </H6>
+                
                 </Col>
                 <Col xs={6} style={{ textAlign: "right" }}>
                     <Switch
