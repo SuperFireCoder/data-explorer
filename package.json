@@ -17,7 +17,7 @@
     "@blueprintjs/select": "3.15.8",
     "@blueprintjs/table": "^3.9.14",
     "@ecocommons-australia/ui-library": "1.6.4",
-    "@ecocommons-australia/visualiser-client-geospatial": "1.6.2-dev-878c510b.0",
+    "@ecocommons-australia/visualiser-client-geospatial": "1.6.2-dev-fedb490c.0",
     "@react-keycloak/ssr": "3.3.0",
     "axios": "0.21.1",
     "bodybuilder": "2.3.0",
