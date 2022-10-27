@@ -1,4 +1,4 @@
-import { Button, H6, MenuItem } from "@blueprintjs/core";
+import { Button, Checkbox, H6, MenuItem } from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
 import { Col, Row } from "@ecocommons-australia/ui-library";
 import { useCallback } from "react";
@@ -29,34 +29,29 @@ export default function FacetSelectFacetState2<T>({ facet }: Props<T>) {
         <div>
             <Row>
                 <Col>
-                    <H6 data-cy="show-privacy">{label}</H6>
-                    <Select
-                        items={items as Item[]}
-                        itemRenderer={(
-                            { key, label, disabled },
-                            { handleClick, modifiers }
-                        ) => (
-                            <MenuItem
-                                key={key}
-                                disabled={disabled}
-                                onClick={handleClick}
-                                active={modifiers.active}
-                                text={label}
-                                data-cy="show-datasets"
-                            />
-                        )}
-                        onItemSelect={handleSelectChange}
-                        filterable={false}
-                        popoverProps={{ fill: true }}
-                    >
-                        <Button
-                            className={styles.selectButton}
-                            fill
-                            rightIcon="caret-down"
-                            text={selectedItems[0]?.label}
-                            data-cy="show-all-data-set"
-                        />
-                    </Select>
+                    <H6 data-cy="show-datasets">{label}</H6>
+                    {items as Item[] && (
+                        <div>
+                            {items.map((itemValue: Item) => {
+                                return (
+                                    <><Checkbox
+                                        key={itemValue.key}
+                                        label={itemValue.label}
+                                        id ={itemValue.label}
+                                        value={itemValue.key}
+                                        data-cy="datasets"
+                                        onChange={(e) => {
+                                            const item = items.find(item=> item.key === e.currentTarget.value)
+                                            handleSelectChange(item as unknown as Item)
+                                        }}
+                                        defaultChecked={items.some(val => val.key === "all" ?? false)}
+                                        checked={selectedItems?.some(l => l?.key === itemValue?.key) ?? false} 
+                                        />
+                                    </>
+                                );
+                            })}
+                        </div>
+                    )}
                 </Col>
             </Row>
         </div>
