@@ -37,7 +37,7 @@ interface QueryParameters {
     /** Search query string */
     searchQuery?: string;
     /** Selected Dataset **/
-    selectedDataset?: string;
+    datasetId?: string;
     /** Array of users/subjects to filter results by */
     filterPrincipals?: string | string[];
 
@@ -56,7 +56,7 @@ interface FormState {
     pageSize: number;
     pageStart: number;
     searchQuery: string;
-    selectedDataset: string;
+    datasetId: string;
     filterPrincipals: readonly string[];
     facetYearMin: number;
     facetYearMax: number;
@@ -376,6 +376,75 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             };
         },
     },
+
+    {
+        id: "facetMonthMin",
+        facetApplicationFn: (formState, query) => {
+            const { facetMonthMin, facetMonthMax } = formState;
+
+            // If both range values are NaN then the query is returned unchanged
+            if (Number.isNaN(facetMonthMin) && Number.isNaN(facetMonthMax)) {
+                return query;
+            }
+
+            const monthRangeQuery: Record<string, number> = {};
+
+            if (!Number.isNaN(facetMonthMin)) {
+                monthRangeQuery["gte"] = facetMonthMin;
+            }
+
+            if (!Number.isNaN(facetMonthMax)) {
+                monthRangeQuery["lte"] = facetMonthMax;
+            }
+
+            return {
+                modified: true,
+                bodyBuilder: query.bodyBuilder.query(
+                    "range",
+                    "month",
+                    monthRangeQuery
+                ),
+            };
+        },
+    },
+    // {
+    //     // NOTE: The facet application function here is just returning the query
+    //     // as-is, as the function declared for `facetYearMin` covers both
+    //     //
+    //     // TODO: Figure out how to configure paired/"range" facets across two
+    //     // params properly
+    //     id: "facetMonthMax",
+    //     facetApplicationFn: (_formState, query) => {
+    //         return query;
+    //     },
+    // },
+
+
+    {
+        id: "datasetId",
+        facetApplicationFn: (formState, query) => {
+            const datasetId = formState.datasetId.trim();
+
+            // If blank, don't apply this facet
+            if (datasetId === undefined || datasetId === "") {
+                return query;
+            }
+
+            // The search box value is used for a query against title
+            // and description
+            const innerQuery = bodybuilder()
+                .orQuery("match", "uuid", datasetId)
+
+            return {
+                modified: true,
+                bodyBuilder: query.bodyBuilder.query(
+                    "bool",
+                    (innerQuery.build() as any).query.bool
+                ),
+            };
+        },
+    },
+
 ];
 
 export default function IndexPage() {
@@ -391,7 +460,7 @@ export default function IndexPage() {
             pageSize = "10",
             pageStart = "0",
             searchQuery = "",
-            selectedDataset = "",
+            datasetId = "",
             filterPrincipals = [],
             facetYearMin = "",
             facetYearMax = "",
@@ -413,7 +482,7 @@ export default function IndexPage() {
             searchQuery,
 
             // Selected Dataset
-            selectedDataset,
+            datasetId,
 
             // Principals
             filterPrincipals: normaliseAsReadonlyStringArray(filterPrincipals),
@@ -466,6 +535,7 @@ export default function IndexPage() {
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
     });
 
+    console.log("esFacetRoot", esFacetRoot)
 
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
 
@@ -644,7 +714,7 @@ export default function IndexPage() {
         (uuid: string) => {
             sendDatasetId(uuid);
             updateFormState({
-                selectedDataset: uuid
+                datasetId: uuid
             });
         },
         [updateFormState]
@@ -819,7 +889,7 @@ export default function IndexPage() {
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
                                 ownerId={_source.allowed_principals as string[]}
-                                selected={formState.selectedDataset === _source.uuid}
+                                selected={formState.datasetId === _source.uuid}
                                 onSelect={Boolean(isEmbed) ? onDatasetSelect : undefined}
                             />
                         ))}
