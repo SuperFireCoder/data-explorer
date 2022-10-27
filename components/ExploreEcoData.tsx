@@ -197,7 +197,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
         // TODO: Figure out how to configure paired/"range" facets across two
         // params properly
         id: "facetYearMax",
-        facetApplicationFn: (_formState, query) => {
+        facetApplicationFn: (formState, query) => {
             return query;
         },
     },
@@ -412,7 +412,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
     },
     {
         id: "facetMonthMax",
-        facetApplicationFn: (_formState, query) => {
+        facetApplicationFn: (formState, query) => {
             return query;
         },
     },
