@@ -380,7 +380,6 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             };
         },
     },
-
     {
         id: "facetMonthMin",
         facetApplicationFn: (formState, query) => {
@@ -417,8 +416,6 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             return query;
         },
     },
-
-
     {
         id: "datasetId",
         facetApplicationFn: (formState, query) => {
