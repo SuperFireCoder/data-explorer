@@ -50,6 +50,8 @@ interface QueryParameters {
     facetDomain?: string | string[];
     facetCollection?: string | string[];
     facetScientificType?: string | string[];
+    facetMonthMin?: string;
+    facetMonthMax?: string;
 }
 
 interface FormState {
@@ -67,6 +69,8 @@ interface FormState {
     facetDomain: readonly string[];
     facetCollection: readonly string[];
     facetGcm: readonly string[];
+    facetMonthMin: number;
+    facetMonthMax: number;
 }
 
 function stripEmptyStringQueryParams(
@@ -407,17 +411,12 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             };
         },
     },
-    // {
-    //     // NOTE: The facet application function here is just returning the query
-    //     // as-is, as the function declared for `facetYearMin` covers both
-    //     //
-    //     // TODO: Figure out how to configure paired/"range" facets across two
-    //     // params properly
-    //     id: "facetMonthMax",
-    //     facetApplicationFn: (_formState, query) => {
-    //         return query;
-    //     },
-    // },
+    {
+        id: "facetMonthMax",
+        facetApplicationFn: (_formState, query) => {
+            return query;
+        },
+    },
 
 
     {
@@ -471,6 +470,8 @@ export default function IndexPage() {
             facetDomain = [],
             facetCollection = [],
             facetGcm = [],
+            facetMonthMin = "",
+            facetMonthMax = "",
         } = router.query as QueryParameters;
 
         return {
@@ -499,6 +500,8 @@ export default function IndexPage() {
             facetDomain: normaliseAsReadonlyStringArray(facetDomain),
             facetCollection: normaliseAsReadonlyStringArray(facetCollection),
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
+            facetMonthMin: parseInt(facetMonthMin, 10), // Value may be NaN
+            facetMonthMax: parseInt(facetMonthMax, 10), // Value may be NaN
         };
     }, [router.query]);
 
@@ -534,8 +537,6 @@ export default function IndexPage() {
         facets: FACETS,
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
     });
-
-    console.log("esFacetRoot", esFacetRoot)
 
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
 
@@ -642,6 +643,12 @@ export default function IndexPage() {
         itemSortFn: itemSortKeyAlpha,
     });
 
+    const facetMonthRange = useEsIndividualFacetNumberRange(esFacetRoot, {
+        minId: "facetMonthMin",
+        maxId: "facetMonthMax",
+        label: "Month",
+    });
+
     const { keycloak } = useKeycloakInfo();
 
     const filterPrincipalsItems = useMemo(() => {
@@ -731,7 +738,9 @@ export default function IndexPage() {
             "facetScientificType": [],
             "facetDomain": [],
             "facetGcm": [],
-            "filterPrincipals": []
+            "filterPrincipals": [],
+            "facetMonthMin": NaN,
+            "facetMonthMax": NaN,
         })
     },[])
   
@@ -789,6 +798,16 @@ export default function IndexPage() {
                                 facet={facetYearRange}
                                 defaultMin={1990}
                                 defaultMax={2010}
+                                numberParseMode="integer"
+                            />
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            <FacetNumberRangeFacetState2
+                                facet={facetMonthRange}
+                                defaultMin={1}
+                                defaultMax={12}
                                 numberParseMode="integer"
                             />
                         </Col>
