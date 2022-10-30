@@ -27,6 +27,7 @@ import FacetMultiSelectFacetState2, { NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL }
 import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
 import { itemSortKeyAlpha } from "./FacetMultiSelect";
 import FacetNumberRangeFacetState2 from "./FacetNumberRangeFacetState2";
+import FacetNumberRangeFacetStateSlider from "./FacetNumberRangeFacetStateSlider";
 import FacetSelectFacetState2 from "./FacetSelectFacetState2";
 
 interface QueryParameters {
@@ -808,11 +809,10 @@ export default function IndexPage() {
                     </Row>
                     <Row>
                         <Col>
-                            <FacetNumberRangeFacetState2
+                            <FacetNumberRangeFacetStateSlider
                                 facet={facetMonthRange}
                                 defaultMin={1}
                                 defaultMax={12}
-                                numberParseMode="integer"
                             />
                         </Col>
                     </Row>
