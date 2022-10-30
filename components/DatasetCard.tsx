@@ -85,16 +85,17 @@ export default function DatasetCard({
     const [downloadInProgress, setDownloadInProgress] =
         useState<boolean>(false);
 
+    const [deleteInProgress, setDeleteInProgress] = useState<boolean>(false);
+
     const disabledDataset =() => {
         //Return True if upload status is not succes
-        return status !== "SUCCESS";
+        return status !== "SUCCESS" || deleteInProgress ;
     };
 
     const disabledDelete = () => {
         //Return True if upload status is not SUCCESS or FAILED
-        return !['SUCCESS', 'FAILED'].includes(status)
+        return !['SUCCESS', 'FAILED'].includes(status)  || deleteInProgress
     };
-
 
     const {
         isOpen: metadataDrawerOpen,
@@ -155,13 +156,13 @@ export default function DatasetCard({
     }, [datasetId, dataManager]);
 
 
-
-
     const removeUserOwnDataset = () => {
         try {
-            dataManager.removeDataset(datasetId);
+            setDeleteInProgress(true)
+            dataManager.removeDataset(datasetId)
+        }
 
-        } catch (e) {
+        catch (e) {
             // Ignore cancellation events
             if (axios.isCancel(e)) {
                 return;

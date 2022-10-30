@@ -82,7 +82,7 @@ export class DataManager {
         const axiosPromise = this.axios.delete<T>(url, {
             cancelToken: cancellationToken.token,
         });
-        const promise = axiosPromise.then((res) => res.data);
+        const promise = axiosPromise.then((res) => res.data).then(()=>{location.reload()});
         return { promise, cancellationToken, axiosPromise };
     }
 
