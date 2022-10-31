@@ -26,34 +26,45 @@ export default function FacetSelectFacetState2<T>({ facet }: Props<T>) {
     );
 
     return (
-        <div>
-            <Row>
-                <Col>
-                    <H6 data-cy="show-datasets">{label}</H6>
-                    {items as Item[] && (
-                        <div>
-                            {items.map((itemValue: Item) => {
-                                return (
-                                    <><Checkbox
-                                        key={itemValue.key}
-                                        label={itemValue.label}
-                                        id ={itemValue.label}
-                                        value={itemValue.key}
-                                        data-cy="datasets"
-                                        onChange={(e) => {
-                                            const item = items.find(item=> item.key === e.currentTarget.value)
-                                            handleSelectChange(item as unknown as Item)
-                                        }}
-                                        defaultChecked={items.some(val => val.key === "all" ?? false)}
-                                        checked={selectedItems?.some(l => l?.key === itemValue?.key) ?? false} 
-                                        />
-                                    </>
-                                );
-                            })}
-                        </div>
-                    )}
-                </Col>
-            </Row>
-        </div>
+        <>
+            {items.length > 0 && (
+                <div data-cy="show-datasets-div" >
+                    <Row>
+                        <Col>
+                            <H6 data-cy="show-datasets-label">{label}</H6>
+
+                            <Select
+                                items={items as Item[]}
+                                itemRenderer={(
+                                    { key, label, disabled },
+                                    { handleClick, modifiers }
+                                ) => (
+                                    <MenuItem
+                                        key={key}
+                                        disabled={disabled}
+                                        onClick={handleClick}
+                                        active={modifiers.active}
+                                        text={label}
+                                        data-cy="show-datasets-menuItem"
+                                        data-testid={label}
+                                    />
+                                )}
+                                onItemSelect={handleSelectChange}
+                                filterable={false}
+                                popoverProps={{ fill: true }}
+                            >
+                                <Button
+                                    className={styles.selectButton}
+                                    fill
+                                    rightIcon="caret-down"
+                                    text={selectedItems[0]?.label}
+                                    data-cy="show-datasets-button"
+                                />
+                            </Select>
+                        </Col>
+                    </Row>
+                </div>
+            )}
+        </>
     );
 }
