@@ -87,7 +87,7 @@ describe(specTitle("Visualise datasets on a map"), () => {
                 ]
             },
             {
-                data: "WorldClim2.1, precipitation December (1996), 2.5 arcmin (~5km)",
+                data: "WorldClim2.1, precipitation November (1996), 2.5 arcmin (~5km)",
                 variables: [
                     // {
                     //     label: "Average maximum temperature"

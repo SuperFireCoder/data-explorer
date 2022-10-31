@@ -69,6 +69,7 @@ export default function SignInOutButton() {
                             <MenuItem
                                 icon="log-out"
                                 text="Sign out"
+                                data-cy="sign-out"
                                 onClick={() =>
                                     router.push(keycloak.createLogoutUrl())
                                 }
