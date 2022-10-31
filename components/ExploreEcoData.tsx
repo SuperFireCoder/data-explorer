@@ -653,19 +653,24 @@ export default function IndexPage() {
         // If user is signed in, provide option for viewing own data
         const userId = keycloak?.subject;
 
-        return [
-            { key: "all", label: "All datasets", disabled: false },
-            {
-                key: userId ?? "",
-                label: "My datasets",
-                disabled: userId === undefined || userId.length === 0,
-            },
-            {
-                key: `shared-${userId}`,
-                label: "Shared datasets",
-                disabled: userId === undefined || userId.length === 0,
-            },
-        ];
+        if (userId === undefined) {
+            return [];
+        } else {
+            return [
+                { key: "all", label: "All datasets", disabled: false },
+                {
+                    key: userId ?? "",
+                    label: "My datasets",
+                    disabled: userId === undefined || userId.length === 0,
+                },
+                {
+                    key: `shared-${userId}`,
+                    label: "Shared datasets",
+                    disabled: userId === undefined || userId.length === 0,
+                },
+            ];
+        }
+        
     }, [keycloak?.subject]);
 
     const filterPrincipals = useEsIndividualFacetFixedArray(esFacetRoot, {
@@ -789,7 +794,12 @@ export default function IndexPage() {
                     </Col>
                 </Row>
                 <form onSubmit={suppressEvent} data-testid="facet-fields">
-                <FacetSelectFacetState2 facet={filterPrincipals} />
+
+                    <FacetSelectFacetState2
+                        data-cy="facet-filter-principals-select"
+                        facet={filterPrincipals}
+                    />
+
                     <Row>
                         <Col>
                             <FacetNumberRangeFacetState2
