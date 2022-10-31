@@ -47,14 +47,20 @@ export default function FacetNumberRangeFacetState2<T>({
         [onRangeChange, defaultMin, defaultMax]
     );
 
-    const renderLabel = useCallback((monthNumber) => {
-        const date = new Date();
-        date.setMonth(monthNumber - 1);
-
-        return date.toLocaleString("en-US", {
-            month: "long"
-        });
-    }, []);
+    const monthNumberToLabelMap: { [key: number]: string } = {
+        1: "January",
+        2: "February",
+        3: "March",
+        4: "April",
+        5: "May",
+        6: "June",
+        7: "July",
+        8: "August",
+        9: "September",
+        10: "October",
+        11: "November",
+        12: "December"
+    };
 
     return (
         <div>
@@ -96,7 +102,9 @@ export default function FacetNumberRangeFacetState2<T>({
                         min={1}
                         max={12}
                         stepSize={1}
-                        labelRenderer={renderLabel}
+                        labelRenderer={(monthNumber) =>
+                            monthNumberToLabelMap[monthNumber]
+                        }
                         labelValues={[]}
                         onChange={(range) => onRangeChange(range[0], range[1])}
                         value={[minValue, maxValue]}
