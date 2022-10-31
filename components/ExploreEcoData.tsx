@@ -811,6 +811,16 @@ export default function IndexPage() {
                         </Col>
                     </Row>
                     
+                    <Row>
+                        <Col>
+                            <FacetNumberRangeFacetStateSlider
+                                facet={facetMonthRange}
+                                defaultMin={1}
+                                defaultMax={12}
+                            />
+                        </Col>
+                    </Row>
+
                     {[
                         facetTimeDomain,
                         facetSpatialDomain,
