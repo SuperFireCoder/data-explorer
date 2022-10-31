@@ -53,7 +53,7 @@ export default function FacetNumberRangeFacetState2<T>({
                         autoFocus={false}
                         interactionKind={PopoverInteractionKind.HOVER}
                         content={<span className={styles.toolTip}>
-                        Select a range of years by sliding all to range.
+                        Select a range of {label.toLocaleLowerCase()}s by sliding all to range.
                     </span>}>
                         <a><Icon icon="info-sign" iconSize={15} /></a>
                     </Popover>
