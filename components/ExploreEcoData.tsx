@@ -654,9 +654,7 @@ export default function IndexPage() {
         const userId = keycloak?.subject;
 
         if (userId === undefined) {
-            return [
-                { key: "all", label: "All datasets", disabled: false },
-            ];
+            return [];
         } else {
             return [
                 { key: "all", label: "All datasets", disabled: false },
@@ -796,7 +794,12 @@ export default function IndexPage() {
                     </Col>
                 </Row>
                 <form onSubmit={suppressEvent} data-testid="facet-fields">
-                <FacetSelectFacetState2 facet={filterPrincipals} />
+
+                    <FacetSelectFacetState2
+                        data-cy="facet-filter-principals-select"
+                        facet={filterPrincipals}
+                    />
+
                     <Row>
                         <Col>
                             <FacetNumberRangeFacetState2
@@ -807,15 +810,7 @@ export default function IndexPage() {
                             />
                         </Col>
                     </Row>
-                    <Row>
-                        <Col>
-                            <FacetNumberRangeFacetStateSlider
-                                facet={facetMonthRange}
-                                defaultMin={1}
-                                defaultMax={12}
-                            />
-                        </Col>
-                    </Row>
+                    
                     {[
                         facetTimeDomain,
                         facetSpatialDomain,
