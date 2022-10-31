@@ -100,6 +100,7 @@ export default function FacetNumberRangeFacetState2<T>({
                         labelValues={[]}
                         onChange={(range) => onRangeChange(range[0], range[1])}
                         value={[minValue, maxValue]}
+                        className={styles.rangeSlider}
                     />
                 </>
             )}
