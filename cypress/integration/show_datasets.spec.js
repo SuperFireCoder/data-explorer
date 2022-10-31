@@ -1,43 +1,57 @@
 /// <reference types="cypress" />
 
-const specTitle = require('cypress-sonarqube-reporter/specTitle');
+const specTitle = require("cypress-sonarqube-reporter/specTitle");
 
-describe(specTitle('login and show filtering on the basis of users on datasets'), () => {
-    beforeEach(() => {
-        cy.login();
-        cy.get('[data-cy="explore-eco-data"]', { timeout: 5000 })
-            .should('contain', 'Explore EcoCommons Data').click();
-        cy.get('[data-cy="show-datasets"]', { timeout: 5000 })
-            .should('contain', 'Show Datasets')
-    })
+const datasetsSelectionLabels = {
+    all_datasets: "All datasets",
+    my_datasets: "My datasets",
+    shared_datasets: "Shared datasets"
+};
 
-    it('Show all the datasets', () => {
-        cy.get('[data-cy="datasets"]', { timeout: 5000 }).get('input[type=checkbox]').eq(0).should('have.id', 'All datasets').click({force:true})
-        cy.get('body').click(0, 0);
-        cy.get('[data-cy="dataset-heading-data"]', { timeout: 5000 }).each(el => {
-            if (el.text() === 'accuCLIM (Wet Tropics Australia), 30-year average either side of (1965), 9 arcsec (~250m)') {
-                el.text().click()
-            }
+describe(
+    specTitle("login and show filtering on the basis of users on datasets"),
+    () => {
+        beforeEach(() => {
+            cy.login();
+            cy.get('h6[data-cy="show-datasets-label"]', {
+                timeout: 5000
+            }).should("contain", "Show Datasets");
         });
-       
-        cy.wait(3000);
-    }) 
 
-    it('Show only my datasets', () => {
-        cy.get('[data-cy="datasets"]', { timeout: 5000 }).get('input[type=checkbox]').eq(1).should('have.id','My datasets').click({force:true});
-        cy.get('body').click(0, 0);
-        cy.get('[data-cy="dataset-heading-data"]', { timeout: 5000 }).each(el => {
-            if (el.text() === 'Litoria electrica occurrences from ALA - 17-May-2022-06:46:47.744952') {
-                el.text().click()
-            }
+        it("shows all the datasets by default", () => {
+            cy.get('[data-cy="show-datasets-button"]').should(
+                "contain",
+                datasetsSelectionLabels.all_datasets
+            );
         });
-        cy.wait(3000);
-    })
 
-    it('Show shared datasets', () => {
-        cy.get('[data-cy="datasets"]', { timeout: 5000 }).get('input[type=checkbox]').eq(2).should('have.id','Shared datasets').click({force:true});
-        cy.get('body').click(0, 0);
-        cy.get('[data-cy="dataset-heading-data"]').should('not.exist'); // as no shared dataset
-        cy.wait(3000);
-    })
-})
+        it("can show only my datasets", () => {
+            cy.get('[data-cy="show-datasets-button"]').click();
+            cy.get(
+                `a[data-cy="show-datasets-menuItem"][data-testid="${datasetsSelectionLabels.my_datasets}"]`
+            ).click();
+            cy.get('[data-cy="show-datasets-button"]').should(
+                "contain",
+                datasetsSelectionLabels.my_datasets
+            );
+        });
+
+        it("Show shared datasets", () => {
+            cy.get('[data-cy="show-datasets-button"]').click();
+            cy.get(
+                `a[data-cy="show-datasets-menuItem"][data-testid="${datasetsSelectionLabels.shared_datasets}"]`
+            ).click();
+            cy.get('[data-cy="show-datasets-button"]').should(
+                "contain",
+                datasetsSelectionLabels.shared_datasets
+            );
+        });
+
+        it("hides `Show Datasets` for guests", () => {
+            cy.get('button[data-cy="root-logged-in"]').click();
+            cy.get('a[data-cy="sign-out"]').click();
+            cy.wait(1000);
+            cy.get('h6[data-cy="show-datasets-label"]').should("not.exist");
+        });
+    }
+);
