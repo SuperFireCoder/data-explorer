@@ -106,9 +106,10 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
                     active={modifiers.active}
                     onClick={handleClick}
                     text={item.key}
-                    label={
-                        disableDocCountLabel ? undefined : `${item.doc_count}`
-                    }
+                    // disable labels as they dont always truly reflect the correct number
+                    // label={
+                    //     disableDocCountLabel ? undefined : `${item.doc_count}`
+                    // }
                     // Keep select menu list open after selection
                     shouldDismissPopover={false}
                 />
