@@ -358,23 +358,34 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
 
             if (formState.filterPrincipals.length > 0 && formState.filterPrincipals[0].startsWith("shared-")) {
                 const userId = formState.filterPrincipals[0].replace('shared-','');
+
+                const innerQuery = bodybuilder().notFilter(
+                    "terms",
+                    "allowed_principals",
+                    [userId,"role:admin"]
+                )
+
                 return {
                     ...query,
-                    bodyBuilder: query.bodyBuilder.notFilter(
-                        "terms",
-                        "allowed_principals",[userId,"role:admin"]
+                    bodyBuilder: query.bodyBuilder.query(
+                        "bool",
+                        (innerQuery.build() as any).query.bool
                     ),
                 };
             }
 
-            // NOTE: This is a filter that does not affect which query to run,
-            // so the `modified` flag does not change
+            // NOTE: still need to investigate how to improve filterPrincipals
+            const innerQuery = bodybuilder().filter(
+                "terms",
+                "allowed_principals",
+                formState.filterPrincipals
+            )
+            
             return {
                 ...query,
-                bodyBuilder: query.bodyBuilder.filter(
-                    "terms",
-                    "allowed_principals",
-                    formState.filterPrincipals
+                bodyBuilder: query.bodyBuilder.query(
+                    "bool",
+                    (innerQuery.build() as any).query.bool
                 ),
             };
         },
@@ -756,7 +767,7 @@ export default function IndexPage() {
             "facetScientificType": [],
             "facetDomain": [],
             "facetGcm": [],
-            "filterPrincipals": [],
+            // "filterPrincipals": [],
             "facetMonthMin": NaN,
             "facetMonthMax": NaN,
         })
