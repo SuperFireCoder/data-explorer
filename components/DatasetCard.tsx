@@ -58,6 +58,8 @@ export interface Props {
     /** Allow dataset cards to be selected */
     selected?: boolean;
     onSelect?: (uuid: string) => void;
+    setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>
+
 }
 
 export default function DatasetCard({
@@ -72,7 +74,8 @@ export default function DatasetCard({
     failureMessage,
     landingPageUrl,
     selected,
-    onSelect
+    onSelect,
+    setDatasetUUIDToDelete,
 }: Props) {
     const { keycloak } = useKeycloakInfo();
     const { dataManager } = useDataManager();
@@ -159,7 +162,7 @@ export default function DatasetCard({
     const removeUserOwnDataset = () => {
         try {
             setDeleteInProgress(true)
-            dataManager.removeDataset(datasetId)
+            dataManager.removeDataset(datasetId, setDatasetUUIDToDelete)
         }
 
         catch (e) {

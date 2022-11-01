@@ -1,7 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
-
 import { KeycloakInstance } from "../interfaces/Keycloak";
-
 const ENDPOINTS = {
     DATASET: "/api/dataset/",
     PERMISSION: "/api/permission/",
@@ -77,12 +75,13 @@ export class DataManager {
         return { promise, cancellationToken, axiosPromise };
     }
 
-    private xhrDelete<T>(url: string) {
+    private xhrDelete<T>(url: string, uuid: string, setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>) {
         const cancellationToken = this.getNewAxiosCancellationToken();
         const axiosPromise = this.axios.delete<T>(url, {
             cancelToken: cancellationToken.token,
         });
-        const promise = axiosPromise.then((res) => res.data).then(()=>{location.reload()});
+        
+        const promise = axiosPromise.then((res) => res.data).then(() => { setDatasetUUIDToDelete(uuid)});
         return { promise, cancellationToken, axiosPromise };
     }
 
@@ -109,9 +108,9 @@ export class DataManager {
     }
 
 
-    public removeDataset(uuid: string) {
+    public removeDataset(uuid: string, setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>) {
         return this.xhrDelete<{}>(
-            `${ENDPOINTS.DATASET}${uuid}/delete`
+            `${ENDPOINTS.DATASET}${uuid}/delete`, uuid, setDatasetUUIDToDelete
         );
     }
 
