@@ -9,6 +9,7 @@ import {
     MenuItem,
     Popover,
     Position,
+    Spinner
 } from "@blueprintjs/core";
 import classnames from "classnames";
 import { Col, Row } from "react-grid-system";
@@ -88,16 +89,16 @@ export default function DatasetCard({
     const [downloadInProgress, setDownloadInProgress] =
         useState<boolean>(false);
 
-    const [deleteInProgress, setDeleteInProgress] = useState<boolean>(false);
+    const [isDeleteInProgress, setIsDeleteInProgress] = useState<boolean>(false);
 
     const disabledDataset =() => {
         //Return True if upload status is not succes
-        return status !== "SUCCESS" || deleteInProgress ;
+        return status !== "SUCCESS" || isDeleteInProgress ;
     };
 
     const disabledDelete = () => {
         //Return True if upload status is not SUCCESS or FAILED
-        return !['SUCCESS', 'FAILED'].includes(status)  || deleteInProgress
+        return !['SUCCESS', 'FAILED'].includes(status)  || isDeleteInProgress
     };
 
     const {
@@ -161,8 +162,9 @@ export default function DatasetCard({
 
     const removeUserOwnDataset = () => {
         try {
-            setDeleteInProgress(true)
-            dataManager.removeDataset(datasetId, setDatasetUUIDToDelete)
+            setIsDeleteInProgress(true)
+            dataManager.removeDataset(datasetId, setDatasetUUIDToDelete).promise.then(() => { setIsDeleteInProgress(false) })
+
         }
 
         catch (e) {
@@ -192,7 +194,9 @@ export default function DatasetCard({
                 data-cy="DatasetCard-card"
                 data-testid={title}
             >
-                <Row justify="between">
+                {isDeleteInProgress ? <Row justify="between"><Col><Spinner size={Spinner.SIZE_LARGE} /></Col></Row> : <Row justify="between">
+
+
                     <Col>
                         <H5
                             data-cy="dataset-heading-data"
@@ -290,27 +294,27 @@ export default function DatasetCard({
                                                 data-cy="download"
                                             />
                                             {
-                                            ownerId !== undefined && (
-                                            <MenuItem
-                                                icon="delete"
-                                                text="Delete"
-                                                onClick={removeUserOwnDataset}
-                                                disabled={
-                                                    disabledDelete() ||
-                                                    // Disable deleting when user is not owner
-                                                    currentUserId ===
-                                                        undefined ||
-                                                    typeof ownerId ===
-                                                        "string"
-                                                        ? ownerId !==
-                                                          currentUserId
-                                                        : !ownerId.includes(
-                                                              currentUserId
-                                                          )
-                                                }
-                                            />
-                                            )
-                                    }
+                                                ownerId !== undefined && (
+                                                    <MenuItem
+                                                        icon="delete"
+                                                        text="Delete"
+                                                        onClick={removeUserOwnDataset}
+                                                        disabled={
+                                                            disabledDelete() ||
+                                                                // Disable deleting when user is not owner
+                                                                currentUserId ===
+                                                                undefined ||
+                                                                typeof ownerId ===
+                                                                "string"
+                                                                ? ownerId !==
+                                                                currentUserId
+                                                                : !ownerId.includes(
+                                                                    currentUserId
+                                                                )
+                                                        }
+                                                    />
+                                                )
+                                            }
                                             {
                                                 ownerId !== undefined && (
                                                     <MenuItem
@@ -351,7 +355,7 @@ export default function DatasetCard({
                                 : ''}
                         </ButtonGroup>
                     </Col>
-                </Row>
+                </Row> }
             </Card>
             <MetadataDrawer
                 drawerTitle={title}

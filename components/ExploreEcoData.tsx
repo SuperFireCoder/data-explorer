@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import bodybuilder from "bodybuilder";
 import { Button, H6, Spinner, Popover, Position, PopoverInteractionKind, Icon, Tooltip, Classes } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
-
 import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
 import { DatasetType } from "../interfaces/DatasetType";
@@ -827,7 +826,6 @@ export default function IndexPage() {
                             />
                         </Col>
                     </Row>
-                    
                     <Row>
                         <Col>
                             <FacetNumberRangeFacetStateSlider
@@ -837,7 +835,6 @@ export default function IndexPage() {
                             />
                         </Col>
                     </Row>
-
                     {[
                         facetTimeDomain,
                         facetSpatialDomain,
@@ -905,8 +902,8 @@ export default function IndexPage() {
                     </Col>
                 </Row>
                 <Row>
-                        <Col>
-                            {getProcessedQueryResult()?.map(({ _id, _source }) => (
+                    <Col>
+                        {getProcessedQueryResult()?.map(({ _id, _source }) => (
                             <DatasetCard
                                 data-cy="dataset-card"
                                 data-testid="dataset-card"
