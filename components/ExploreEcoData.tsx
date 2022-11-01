@@ -741,7 +741,7 @@ export default function IndexPage() {
             "facetScientificType": [],
             "facetDomain": [],
             "facetGcm": [],
-            "filterPrincipals": [],
+            // "filterPrincipals": [],
             "facetMonthMin": NaN,
             "facetMonthMax": NaN,
         })
