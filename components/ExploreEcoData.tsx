@@ -39,6 +39,8 @@ interface QueryParameters {
     searchQuery?: string;
     /** Search Dataset **/
     datasetId?: string;
+    /** Selected Dataset **/
+    selectedDatasetId?: string;
     /** Array of users/subjects to filter results by */
     filterPrincipals?: string | string[];
     facetYearMin?: string;
@@ -59,7 +61,7 @@ interface FormState {
     pageStart: number;
     searchQuery: string;
     datasetId: string;
-    selectedDatasetId: string | undefined;
+    selectedDatasetId: string;
     filterPrincipals: readonly string[];
     facetYearMin: number;
     facetYearMax: number;
@@ -469,6 +471,7 @@ export default function IndexPage() {
             pageStart = "0",
             searchQuery = "",
             datasetId = "",
+            selectedDatasetId = "",
             filterPrincipals = [],
             facetYearMin = "",
             facetYearMax = "",
@@ -495,7 +498,7 @@ export default function IndexPage() {
             datasetId,
 
             // Selected Dataset
-            selectedDatasetId: undefined,
+            selectedDatasetId,
 
             // Principals
             filterPrincipals: normaliseAsReadonlyStringArray(filterPrincipals),
@@ -778,6 +781,8 @@ export default function IndexPage() {
         }
     }
 
+    console.log(formState);
+
     return (
         <Row data-cy="ExploreEcoDataTab">
             <Col xs={2}>
@@ -930,7 +935,7 @@ export default function IndexPage() {
                                 // lastUpdated={lastUpdated}
                                 ownerId={_source.allowed_principals as string[]}
                                 selected={formState.selectedDatasetId === _source.uuid}
-                                onSelect={Boolean(isEmbed) ? onDatasetSelect : undefined}
+                                onSelect={isEmbed === true ? onDatasetSelect : undefined}
                             />
                         ))}
                     </Col>
