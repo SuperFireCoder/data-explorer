@@ -797,7 +797,6 @@ export default function IndexPage() {
     }
 
     return (
-        (console.log(getProcessedQueryResult())),
         <Row data-cy="ExploreEcoDataTab">
             <Col xs={2}>
                 <Row disableDefaultMargins>
