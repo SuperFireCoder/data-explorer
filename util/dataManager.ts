@@ -75,13 +75,13 @@ export class DataManager {
         return { promise, cancellationToken, axiosPromise };
     }
 
-    private xhrDelete<T>(url: string, uuid: string, setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>) {
+    private xhrDelete<T>(url: string) {
         const cancellationToken = this.getNewAxiosCancellationToken();
         const axiosPromise = this.axios.delete<T>(url, {
             cancelToken: cancellationToken.token,
         });
         
-        const promise = axiosPromise.then((res) => res.data).then(() => { setDatasetUUIDToDelete(uuid)});
+        const promise = axiosPromise.then((res) => res.data);
         return { promise, cancellationToken, axiosPromise };
     }
 
@@ -108,9 +108,9 @@ export class DataManager {
     }
 
 
-    public removeDataset(uuid: string, setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>) {
+    public removeDataset(uuid: string) {
         return this.xhrDelete<{}>(
-            `${ENDPOINTS.DATASET}${uuid}/delete`, uuid, setDatasetUUIDToDelete
+            `${ENDPOINTS.DATASET}${uuid}/delete`
         );
     }
 

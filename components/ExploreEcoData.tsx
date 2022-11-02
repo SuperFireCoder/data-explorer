@@ -548,10 +548,16 @@ export default function IndexPage() {
         //Removes dataset from dataset list if user deleted it.
         if (datasetUUIDToDelete && queryResult) {
             let indexToDelete = queryResult?.hits.hits.findIndex(x => x._source.uuid == datasetUUIDToDelete)
-            return indexToDelete !== -1? queryResult.hits.hits.splice(indexToDelete,1): queryResult.hits.hits //Work around react state not being async. 
+            setDatasetUUIDToDelete(undefined)
+            if (indexToDelete !== -1) // if matching uuid is found, return spliced dataset list
+            {
+                return queryResult.hits.hits.splice(indexToDelete, 1)
+            }
+            else {
+                return queryResult.hits.hits
+            }
         }
-        else 
-        {
+        else {
             return queryResult?.hits.hits
         }
 
