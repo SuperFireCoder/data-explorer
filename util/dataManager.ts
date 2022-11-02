@@ -1,7 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
-
 import { KeycloakInstance } from "../interfaces/Keycloak";
-
 const ENDPOINTS = {
     DATASET: "/api/dataset/",
     PERMISSION: "/api/permission/",
@@ -82,6 +80,7 @@ export class DataManager {
         const axiosPromise = this.axios.delete<T>(url, {
             cancelToken: cancellationToken.token,
         });
+        
         const promise = axiosPromise.then((res) => res.data);
         return { promise, cancellationToken, axiosPromise };
     }
