@@ -1,10 +1,9 @@
 import { Col, Row } from "@ecocommons-australia/ui-library";
-import { FormEvent, useCallback, useMemo } from "react";
+import { FormEvent, useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import bodybuilder from "bodybuilder";
 import { Button, H6, Spinner, Popover, Position, PopoverInteractionKind, Icon, Tooltip, Classes } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
-
 import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
 import { DatasetType } from "../interfaces/DatasetType";
@@ -13,7 +12,6 @@ import { getDataExplorerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
 import { sendDatasetId } from "../util/messages";
 import styles from "./FacetSelectFacetState2.module.css"
-
 import {
     EsFacetRootConfig,
     QueryState,
@@ -459,6 +457,9 @@ export default function IndexPage() {
     const router = useRouter();
 
     const isEmbed = router.query.embed === "1";
+
+    const [datasetUUIDToDelete, setDatasetUUIDToDelete] =
+        useState<string | undefined>(undefined);
     
     /**
      * Extracts the current page parameters from the URL query parameter values.
@@ -541,6 +542,26 @@ export default function IndexPage() {
         },
         [router.query]
     );
+
+
+    const getProcessedQueryResult = (): Array<any> | undefined => {
+        //Removes dataset from dataset list if user deleted it.
+        if (datasetUUIDToDelete && queryResult) {
+            let indexToDelete = queryResult?.hits.hits.findIndex(x => x._source.uuid == datasetUUIDToDelete)
+            setDatasetUUIDToDelete(undefined)
+            if (indexToDelete !== -1) // if matching uuid is found, return spliced dataset list
+            {
+                return queryResult.hits.hits.splice(indexToDelete, 1)
+            }
+            else {
+                return queryResult.hits.hits
+            }
+        }
+        else {
+            return queryResult?.hits.hits
+        }
+
+    }
 
     const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
         facets: FACETS,
@@ -838,7 +859,7 @@ export default function IndexPage() {
                         facetDomain,
                         facetGcm,
                         facetCollection,
-                    ].map((facet) => (
+                        ].map((facet) => (
                         <Row key={facet.id}>
                             <Col>
                                 {renderFacetLabel(facet.id, facet.label)}
@@ -898,7 +919,7 @@ export default function IndexPage() {
                 </Row>
                 <Row>
                     <Col>
-                        {queryResult?.hits.hits.map(({ _id, _source }) => (
+                        {getProcessedQueryResult()?.map(({ _id, _source }) => (
                             <DatasetCard
                                 data-cy="dataset-card"
                                 data-testid="dataset-card"
@@ -916,11 +937,11 @@ export default function IndexPage() {
                                 type={
                                     _source.status === "SUCCESS"
                                         ? // TODO: Clarify values for "scientific_type"
-                                          ({
-                                              type: _source.scientific_type[0],
-                                              subtype:
-                                                  _source.scientific_type[1],
-                                          } as unknown as DatasetType)
+                                        ({
+                                            type: _source.scientific_type[0],
+                                            subtype:
+                                                _source.scientific_type[1],
+                                        } as unknown as DatasetType)
                                         : undefined
                                 }
                                 // TODO: Add modification date into ES index
@@ -928,6 +949,7 @@ export default function IndexPage() {
                                 ownerId={_source.allowed_principals as string[]}
                                 selected={formState.datasetId === _source.uuid}
                                 onSelect={Boolean(isEmbed) ? onDatasetSelect : undefined}
+                                setDatasetUUIDToDelete={setDatasetUUIDToDelete}
                             />
                         ))}
                     </Col>
