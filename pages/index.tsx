@@ -226,7 +226,7 @@ export default function IndexPage() {
             );
     }, []);
 
-    if (Boolean(isEmbed)){
+    if (isEmbed === true){
         return (
             <>
                 <HtmlHead title={["Datasets", "Explore data"]} />
