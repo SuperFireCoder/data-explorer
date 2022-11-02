@@ -97,8 +97,8 @@ export default function DatasetCard({
     };
 
     const disabledDelete = () => {
-        //Return True if upload status is not SUCCESS or FAILED
-        return !['SUCCESS', 'FAILED'].includes(status)  || isDeleteInProgress
+        //Return True if upload status is not SUCCESS, FAILED, CREATED, or delete process in progress.
+        return !['SUCCESS', 'FAILED', 'CREATED'].includes(status)  || isDeleteInProgress
     };
 
     const {
@@ -161,21 +161,15 @@ export default function DatasetCard({
 
 
     const removeUserOwnDataset = () => {
-        try {
             setIsDeleteInProgress(true)
-            dataManager.removeDataset(datasetId, setDatasetUUIDToDelete).promise.then(() => { setIsDeleteInProgress(false) })
-
-        }
-
-        catch (e) {
-            // Ignore cancellation events
-            if (axios.isCancel(e)) {
-                return;
-            }
-
-            console.error(e);
-            alert(e.toString());
-        }
+            dataManager.removeDataset(datasetId)
+                .promise.then(() => {
+                    setIsDeleteInProgress(false);
+                    setDatasetUUIDToDelete(datasetId)
+                })
+                .catch(error => {
+                    setIsDeleteInProgress(false)
+                })
     }
 
 
