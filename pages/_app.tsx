@@ -20,7 +20,7 @@ import { useEffect } from "react";
 import router from "next/router";
 
 import { theme } from "../themes/default/theme";
-import "../themes/default/styles/global.css";
+import "../themes/default/styles/theme.css";
 
 const config = getConfig();
 
