@@ -35,11 +35,10 @@ interface QueryParameters {
     pageStart?: string;
     /** Search query string */
     searchQuery?: string;
-    /** Selected Dataset **/
+    /** Search Dataset **/
     datasetId?: string;
     /** Array of users/subjects to filter results by */
     filterPrincipals?: string | string[];
-
     facetYearMin?: string;
     facetYearMax?: string;
     facetTimeDomain?: string | string[];
@@ -58,6 +57,7 @@ interface FormState {
     pageStart: number;
     searchQuery: string;
     datasetId: string;
+    selectedDatasetId: string | undefined;
     filterPrincipals: readonly string[];
     facetYearMin: number;
     facetYearMax: number;
@@ -492,8 +492,11 @@ export default function IndexPage() {
             // String search query
             searchQuery,
 
-            // Selected Dataset
+            // Searched Dataset
             datasetId,
+
+            // Selected Dataset
+            selectedDatasetId: undefined,
 
             // Principals
             filterPrincipals: normaliseAsReadonlyStringArray(filterPrincipals),
@@ -756,7 +759,7 @@ export default function IndexPage() {
         (uuid: string) => {
             sendDatasetId(uuid);
             updateFormState({
-                datasetId: uuid
+                selectedDatasetId: uuid
             });
         },
         [updateFormState]
@@ -947,7 +950,7 @@ export default function IndexPage() {
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
                                 ownerId={_source.allowed_principals as string[]}
-                                selected={formState.datasetId === _source.uuid}
+                                selected={formState.selectedDatasetId === _source.uuid}
                                 onSelect={Boolean(isEmbed) ? onDatasetSelect : undefined}
                                 setDatasetUUIDToDelete={setDatasetUUIDToDelete}
                             />
