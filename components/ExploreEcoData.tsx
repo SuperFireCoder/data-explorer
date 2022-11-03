@@ -35,11 +35,12 @@ interface QueryParameters {
     pageStart?: string;
     /** Search query string */
     searchQuery?: string;
-    /** Selected Dataset **/
+    /** Search Dataset **/
     datasetId?: string;
+    /** Selected Dataset **/
+    selectedDatasetId?: string;
     /** Array of users/subjects to filter results by */
     filterPrincipals?: string | string[];
-
     facetYearMin?: string;
     facetYearMax?: string;
     facetTimeDomain?: string | string[];
@@ -58,6 +59,7 @@ interface FormState {
     pageStart: number;
     searchQuery: string;
     datasetId: string;
+    selectedDatasetId: string;
     filterPrincipals: readonly string[];
     facetYearMin: number;
     facetYearMax: number;
@@ -470,6 +472,7 @@ export default function IndexPage() {
             pageStart = "0",
             searchQuery = "",
             datasetId = "",
+            selectedDatasetId = "",
             filterPrincipals = [],
             facetYearMin = "",
             facetYearMax = "",
@@ -492,8 +495,11 @@ export default function IndexPage() {
             // String search query
             searchQuery,
 
-            // Selected Dataset
+            // Searched Dataset
             datasetId,
+
+            // Selected Dataset
+            selectedDatasetId,
 
             // Principals
             filterPrincipals: normaliseAsReadonlyStringArray(filterPrincipals),
@@ -756,7 +762,7 @@ export default function IndexPage() {
         (uuid: string) => {
             sendDatasetId(uuid);
             updateFormState({
-                datasetId: uuid
+                selectedDatasetId: uuid
             });
         },
         [updateFormState]
@@ -795,6 +801,8 @@ export default function IndexPage() {
             return <H6>{facetLabel}</H6>;
         }
     }
+
+    console.log(formState);
 
     return (
         <Row data-cy="ExploreEcoDataTab">
@@ -947,8 +955,8 @@ export default function IndexPage() {
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
                                 ownerId={_source.allowed_principals as string[]}
-                                selected={formState.datasetId === _source.uuid}
-                                onSelect={Boolean(isEmbed) ? onDatasetSelect : undefined}
+                                selected={formState.selectedDatasetId === _source.uuid}
+                                onSelect={isEmbed === true ? onDatasetSelect : undefined}
                                 setDatasetUUIDToDelete={setDatasetUUIDToDelete}
                             />
                         ))}
