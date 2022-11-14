@@ -1,6 +1,6 @@
 {
   "name": "data-explorer-ui",
-  "version": "1.0.2",
+  "version": "1.2.1",
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--inspect' next dev",
@@ -17,7 +17,7 @@
     "@blueprintjs/select": "3.15.8",
     "@blueprintjs/table": "^3.9.14",
     "@ecocommons-australia/ui-library": "1.6.4",
-    "@ecocommons-australia/visualiser-client-geospatial": "1.6.5",
+    "@ecocommons-australia/visualiser-client-geospatial": "1.6.7",
     "@react-keycloak/ssr": "3.3.0",
     "axios": "0.21.1",
     "bodybuilder": "2.3.0",
