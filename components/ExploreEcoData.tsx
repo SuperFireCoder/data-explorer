@@ -674,7 +674,7 @@ export default function IndexPage() {
 
     const facetMonth = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetMonth",
-        label: "MonthFilter",
+        label: "Month filter",
         placeholder: "Filter by month...",
         itemSortFn: monthItemSort,
     });
@@ -796,8 +796,6 @@ export default function IndexPage() {
             return <H6>{facetLabel}</H6>;
         }
     }
-
-    console.log(formState);
 
     return (
         <Row data-cy="ExploreEcoDataTab">
