@@ -1,7 +1,7 @@
 import { MenuItem } from "@blueprintjs/core";
 import { ItemPredicate, ItemRenderer, MultiSelect } from "@blueprintjs/select";
 import { ReactNode, SyntheticEvent, useCallback, useMemo } from "react";
-import { EsAggregationBucket, EsAggregationBucketMonth } from "../interfaces/EsAggregationBucket";
+import { EsAggregationBucket } from "../interfaces/EsAggregationBucket";
 import styles from "./FacetMultiSelect.module.css";
 
 export interface Props<T> {
@@ -28,15 +28,6 @@ const defaultItemPredicateFilter: ItemPredicate<EsAggregationBucket> = (
     _index,
     exactMatch
 ) =>
-
-// {
-//     if (exactMatch) {
-//         return true
-//     } else {
-//         // console.log("exactMatch", exactMatch, "item", item, "query", query)
-//         return false
-//     }
-// }
     exactMatch
         ? item.key === query
         : item.key.toLowerCase().indexOf(query.toLowerCase()) >= 0;
@@ -50,9 +41,9 @@ export const itemSortKeyAlpha = (
 ) => (a?.key ?? "").localeCompare(b?.key ?? "");
 
 export const monthItemSort = (
-    a: EsAggregationBucketMonth,
-    b: EsAggregationBucketMonth
-) => (a?.key ?? 0) - (b?.key ?? 0);
+    a: EsAggregationBucket | undefined,
+    b: EsAggregationBucket | undefined
+) => (a?.key ?? 0) as number - ((b?.key ?? 0) as number);
 
 export const resolutionItemSort = (
     a: EsAggregationBucket | undefined,

@@ -598,6 +598,11 @@ export default function IndexPage() {
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
     });
 
+    esFacetRoot && 
+    esFacetRoot.aggregations && 
+    esFacetRoot.aggregations.facetMonth && 
+    esFacetRoot.aggregations.facetMonth.map(m => m.key = m?.key?.toString())
+
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
 
     const searchQuery = useEsIndividualFacetFreeText(esFacetRoot, {
