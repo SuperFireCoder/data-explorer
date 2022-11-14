@@ -46,6 +46,7 @@ class EcoCommonsDocument extends Document {
                             __html: `
                             if (new URLSearchParams(document.location.search).get("embed") === "1"){
                                 document.querySelector('html').classList.add('embed-mode');
+                                document.querySelector('html').classList.add('embed-margin');
                             }`,
                         }}
                     />
