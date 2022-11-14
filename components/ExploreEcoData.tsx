@@ -23,7 +23,7 @@ import {
 } from "../hooks/EsFacet";
 import FacetMultiSelectFacetState2, { NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL } from "./FacetMultiSelectFacetState2";
 import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
-import { itemSortKeyAlpha } from "./FacetMultiSelect";
+import { itemSortKeyAlpha, monthItemSort, resolutionItemSort } from "./FacetMultiSelect";
 import FacetNumberRangeFacetState2 from "./FacetNumberRangeFacetState2";
 import FacetNumberRangeFacetStateSlider from "./FacetNumberRangeFacetStateSlider";
 import FacetSelectFacetState2 from "./FacetSelectFacetState2";
@@ -52,6 +52,7 @@ interface QueryParameters {
     facetScientificType?: string | string[];
     facetMonthMin?: string;
     facetMonthMax?: string;
+    facetMonth?: string | string[];
 }
 
 interface FormState {
@@ -72,6 +73,7 @@ interface FormState {
     facetGcm: readonly string[];
     facetMonthMin: number;
     facetMonthMax: number;
+    facetMonth: readonly string[];
 }
 
 function stripEmptyStringQueryParams(
@@ -429,6 +431,26 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
         },
     },
     {
+        id: "facetMonth",
+        facetApplicationFn: (formState, query) =>
+            addTermAggregationFacetStateToQuery(
+                query,
+                "month",
+                formState.facetMonth
+            ),
+        aggregationApplicationFn: (query) => {
+            return {
+                ...query,
+                bodyBuilder: query.bodyBuilder.aggregation(
+                    "terms",
+                    "month",
+                    { size: 1000000 },
+                    "facetMonth"
+                ),
+            };
+        },
+    },
+    {
         id: "datasetId",
         facetApplicationFn: (formState, query) => {
             const datasetId = formState.datasetId.trim();
@@ -485,6 +507,7 @@ export default function IndexPage() {
             facetGcm = [],
             facetMonthMin = "",
             facetMonthMax = "",
+            facetMonth = [],
         } = router.query as QueryParameters;
 
         return {
@@ -518,6 +541,7 @@ export default function IndexPage() {
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
             facetMonthMin: parseInt(facetMonthMin, 10), // Value may be NaN
             facetMonthMax: parseInt(facetMonthMax, 10), // Value may be NaN
+            facetMonth: normaliseAsReadonlyStringArray(facetMonth),
         };
     }, [router.query]);
 
@@ -613,49 +637,7 @@ export default function IndexPage() {
         id: "facetResolution",
         label: "Resolution",
         placeholder: "Filter by resolution...",
-        itemSortFn: (a, b) => {
-            const aName = a?.key;
-            const bName = b?.key;
-
-            if (aName === undefined || bName === undefined) {
-                return 0;
-            }
-
-            // Parse "arcmin"/"arcsec" names
-            const parseArcSecValueFromName = (x: string) => {
-                const parts = x
-                    .split(" ")
-                    .filter((s) => s.trim().length !== 0)
-                    .map((s) => s.toLowerCase());
-
-                // Assume first is number, second is unit
-                // e.g. "36 arcsec (...)"
-                if (parts[1] === "arcsec") {
-                    return Number.parseFloat(parts[0]);
-                }
-
-                if (parts[1] === "arcmin") {
-                    return Number.parseFloat(parts[0]) * 60;
-                }
-
-                // Return NaN if we don't know what we're dealing with rather
-                // than throwing as we don't want to completely crash the sort
-                return Number.NaN;
-            };
-
-            const aValue = parseArcSecValueFromName(aName);
-            const bValue = parseArcSecValueFromName(bName);
-
-            if (aValue < bValue) {
-                return -1;
-            }
-
-            if (aValue > bValue) {
-                return 1;
-            }
-
-            return 0;
-        },
+        itemSortFn: resolutionItemSort,
     });
 
     const facetScientificType = useEsIndividualFacetArray(esFacetRoot, {
@@ -683,6 +665,13 @@ export default function IndexPage() {
         minId: "facetMonthMin",
         maxId: "facetMonthMax",
         label: "Month",
+    });
+
+    const facetMonth = useEsIndividualFacetArray(esFacetRoot, {
+        id: "facetMonth",
+        label: "MonthFilter",
+        placeholder: "Filter by month...",
+        itemSortFn: monthItemSort,
     });
 
     const { keycloak } = useKeycloakInfo();
@@ -782,6 +771,7 @@ export default function IndexPage() {
             // "filterPrincipals": [],
             "facetMonthMin": NaN,
             "facetMonthMax": NaN,
+            "facetMonth": [],
         })
     },[])
   
@@ -860,6 +850,7 @@ export default function IndexPage() {
                         </Col>
                     </Row>
                     {[
+                        facetMonth,
                         facetTimeDomain,
                         facetSpatialDomain,
                         facetResolution,

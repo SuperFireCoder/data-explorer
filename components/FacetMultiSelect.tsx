@@ -1,7 +1,7 @@
 import { MenuItem } from "@blueprintjs/core";
 import { ItemPredicate, ItemRenderer, MultiSelect } from "@blueprintjs/select";
 import { ReactNode, SyntheticEvent, useCallback, useMemo } from "react";
-import { EsAggregationBucket } from "../interfaces/EsAggregationBucket";
+import { EsAggregationBucket, EsAggregationBucketMonth } from "../interfaces/EsAggregationBucket";
 import styles from "./FacetMultiSelect.module.css";
 
 export interface Props<T> {
@@ -28,6 +28,15 @@ const defaultItemPredicateFilter: ItemPredicate<EsAggregationBucket> = (
     _index,
     exactMatch
 ) =>
+
+// {
+//     if (exactMatch) {
+//         return true
+//     } else {
+//         // console.log("exactMatch", exactMatch, "item", item, "query", query)
+//         return false
+//     }
+// }
     exactMatch
         ? item.key === query
         : item.key.toLowerCase().indexOf(query.toLowerCase()) >= 0;
@@ -39,6 +48,58 @@ export const itemSortKeyAlpha = (
     a: EsAggregationBucket | undefined,
     b: EsAggregationBucket | undefined
 ) => (a?.key ?? "").localeCompare(b?.key ?? "");
+
+export const monthItemSort = (
+    a: EsAggregationBucketMonth,
+    b: EsAggregationBucketMonth
+) => (a?.key ?? 0) - (b?.key ?? 0);
+
+export const resolutionItemSort = (
+    a: EsAggregationBucket | undefined,
+    b: EsAggregationBucket | undefined
+) => {
+    const aName = a?.key;
+    const bName = b?.key;
+
+    if (aName === undefined || bName === undefined) {
+        return 0;
+    }
+
+    // Parse "arcmin"/"arcsec" names
+    const parseArcSecValueFromName = (x: string) => {
+        const parts = x
+            .split(" ")
+            .filter((s) => s.trim().length !== 0)
+            .map((s) => s.toLowerCase());
+
+        // Assume first is number, second is unit
+        // e.g. "36 arcsec (...)"
+        if (parts[1] === "arcsec") {
+            return Number.parseFloat(parts[0]);
+        }
+
+        if (parts[1] === "arcmin") {
+            return Number.parseFloat(parts[0]) * 60;
+        }
+
+        // Return NaN if we don't know what we're dealing with rather
+        // than throwing as we don't want to completely crash the sort
+        return Number.NaN;
+    };
+
+    const aValue = parseArcSecValueFromName(aName);
+    const bValue = parseArcSecValueFromName(bName);
+
+    if (aValue < bValue) {
+        return -1;
+    }
+
+    if (aValue > bValue) {
+        return 1;
+    }
+
+    return 0;
+};
 
 export const itemSortCountDesc = (
     a: EsAggregationBucket | undefined,
