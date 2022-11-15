@@ -40,6 +40,77 @@ export const itemSortKeyAlpha = (
     b: EsAggregationBucket | undefined
 ) => (a?.key ?? "").localeCompare(b?.key ?? "");
 
+export const monthItemSort = (
+    a: EsAggregationBucket | undefined,
+    b: EsAggregationBucket | undefined
+) => {
+    const monthLabelToNumberMap: { [key: string]: number } = {
+        "Non monthly data": 0,
+        "January": 1,
+        "February": 2,
+        "March": 3,
+        "April": 4,
+        "May": 5,
+        "June": 6,
+        "July": 7,
+        "August": 8,
+        "September": 9,
+        "October": 10,
+        "November": 11,
+        "December": 12,
+    };
+
+    return (monthLabelToNumberMap[a?.key as string] ?? 0)
+    - (monthLabelToNumberMap[b?.key as string] ?? 0);
+}
+
+export const resolutionItemSort = (
+    a: EsAggregationBucket | undefined,
+    b: EsAggregationBucket | undefined
+) => {
+    const aName = a?.key;
+    const bName = b?.key;
+
+    if (aName === undefined || bName === undefined) {
+        return 0;
+    }
+
+    // Parse "arcmin"/"arcsec" names
+    const parseArcSecValueFromName = (x: string) => {
+        const parts = x
+            .split(" ")
+            .filter((s) => s.trim().length !== 0)
+            .map((s) => s.toLowerCase());
+
+        // Assume first is number, second is unit
+        // e.g. "36 arcsec (...)"
+        if (parts[1] === "arcsec") {
+            return Number.parseFloat(parts[0]);
+        }
+
+        if (parts[1] === "arcmin") {
+            return Number.parseFloat(parts[0]) * 60;
+        }
+
+        // Return NaN if we don't know what we're dealing with rather
+        // than throwing as we don't want to completely crash the sort
+        return Number.NaN;
+    };
+
+    const aValue = parseArcSecValueFromName(aName);
+    const bValue = parseArcSecValueFromName(bName);
+
+    if (aValue < bValue) {
+        return -1;
+    }
+
+    if (aValue > bValue) {
+        return 1;
+    }
+
+    return 0;
+};
+
 export const itemSortCountDesc = (
     a: EsAggregationBucket | undefined,
     b: EsAggregationBucket | undefined
