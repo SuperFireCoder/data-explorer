@@ -25,7 +25,6 @@ import FacetMultiSelectFacetState2, { NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL }
 import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
 import { itemSortKeyAlpha, monthItemSort, resolutionItemSort } from "./FacetMultiSelect";
 import FacetNumberRangeFacetState2 from "./FacetNumberRangeFacetState2";
-import FacetNumberRangeFacetStateSlider from "./FacetNumberRangeFacetStateSlider";
 import FacetSelectFacetState2 from "./FacetSelectFacetState2";
 
 interface QueryParameters {
@@ -50,8 +49,6 @@ interface QueryParameters {
     facetDomain?: string | string[];
     facetCollection?: string | string[];
     facetScientificType?: string | string[];
-    facetMonthMin?: string;
-    facetMonthMax?: string;
     facetMonth?: string | string[];
 }
 
@@ -71,8 +68,6 @@ interface FormState {
     facetDomain: readonly string[];
     facetCollection: readonly string[];
     facetGcm: readonly string[];
-    facetMonthMin: number;
-    facetMonthMax: number;
     facetMonth: readonly string[];
 }
 
@@ -395,42 +390,6 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
         },
     },
     {
-        id: "facetMonthMin",
-        facetApplicationFn: (formState, query) => {
-            const { facetMonthMin, facetMonthMax } = formState;
-
-            // If both range values are NaN then the query is returned unchanged
-            if (Number.isNaN(facetMonthMin) && Number.isNaN(facetMonthMax)) {
-                return query;
-            }
-
-            const monthRangeQuery: Record<string, number> = {};
-
-            if (!Number.isNaN(facetMonthMin)) {
-                monthRangeQuery["gte"] = facetMonthMin;
-            }
-
-            if (!Number.isNaN(facetMonthMax)) {
-                monthRangeQuery["lte"] = facetMonthMax;
-            }
-
-            return {
-                modified: true,
-                bodyBuilder: query.bodyBuilder.query(
-                    "range",
-                    "month",
-                    monthRangeQuery
-                ),
-            };
-        },
-    },
-    {
-        id: "facetMonthMax",
-        facetApplicationFn: (formState, query) => {
-            return query;
-        },
-    },
-    {
         id: "facetMonth",
         facetApplicationFn: (formState, query) =>
             addTermAggregationFacetStateToQuery(
@@ -505,8 +464,6 @@ export default function IndexPage() {
             facetDomain = [],
             facetCollection = [],
             facetGcm = [],
-            facetMonthMin = "",
-            facetMonthMax = "",
             facetMonth = [],
         } = router.query as QueryParameters;
 
@@ -539,8 +496,6 @@ export default function IndexPage() {
             facetDomain: normaliseAsReadonlyStringArray(facetDomain),
             facetCollection: normaliseAsReadonlyStringArray(facetCollection),
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
-            facetMonthMin: parseInt(facetMonthMin, 10), // Value may be NaN
-            facetMonthMax: parseInt(facetMonthMax, 10), // Value may be NaN
             facetMonth: normaliseAsReadonlyStringArray(facetMonth),
         };
     }, [router.query]);
@@ -661,12 +616,6 @@ export default function IndexPage() {
         itemSortFn: itemSortKeyAlpha,
     });
 
-    const facetMonthRange = useEsIndividualFacetNumberRange(esFacetRoot, {
-        minId: "facetMonthMin",
-        maxId: "facetMonthMax",
-        label: "Month",
-    });
-
     const facetMonth = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetMonth",
         label: "Month filter",
@@ -769,8 +718,6 @@ export default function IndexPage() {
             "facetDomain": [],
             "facetGcm": [],
             // "filterPrincipals": [],
-            "facetMonthMin": NaN,
-            "facetMonthMax": NaN,
             "facetMonth": [],
         })
     },[])
@@ -835,15 +782,6 @@ export default function IndexPage() {
                                 defaultMin={1990}
                                 defaultMax={2010}
                                 numberParseMode="integer"
-                            />
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            <FacetNumberRangeFacetStateSlider
-                                facet={facetMonthRange}
-                                defaultMin={1}
-                                defaultMax={12}
                             />
                         </Col>
                     </Row>
