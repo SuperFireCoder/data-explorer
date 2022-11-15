@@ -41,6 +41,17 @@ class EcoCommonsDocument extends Document {
                             }`,
                         }}
                     />
+                    <script
+                        dangerouslySetInnerHTML={{
+                            // CORS workaround. Remove subdomain
+                            __html: `
+                                const domain = String(window.location.hostname).replace(/^\\w+\\./, '');
+                                window.document.domain = domain;
+                                window.domain = domain;
+                                window.origin = domain;
+                                `
+                        }}
+                    />
                     <script 
                         dangerouslySetInnerHTML={{
                             __html: `
