@@ -43,7 +43,26 @@ export const itemSortKeyAlpha = (
 export const monthItemSort = (
     a: EsAggregationBucket | undefined,
     b: EsAggregationBucket | undefined
-) => (a?.key ?? 0) as number - ((b?.key ?? 0) as number);
+) => {
+    const monthLabelToNumberMap: { [key: string]: number } = {
+        "Non monthly data": 0,
+        "January": 1,
+        "February": 2,
+        "March": 3,
+        "April": 4,
+        "May": 5,
+        "June": 6,
+        "July": 7,
+        "August": 8,
+        "September": 9,
+        "October": 10,
+        "November": 11,
+        "December": 12,
+    };
+
+    return (monthLabelToNumberMap[a?.key as string] ?? 0)
+    - (monthLabelToNumberMap[b?.key as string] ?? 0);
+}
 
 export const resolutionItemSort = (
     a: EsAggregationBucket | undefined,
