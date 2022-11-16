@@ -45,10 +45,12 @@ class EcoCommonsDocument extends Document {
                         dangerouslySetInnerHTML={{
                             // CORS workaround. Remove subdomain
                             __html: `
-                                const domain = String(window.location.hostname).replace(/^\\w+\\./, '');
-                                window.document.domain = domain;
-                                window.domain = domain;
-                                window.origin = domain;
+                                if (window.location.hostname !== '127.0.0.1'){
+                                    const domain = String(window.location.hostname).replace(/^\\w+\\./, '');
+                                    window.document.domain = domain;
+                                    window.domain = domain;
+                                    window.origin = domain;
+                                }
                                 `
                         }}
                     />
