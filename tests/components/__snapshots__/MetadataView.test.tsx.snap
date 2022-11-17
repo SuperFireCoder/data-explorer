@@ -23,6 +23,14 @@ exports[`MetadataView renders metadata from server 1`] = `
     </li>
     <li>
       <b>
+        Variables
+      </b>
+      <p>
+        test
+      </p>
+    </li>
+    <li>
+      <b>
         Domain
       </b>
       <p>
