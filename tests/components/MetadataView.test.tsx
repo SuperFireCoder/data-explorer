@@ -55,6 +55,13 @@ describe("MetadataView", () => {
         await act(async () => {
             mockAxios.mockResponse({
                 data: {
+                    "parameters":{
+                        "test":{
+                            categoryEncoding :{
+                                test:"test category"
+                            }
+                        }
+                    },
                     "bccvl:metadata": {
                         scientificName: ["Panthera leo"],
                         resolution: "Really fine",
