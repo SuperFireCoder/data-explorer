@@ -79,7 +79,7 @@ export default function MetadataView({ datasetId }: Props) {
             const bccvlMetadata = data["bccvl:metadata"];
 
             const description = bccvlMetadata.description;
-
+            const categoryVariables= Object.entries(data.parameters)?.[0][1]?.categoryEncoding; 
             const displayedMetadata = {
                 // Species
                 "Scientific name": bccvlMetadata.scientificName?.join(" "),
@@ -97,6 +97,7 @@ export default function MetadataView({ datasetId }: Props) {
                         )}
                     </ul>
                 ),
+                "Variables": categoryVariables && Object.keys(categoryVariables).join(","),
                 // Dataset
                 "Year range":
                     bccvlMetadata.year_range &&
