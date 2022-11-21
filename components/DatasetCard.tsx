@@ -258,7 +258,7 @@ export default function DatasetCard({
                                     Select
                                 </Button>
                                 : ''}
-                            {status === "IMPORTING" ?
+                            {status === "CREATED" ?
                                 <Button
                                     icon="eye-open"
                                     intent={onSelect ? 'primary' : 'success'}
