@@ -7,6 +7,7 @@ import { ParsedUrlQueryInput } from "querystring";
 import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
 import { DatasetType } from "../interfaces/DatasetType";
+import { useEffectTrigger } from "../hooks/EffectTrigger";
 
 import { getDataExplorerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
@@ -443,6 +444,25 @@ export default function IndexPage() {
 
     const [datasetUUIDToDelete, setDatasetUUIDToDelete] =
         useState<string | undefined>(undefined);
+    const {
+        triggerValue: jobFetchTriggerValue,
+        triggerEffect: triggerJobFetch,
+    } = useEffectTrigger();
+
+
+    useEffect(
+        function setupReloadJobsInterval() {
+            // Trigger job fetch every 30 seconds
+            const intervalHandle = window.setInterval(() => {
+                triggerJobFetch();
+            }, 30000);
+
+            return function stopReloadJobsInterval() {
+                window.clearInterval(intervalHandle);
+            };
+        },
+        [triggerJobFetch]
+    );
     
     /**
      * Extracts the current page parameters from the URL query parameter values.
@@ -646,8 +666,7 @@ export default function IndexPage() {
                 },
             ];
         }
-        
-    }, [keycloak?.subject]);
+    }, [keycloak?.subject,jobFetchTriggerValue]);
 
     const filterPrincipals = useEsIndividualFacetFixedArray(esFacetRoot, {
         id: "filterPrincipals",
@@ -841,6 +860,34 @@ export default function IndexPage() {
                             </>
                         )}
                     </Col>
+                    <Col xs={6}>
+                            <div style={{ textAlign: "right" }}>
+                                <Button
+                                    icon="refresh"
+                                    minimal
+                                    small
+                                    onClick={triggerJobFetch}
+                                >
+                                    {new Date() && (
+                                        <>
+                                            Last refreshed at{" "}
+                                            {new Intl.DateTimeFormat(
+                                                undefined,
+                                                {
+                                                    year: "numeric",
+                                                    month: "2-digit",
+                                                    day: "2-digit",
+
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                    hour12: false,
+                                                }
+                                            ).format(new Date())}
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </Col>
                     <Col
                         style={{ textAlign: "right" }}
                         data-testid="pagination-buttons"
