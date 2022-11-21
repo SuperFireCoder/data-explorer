@@ -7,6 +7,7 @@ import { ParsedUrlQueryInput } from "querystring";
 import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
 import { DatasetType } from "../interfaces/DatasetType";
+import { useEffectTrigger } from "../hooks/EffectTrigger";
 
 import { getDataExplorerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
@@ -443,6 +444,33 @@ export default function IndexPage() {
 
     const [datasetUUIDToDelete, setDatasetUUIDToDelete] =
         useState<string | undefined>(undefined);
+    const {
+        triggerValue: searchTriggerValue,
+        triggerEffect: triggerSearch,
+    } = useEffectTrigger();
+
+    const [datasetHistory, setDatasetHistory] = useState<
+        { lastUpdated: Date; } | undefined
+    >(undefined);
+
+
+    useEffect(
+        function setupReloadInterval() {
+            // Trigger job fetch every 30 seconds
+console.log("entered here")
+            setDatasetHistory({
+                lastUpdated: new Date(),
+            });
+            const intervalHandle = window.setInterval(() => {
+                triggerSearch();
+            }, 30000);
+
+            return function stopReloadJobsInterval() {
+                window.clearInterval(intervalHandle);
+            };
+        },
+        [triggerSearch]
+    );
     
     /**
      * Extracts the current page parameters from the URL query parameter values.
@@ -466,6 +494,10 @@ export default function IndexPage() {
             facetGcm = [],
             facetMonth = [],
         } = router.query as QueryParameters;
+
+        setDatasetHistory({
+            lastUpdated: new Date(),
+        });
 
         return {
             // Pagination
@@ -498,7 +530,7 @@ export default function IndexPage() {
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
             facetMonth: normaliseAsReadonlyStringArray(facetMonth),
         };
-    }, [router.query]);
+    }, [router.query,searchTriggerValue]);
 
     const updateFormState = useCallback(
         (formState: Partial<FormState>) => {
@@ -646,7 +678,6 @@ export default function IndexPage() {
                 },
             ];
         }
-        
     }, [keycloak?.subject]);
 
     const filterPrincipals = useEsIndividualFacetFixedArray(esFacetRoot, {
@@ -841,6 +872,31 @@ export default function IndexPage() {
                             </>
                         )}
                     </Col>
+                    <Col xs={6}>
+                            <div style={{ textAlign: "right" }}>
+                                <Button
+                                    icon="refresh"
+                                    minimal
+                                    small
+                                    onClick={triggerSearch}
+                                >
+                                    {datasetHistory?.lastUpdated && (
+                                <>
+                                    Last refreshed at{" "}
+                                    {new Intl.DateTimeFormat(undefined, {
+                                        year: "numeric",
+                                        month: "2-digit",
+                                        day: "2-digit",
+
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: false,
+                                    }).format(datasetHistory.lastUpdated)}
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </Col>
                     <Col
                         style={{ textAlign: "right" }}
                         data-testid="pagination-buttons"

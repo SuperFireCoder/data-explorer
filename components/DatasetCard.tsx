@@ -258,15 +258,23 @@ export default function DatasetCard({
                                     Select
                                 </Button>
                                 : ''}
-                            <Button
-                                icon="eye-open"
-                                data-testid="view-button"
-                                intent={onSelect ? 'primary' : 'success'}
-                                onClick={openVisualiserDrawer}
-                                disabled={disabledDataset()}
-                            >
-                                View
-                            </Button>
+                            {status === "CREATED" ?
+                                <Button
+                                    icon="eye-open"
+                                    intent={onSelect ? 'primary' : 'success'}
+                                >
+                                    In Progress
+                                </Button> :
+                                <Button
+                                    icon="eye-open"
+                                    data-testid="view-button"
+                                    intent={onSelect ? 'primary' : 'success'}
+                                    onClick={openVisualiserDrawer}
+                                    disabled={disabledDataset()}
+                                >
+                                    View
+                                </Button>
+                            }
                             <Button
                                 icon="info-sign"
                                 data-testid="info-button"
