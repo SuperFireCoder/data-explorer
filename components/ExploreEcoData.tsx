@@ -445,23 +445,31 @@ export default function IndexPage() {
     const [datasetUUIDToDelete, setDatasetUUIDToDelete] =
         useState<string | undefined>(undefined);
     const {
-        triggerValue: jobFetchTriggerValue,
-        triggerEffect: triggerJobFetch,
+        triggerValue: searchTriggerValue,
+        triggerEffect: triggerSearch,
     } = useEffectTrigger();
+
+    const [datasetHistory, setDatasetHistory] = useState<
+        { lastUpdated: Date; } | undefined
+    >(undefined);
 
 
     useEffect(
-        function setupReloadJobsInterval() {
+        function setupReloadInterval() {
             // Trigger job fetch every 30 seconds
+console.log("entered here")
+            setDatasetHistory({
+                lastUpdated: new Date(),
+            });
             const intervalHandle = window.setInterval(() => {
-                triggerJobFetch();
+                triggerSearch();
             }, 30000);
 
             return function stopReloadJobsInterval() {
                 window.clearInterval(intervalHandle);
             };
         },
-        [triggerJobFetch]
+        [triggerSearch]
     );
     
     /**
@@ -486,6 +494,10 @@ export default function IndexPage() {
             facetGcm = [],
             facetMonth = [],
         } = router.query as QueryParameters;
+
+        setDatasetHistory({
+            lastUpdated: new Date(),
+        });
 
         return {
             // Pagination
@@ -518,7 +530,7 @@ export default function IndexPage() {
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
             facetMonth: normaliseAsReadonlyStringArray(facetMonth),
         };
-    }, [router.query]);
+    }, [router.query,searchTriggerValue]);
 
     const updateFormState = useCallback(
         (formState: Partial<FormState>) => {
@@ -666,7 +678,7 @@ export default function IndexPage() {
                 },
             ];
         }
-    }, [keycloak?.subject,jobFetchTriggerValue]);
+    }, [keycloak?.subject]);
 
     const filterPrincipals = useEsIndividualFacetFixedArray(esFacetRoot, {
         id: "filterPrincipals",
@@ -866,23 +878,20 @@ export default function IndexPage() {
                                     icon="refresh"
                                     minimal
                                     small
-                                    onClick={triggerJobFetch}
+                                    onClick={triggerSearch}
                                 >
-                                    {new Date() && (
-                                        <>
-                                            Last refreshed at{" "}
-                                            {new Intl.DateTimeFormat(
-                                                undefined,
-                                                {
-                                                    year: "numeric",
-                                                    month: "2-digit",
-                                                    day: "2-digit",
+                                    {datasetHistory?.lastUpdated && (
+                                <>
+                                    Last refreshed at{" "}
+                                    {new Intl.DateTimeFormat(undefined, {
+                                        year: "numeric",
+                                        month: "2-digit",
+                                        day: "2-digit",
 
-                                                    hour: "2-digit",
-                                                    minute: "2-digit",
-                                                    hour12: false,
-                                                }
-                                            ).format(new Date())}
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: false,
+                                    }).format(datasetHistory.lastUpdated)}
                                         </>
                                     )}
                                 </Button>
