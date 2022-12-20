@@ -74,12 +74,12 @@ export default function MetadataView({ datasetId }: Props) {
             );
         }
 
-        case "dataset": {
+        case "dataset": {            
             const data = metadata.data;
             const bccvlMetadata = data["bccvl:metadata"];
 
             const description = bccvlMetadata.description;
-            const categoryVariables= Object.entries(data.parameters)?.[0][1]?.categoryEncoding; 
+            const categoryVariables= data.parameters ? Object.entries(data.parameters)?.[0][1]?.categoryEncoding : null
             const displayedMetadata = {
                 // Species
                 "Scientific name": bccvlMetadata.scientificName?.join(" "),
@@ -104,7 +104,7 @@ export default function MetadataView({ datasetId }: Props) {
                     `${bccvlMetadata.year_range[0]} to ${bccvlMetadata.year_range[1]}`,
                 Domain: bccvlMetadata.domain,
                 Genre: bccvlMetadata.genre,
-                Categories: bccvlMetadata.categories.join(" "),
+                Categories: typeof(bccvlMetadata.categories) == "string" ? bccvlMetadata.categories : bccvlMetadata.categories.join(" "),
                 // Citation, referencing and licensing
                 DOI: bccvlMetadata.doi,
                 Attributions: bccvlMetadata.attributions && (
@@ -124,6 +124,7 @@ export default function MetadataView({ datasetId }: Props) {
                         {bccvlMetadata.landingpage}
                     </a>
                 ),
+                "Dataset UUID": bccvlMetadata.uuid
             };
 
             return (
