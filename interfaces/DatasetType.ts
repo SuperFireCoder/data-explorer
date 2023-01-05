@@ -29,8 +29,10 @@ interface DatasetTypeEnvironmental {
 interface DatasetTypeFile {
     type: "file"
     // Todo: need to add subtype
+    subtype: string;
 }
 
 interface DatasetTypeFile_Broken {
-    type: "f"
+    type: "f";
+    subtype: string;
 }
