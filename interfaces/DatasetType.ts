@@ -1,4 +1,9 @@
-export type DatasetType = DatasetTypeBiological | DatasetTypeEnvironmental;
+export type DatasetType =
+    DatasetTypeBiological
+    | DatasetTypeEnvironmental
+    | DatasetTypeFile
+    // Todo: need to clear DatasetTypeFile_Broken once backend & database for data type dataset fixed
+    | DatasetTypeFile_Broken;
 
 interface DatasetTypeBiological {
     type: "biological";
@@ -19,4 +24,15 @@ interface DatasetTypeEnvironmental {
         | "physical"
         | "nutrients"
         | "biochemical";
+}
+
+interface DatasetTypeFile {
+    type: "file"
+    // Todo: need to add subtype
+    subtype: string;
+}
+
+interface DatasetTypeFile_Broken {
+    type: "f";
+    subtype: string;
 }
