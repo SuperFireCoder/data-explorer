@@ -457,7 +457,7 @@ export default function IndexPage() {
     useEffect(
         function setupReloadInterval() {
             // Trigger job fetch every 30 seconds
-console.log("entered here")
+
             setDatasetHistory({
                 lastUpdated: new Date(),
             });
