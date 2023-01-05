@@ -91,15 +91,28 @@ export default function DatasetCard({
 
     const [isDeleteInProgress, setIsDeleteInProgress] = useState<boolean>(false);
 
-    const disabledDataset =() => {
+    const disabledDataset = () => {
         //Return True if upload status is not succes
         return status !== "SUCCESS" || isDeleteInProgress ;
+    };
+
+    const disabledView = () => {
+        // Return True if dataset can not be visualised
+        // Todo: need to clearup later
+        return type?.type === "f" || type?.type === "file";
     };
 
     const disabledDelete = () => {
         //Return True if upload status is not SUCCESS, FAILED, CREATED, or delete process in progress.
         return !['SUCCESS', 'FAILED', 'CREATED'].includes(status)  || isDeleteInProgress
     };
+
+    const renderViewTitle = useMemo(() => {
+        if (disabledView()) {
+            return "This dataset cannot be currently visualised"
+        }
+        return ""
+    }, []);
 
     const {
         isOpen: metadataDrawerOpen,
@@ -171,9 +184,6 @@ export default function DatasetCard({
                     setIsDeleteInProgress(false)
                 })
     }
-
-
-
 
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
@@ -270,7 +280,8 @@ export default function DatasetCard({
                                     data-testid="view-button"
                                     intent={onSelect ? 'primary' : 'success'}
                                     onClick={openVisualiserDrawer}
-                                    disabled={disabledDataset()}
+                                    disabled={disabledDataset() || disabledView()}
+                                    title={renderViewTitle}
                                 >
                                     View
                                 </Button>

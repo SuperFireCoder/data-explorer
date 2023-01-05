@@ -131,6 +131,7 @@ export interface BccvlMetadata {
     landingpage?: string;
     "citation-url"?: string;
     description_full?: string;
+    rights?: string;
 }
 
 export interface Attribution {
