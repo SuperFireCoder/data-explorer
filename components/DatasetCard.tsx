@@ -279,7 +279,7 @@ export default function DatasetCard({
                                     disabled={disabledDataset() || disabledView}
                                     title={renderViewTitle}
                                 >
-                                    View{renderViewTitle}
+                                    View
                                 </Button>
                             }
                             <Button
