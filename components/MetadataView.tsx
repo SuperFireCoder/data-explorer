@@ -106,7 +106,7 @@ export default function MetadataView({ datasetId }: Props) {
                     `${bccvlMetadata.year_range[0]} to ${bccvlMetadata.year_range[1]}`,
                 Domain: bccvlMetadata.domain,
                 Genre: bccvlMetadata.genre,
-                Categories: typeof(bccvlMetadata.categories) == "string" ? bccvlMetadata.categories : bccvlMetadata.categories.join(" "),
+                Categories: bccvlMetadata.categories.join(" "),
                 // Citation, referencing and licensing
                 DOI: bccvlMetadata.doi,
                 Attributions: bccvlMetadata.attributions && (
