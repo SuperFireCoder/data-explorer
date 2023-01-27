@@ -96,11 +96,10 @@ export default function DatasetCard({
         return status !== "SUCCESS" || isDeleteInProgress ;
     };
 
-    const disabledView = () => {
+    const disabledView = useMemo(() => {
         // Return True if dataset can not be visualised
-        // Todo: need to clearup later
-        return type?.type === "f" || type?.type === "file";
-    };
+        return type?.type === "file" || type?.subtype === 'spatialShape';
+    }, []);
 
     const disabledDelete = () => {
         //Return True if upload status is not SUCCESS, FAILED, CREATED, or delete process in progress.
@@ -108,11 +107,8 @@ export default function DatasetCard({
     };
 
     const renderViewTitle = useMemo(() => {
-        if (disabledView()) {
-            return "This dataset cannot be currently visualised"
-        }
-        return ""
-    }, []);
+        return disabledView ? "This dataset cannot be currently visualised" : ""
+    }, [disabledView]);
 
     const {
         isOpen: metadataDrawerOpen,
@@ -280,10 +276,10 @@ export default function DatasetCard({
                                     data-testid="view-button"
                                     intent={onSelect ? 'primary' : 'success'}
                                     onClick={openVisualiserDrawer}
-                                    disabled={disabledDataset() || disabledView()}
+                                    disabled={disabledDataset() || disabledView}
                                     title={renderViewTitle}
                                 >
-                                    View
+                                    View{renderViewTitle}
                                 </Button>
                             }
                             <Button
