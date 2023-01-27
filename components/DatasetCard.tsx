@@ -98,7 +98,7 @@ export default function DatasetCard({
 
     const disabledView = useMemo(() => {
         // Return True if dataset can not be visualised
-        return type?.type === "file" || type?.subtype === 'spatialShape';
+        return type?.type === "file" || type?.subtype === 'spatialShape' as string;
     }, []);
 
     const disabledDelete = () => {
