@@ -96,9 +96,10 @@ export default function DatasetCard({
         return status !== "SUCCESS" || isDeleteInProgress ;
     };
 
-    const disabledView = useMemo(() => {
+    const disabledView = useMemo<boolean>(() => {
         // Return True if dataset can not be visualised
-        return type?.type === "file" || type?.subtype === 'spatialShape' as string;
+        return type?.type === "others"
+            && (type?.subtype === 'spatialShape' || type?.subtype === 'file');
     }, []);
 
     const disabledDelete = () => {

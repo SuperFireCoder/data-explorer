@@ -25,7 +25,9 @@ interface DatasetTypeEnvironmental {
 }
 
 interface DatasetTypeFile {
-    type: "file"
-    // Subtype is the mimetype for File
-    subtype: string;
+    type: "others"
+    // may have more subtypes for `others` later
+    subtype: 
+        | "spatialShape"
+        | "file";
 }
