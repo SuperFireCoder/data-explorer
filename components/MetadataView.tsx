@@ -74,17 +74,19 @@ export default function MetadataView({ datasetId }: Props) {
             );
         }
 
-        case "dataset": {
+        case "dataset": {            
             const data = metadata.data;
             const bccvlMetadata = data["bccvl:metadata"];
 
             const description = bccvlMetadata.description;
-            const categoryVariables= Object.entries(data.parameters)?.[0][1]?.categoryEncoding; 
+            const categoryVariables= data.parameters ? Object.entries(data.parameters)?.[0][1]?.categoryEncoding : null
             const displayedMetadata = {
                 // Species
                 "Scientific name": bccvlMetadata.scientificName?.join(" "),
                 // Raster
                 Resolution: bccvlMetadata.resolution,
+                Description: bccvlMetadata.description,
+                Mimetype: bccvlMetadata.mimetype,
                 Layers: data.rangeAlternates["dmgr:tiff"] && (
                     <ul>
                         {Object.entries(data.rangeAlternates["dmgr:tiff"]).map(
@@ -119,11 +121,13 @@ export default function MetadataView({ datasetId }: Props) {
                 ),
                 Acknowledgement: bccvlMetadata.acknowledgement,
                 License: bccvlMetadata.license,
+                Rights: bccvlMetadata.rights,
                 "Landing page": bccvlMetadata.landingpage && (
                     <a href={bccvlMetadata.landingpage} target="_blank">
                         {bccvlMetadata.landingpage}
                     </a>
                 ),
+                "Dataset UUID": bccvlMetadata.uuid
             };
 
             return (

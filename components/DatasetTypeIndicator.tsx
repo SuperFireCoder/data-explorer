@@ -15,7 +15,9 @@ export default function DatasetTypeIndicator({ type }: Props) {
             data-subtype={type.subtype}
         >
             <span className={styles.type}>{type.type}</span>
-            <span className={styles.subtype}>{type.subtype}</span>
+            {type.subtype && 
+                <span className={styles.subtype}>{type.subtype}</span>
+            }
         </span>
     );
 }

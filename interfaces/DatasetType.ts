@@ -1,4 +1,7 @@
-export type DatasetType = DatasetTypeBiological | DatasetTypeEnvironmental;
+export type DatasetType =
+    DatasetTypeBiological
+    | DatasetTypeEnvironmental
+    | DatasetTypeFile
 
 interface DatasetTypeBiological {
     type: "biological";
@@ -19,4 +22,12 @@ interface DatasetTypeEnvironmental {
         | "physical"
         | "nutrients"
         | "biochemical";
+}
+
+interface DatasetTypeFile {
+    type: "others"
+    // may have more subtypes for `others` later
+    subtype: 
+        | "spatialShape"
+        | "file";
 }
