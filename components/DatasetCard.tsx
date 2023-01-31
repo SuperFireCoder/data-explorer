@@ -91,15 +91,25 @@ export default function DatasetCard({
 
     const [isDeleteInProgress, setIsDeleteInProgress] = useState<boolean>(false);
 
-    const disabledDataset =() => {
+    const disabledDataset = useMemo<boolean>(() => {
         //Return True if upload status is not succes
         return status !== "SUCCESS" || isDeleteInProgress ;
-    };
+    }, [status, isDeleteInProgress]);
+
+    const disabledView = useMemo<boolean>(() => {
+        // Return True if dataset can not be visualised
+        return type?.type === "others"
+            && (type?.subtype === 'spatialShape' || type?.subtype === 'file');
+    }, [type]);
 
     const disabledDelete = () => {
         //Return True if upload status is not SUCCESS, FAILED, CREATED, or delete process in progress.
         return !['SUCCESS', 'FAILED', 'CREATED'].includes(status)  || isDeleteInProgress
     };
+
+    const renderViewTitle = useMemo(() => {
+        return disabledView ? "This dataset cannot be currently visualised" : ""
+    }, [disabledView]);
 
     const {
         isOpen: metadataDrawerOpen,
@@ -171,9 +181,6 @@ export default function DatasetCard({
                     setIsDeleteInProgress(false)
                 })
     }
-
-
-
 
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
@@ -253,7 +260,7 @@ export default function DatasetCard({
                                     data-testid="select-button"
                                     intent={selected ? 'success' : 'none'}
                                     onClick={() => onSelect(datasetId)}
-                                    disabled={disabledDataset()}
+                                    disabled={disabledDataset}
                                 >
                                     Select
                                 </Button>
@@ -270,7 +277,8 @@ export default function DatasetCard({
                                     data-testid="view-button"
                                     intent={onSelect ? 'primary' : 'success'}
                                     onClick={openVisualiserDrawer}
-                                    disabled={disabledDataset()}
+                                    disabled={disabledDataset || disabledView}
+                                    title={renderViewTitle}
                                 >
                                     View
                                 </Button>
@@ -280,7 +288,7 @@ export default function DatasetCard({
                                 data-testid="info-button"
                                 intent="primary"
                                 onClick={openMetadataDrawer}
-                                disabled={disabledDataset()}
+                                disabled={disabledDataset}
                             >
                                 Info
                             </Button>
@@ -326,7 +334,7 @@ export default function DatasetCard({
                                                             openSharingDrawer
                                                         }
                                                         disabled={
-                                                            disabledDataset() ||
+                                                            disabledDataset ||
                                                                 // Disable sharing when user is not owner
                                                                 currentUserId ===
                                                                 undefined ||

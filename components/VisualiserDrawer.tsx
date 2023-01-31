@@ -60,6 +60,10 @@ export default function VisualiserDrawer({
             return undefined;
         }
 
+        if (metadata.data.type === "File") {
+            return undefined;
+        }
+
         return Object.keys(metadata.data.parameters).map((layerName) => {
             // NOTE: Currently assuming data type from `rangeAlternates`
             // property
