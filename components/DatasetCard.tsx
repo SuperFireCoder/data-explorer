@@ -107,6 +107,12 @@ export default function DatasetCard({
         return !['SUCCESS', 'FAILED', 'CREATED'].includes(status)  || isDeleteInProgress
     };
 
+    const disabledOptions = (ownerId: string | string[] | undefined) => {
+        // Disable deleting and Sharing when user is not owner
+        return currentUserId === undefined ||
+            typeof ownerId === "string" ? ownerId !== currentUserId : !ownerId?.includes(currentUserId)
+    };
+
     const renderViewTitle = useMemo(() => {
         return disabledView ? "This dataset cannot be currently visualised" : ""
     }, [disabledView]);
@@ -296,58 +302,27 @@ export default function DatasetCard({
                                 <Popover
                                     content={
                                         <Menu>
-                                            <MenuItem
-                                                icon="download"
-                                                text="Download"
-                                                onClick={downloadDataset}
-                                                disabled={!downloadable}
-                                                data-cy="download"
-                                            />
-                                            {
-                                                ownerId !== undefined && (
-                                                    <MenuItem
-                                                        icon="delete"
-                                                        text="Delete"
-                                                        onClick={removeUserOwnDataset}
-                                                        disabled={
-                                                            disabledDelete() ||
-                                                                // Disable deleting when user is not owner
-                                                                currentUserId ===
-                                                                undefined ||
-                                                                typeof ownerId ===
-                                                                "string"
-                                                                ? ownerId !==
-                                                                currentUserId
-                                                                : !ownerId.includes(
-                                                                    currentUserId
-                                                                )
-                                                        }
-                                                    />
-                                                )
+                                            {currentUserId !== undefined &&
+                                                <MenuItem
+                                                    icon="download"
+                                                    text="Download"
+                                                    onClick={downloadDataset}
+                                                    disabled={!downloadable || disabledDataset}
+                                                    data-cy="download"
+                                                />
                                             }
                                             {
-                                                ownerId !== undefined && (
-                                                    <MenuItem
-                                                        icon="share"
-                                                        text="Share..."
-                                                        onClick={
-                                                            openSharingDrawer
-                                                        }
-                                                        disabled={
-                                                            disabledDataset ||
-                                                                // Disable sharing when user is not owner
-                                                                currentUserId ===
-                                                                undefined ||
-                                                                typeof ownerId ===
-                                                                "string"
-                                                                ? ownerId !==
-                                                                currentUserId
-                                                                : !ownerId.includes(
-                                                                    currentUserId
-                                                                )
-                                                        }
-                                                    />
-                                                )
+                                                <><MenuItem
+                                                    icon="delete"
+                                                    text="Delete"
+                                                    onClick={removeUserOwnDataset}
+                                                    disabled={disabledOptions(ownerId)} />
+                                                   <MenuItem
+                                                      icon="share"
+                                                      text="Share..."
+                                                      onClick={openSharingDrawer}
+                                                      disabled={disabledDataset || disabledOptions(ownerId)} />
+                                                </>
                                             }
                                         </Menu>
                                     }
