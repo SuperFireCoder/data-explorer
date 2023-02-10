@@ -56,7 +56,7 @@ export default function FacetSelectFacetState2<T>({
                                 onItemSelect={handleSelectChange}
                                 filterable={false}
                                 popoverProps={{ fill: true }}
-                                disabled={allowChangeFilterPrinciples}
+                                disabled={!allowChangeFilterPrinciples}
                             >
                                 <Button
                                     className={styles.selectButton}
@@ -64,7 +64,7 @@ export default function FacetSelectFacetState2<T>({
                                     rightIcon="caret-down"
                                     text={selectedItems[0]?.label}
                                     data-cy="show-datasets-button"
-                                    disabled={allowChangeFilterPrinciples}
+                                    disabled={!allowChangeFilterPrinciples}
                                 />
                             </Select>
                         </Col>
