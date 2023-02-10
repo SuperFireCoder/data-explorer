@@ -19,7 +19,7 @@ type Item = {
 
 export default function FacetSelectFacetState2<T>({
     facet,
-    allowChangeFilterPrinciples=false
+    allowChangeFilterPrinciples=true
 }: Props<T>) {
     const { items = [], selectedItems = [], onItemSelect, label } = facet;
     const handleSelectChange = useCallback(
