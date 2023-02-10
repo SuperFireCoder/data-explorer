@@ -442,6 +442,8 @@ export default function IndexPage() {
 
     const isEmbed = router.query.embed === "1";
 
+    const allowChangeFilterPrinciples = router.query.allow_change_filterPrinciples !== "0";
+
     const [datasetUUIDToDelete, setDatasetUUIDToDelete] =
         useState<string | undefined>(undefined);
     const {
@@ -804,6 +806,7 @@ export default function IndexPage() {
                     <FacetSelectFacetState2
                         data-cy="facet-filter-principals-select"
                         facet={filterPrincipals}
+                        allowChangeFilterPrinciples={allowChangeFilterPrinciples}
                     />
 
                     <Row>
