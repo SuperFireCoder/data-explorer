@@ -442,7 +442,7 @@ export default function IndexPage() {
 
     const isEmbed = router.query.embed === "1";
 
-    const allowChangeFilterPrinciples = router.query.allow_change_filterPrinciples === "1";
+    const allowChangeFilterPrinciples = router.query.allow_change_filterPrinciples !== "0";
 
     const [datasetUUIDToDelete, setDatasetUUIDToDelete] =
         useState<string | undefined>(undefined);
