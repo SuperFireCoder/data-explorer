@@ -8,7 +8,7 @@ import styles from "./FacetSelectFacetState2.module.css";
 
 export interface Props<T> {
     facet: EsIndividualFacetFixedArray<T>;
-    allow_change_filterPrinciples?: boolean;
+    allowChangeFilterPrinciples?: boolean;
 }
 
 type Item = {
@@ -19,7 +19,7 @@ type Item = {
 
 export default function FacetSelectFacetState2<T>({
     facet,
-    allow_change_filterPrinciples=false
+    allowChangeFilterPrinciples=false
 }: Props<T>) {
     const { items = [], selectedItems = [], onItemSelect, label } = facet;
     const handleSelectChange = useCallback(
@@ -56,7 +56,7 @@ export default function FacetSelectFacetState2<T>({
                                 onItemSelect={handleSelectChange}
                                 filterable={false}
                                 popoverProps={{ fill: true }}
-                                disabled={allow_change_filterPrinciples}
+                                disabled={allowChangeFilterPrinciples}
                             >
                                 <Button
                                     className={styles.selectButton}
@@ -64,7 +64,7 @@ export default function FacetSelectFacetState2<T>({
                                     rightIcon="caret-down"
                                     text={selectedItems[0]?.label}
                                     data-cy="show-datasets-button"
-                                    disabled={allow_change_filterPrinciples}
+                                    disabled={allowChangeFilterPrinciples}
                                 />
                             </Select>
                         </Col>
