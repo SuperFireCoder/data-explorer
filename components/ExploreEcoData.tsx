@@ -51,6 +51,7 @@ interface QueryParameters {
     facetCollection?: string | string[];
     facetScientificType?: string | string[];
     facetMonth?: string | string[];
+    facetDataCategory?: string | string[];
 }
 
 interface FormState {
@@ -70,6 +71,7 @@ interface FormState {
     facetCollection: readonly string[];
     facetGcm: readonly string[];
     facetMonth: readonly string[];
+    facetDataCategory: readonly string[];
 }
 
 function stripEmptyStringQueryParams(
@@ -116,6 +118,45 @@ function addTermAggregationFacetStateToQuery(
     facetValues.forEach(
         (x) => (innerQuery = innerQuery.orQuery("match", facetEsTerm, x))
     );
+
+    const newQueryBuilder = queryState.bodyBuilder.query(
+        "bool",
+        (innerQuery.build() as any).query.bool
+    );
+
+    return {
+        bodyBuilder: newQueryBuilder,
+        modified: true,
+    };
+}
+
+/**
+ * Adds terms aggregation based facets to given bodybuilder query instance, and
+ * a carrying boolean flag that indicates whether the query is "empty" (that is,
+ * whether the query has had filters applied such as prior facets or some string
+ * query.)
+ *
+ * @param queryState
+ * @param facetEsTerms String identifier for the terms used in Elasticsearch query
+ * @param facetValues
+ */
+ function addTermsAggregationFacetStateToQuery(
+    queryState: QueryState,
+    facetEsTerms: string[],
+    facetValues: readonly string[]
+): QueryState {
+    // If nothing selected for this facet, return state untouched
+    if (facetValues.length === 0) {
+        return queryState;
+    }
+
+    // Add all selected facet values
+    let innerQuery = bodybuilder();
+    console.log(facetValues,facetEsTerms)
+
+     facetValues.forEach(
+         (x) => (facetEsTerms.forEach(facetEsTerm => innerQuery = innerQuery.orQuery("match", facetEsTerm, x)))
+     );
 
     const newQueryBuilder = queryState.bodyBuilder.query(
         "bool",
@@ -411,6 +452,25 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
         },
     },
     {
+        id: "facetDataCategory",
+        facetApplicationFn: (formState, query) =>
+        addTermsAggregationFacetStateToQuery(
+                query,
+                ["domain, scientific_type"],
+                formState.facetDataCategory
+            ),
+        aggregationApplicationFn: (query) => {
+            return {
+                ...query,
+                bodyBuilder: query.bodyBuilder.aggregation("terms", "domain",  "facetDataCategory"
+                )
+                .aggregation
+                ("terms", "scientific_type",  "facetDataCategory"
+                ),
+            };
+        },
+    },
+    {
         id: "datasetId",
         facetApplicationFn: (formState, query) => {
             const datasetId = formState.datasetId.trim();
@@ -459,7 +519,6 @@ export default function IndexPage() {
     useEffect(
         function setupReloadInterval() {
             // Trigger job fetch every 30 seconds
-
             setDatasetHistory({
                 lastUpdated: new Date(),
             });
@@ -495,6 +554,7 @@ export default function IndexPage() {
             facetCollection = [],
             facetGcm = [],
             facetMonth = [],
+            facetDataCategory=[]
         } = router.query as QueryParameters;
 
         setDatasetHistory({
@@ -531,6 +591,7 @@ export default function IndexPage() {
             facetCollection: normaliseAsReadonlyStringArray(facetCollection),
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
             facetMonth: normaliseAsReadonlyStringArray(facetMonth),
+            facetDataCategory: normaliseAsReadonlyStringArray(facetDataCategory),
         };
     }, [router.query,searchTriggerValue]);
 
@@ -657,6 +718,13 @@ export default function IndexPage() {
         itemSortFn: monthItemSort,
     });
 
+    const facetDataCategory = useEsIndividualFacetArray(esFacetRoot, {
+        id: "facetDataCategory",
+        label: "Data Category",
+        placeholder: "Filter by data category...",
+        itemSortFn: itemSortKeyAlpha,
+    });
+
     const { keycloak } = useKeycloakInfo();
 
     const filterPrincipalsItems = useMemo(() => {
@@ -752,6 +820,7 @@ export default function IndexPage() {
             "facetGcm": [],
             // "filterPrincipals": [],
             "facetMonth": [],
+            "facetDataCategory": []
         })
     },[])
   
@@ -828,6 +897,7 @@ export default function IndexPage() {
                         facetDomain,
                         facetGcm,
                         facetCollection,
+                        facetDataCategory
                         ].map((facet) => (
                         <Row key={facet.id}>
                             <Col>
