@@ -73,7 +73,9 @@ export default function SignInOutButton() {
                                 text="Sign out"
                                 data-cy="sign-out"
                                 onClick={() =>
-                                    router.push(keycloak.createLogoutUrl())
+                                    router.push(keycloak.createLogoutUrl({
+                                        redirectUri: "https://workspace.dev.ecocommons.org.au/dashboard"
+                                    }))
                                 }
                             />
                         </Menu>
