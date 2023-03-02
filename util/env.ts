@@ -41,5 +41,5 @@ export function getWorkFlowUrl() {
 
 export function getWorkSpaceUrl() {
     return config.publicRuntimeConfig
-        .NEXT_PUBLIC_WORKSPACE_BACKEND_SERVER_URL as string;
+        .NEXT_PUBLIC_WORKSPACE_URL as string;
 }
