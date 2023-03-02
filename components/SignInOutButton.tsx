@@ -48,6 +48,8 @@ export default function SignInOutButton() {
             keycloak.tokenParsed?.name ??
             "";
 
+        keycloak.redirectUri = "https://workspace.dev.ecocommons.org.au/dashboard"
+
         return (
             <Popover
                 content={
