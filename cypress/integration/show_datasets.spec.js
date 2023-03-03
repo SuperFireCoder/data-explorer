@@ -13,6 +13,7 @@ describe(
     () => {
         beforeEach(() => {
             cy.login();
+            cy.visit('/');
             cy.get('h6[data-cy="show-datasets-label"]', {
                 timeout: 5000
             }).should("contain", "Show Datasets");
