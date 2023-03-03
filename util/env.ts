@@ -38,3 +38,8 @@ export function getWorkFlowUrl() {
     return config.publicRuntimeConfig
         .NEXT_PUBLIC_WORKFLOW_URL as string;
 }
+
+export function getWorkSpaceUrl() {
+    return config.publicRuntimeConfig
+        .NEXT_PUBLIC_WORKSPACE_URL as string;
+}
