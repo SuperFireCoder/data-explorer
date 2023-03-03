@@ -12,7 +12,7 @@ describe(
     specTitle("login and show filtering on the basis of users on datasets"),
     () => {
         beforeEach(() => {
-            cy.login();
+            cy.login().visit('/');
             cy.get('h6[data-cy="show-datasets-label"]', {
                 timeout: 5000
             }).should("contain", "Show Datasets");

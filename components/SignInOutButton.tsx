@@ -11,6 +11,7 @@ import {
 } from "@blueprintjs/core";
 
 import { useKeycloakInfo } from "../util/keycloak";
+import { getWorkSpaceUrl } from "../util/env";
 
 export default function SignInOutButton() {
     const router = useRouter();
@@ -98,7 +99,9 @@ export default function SignInOutButton() {
                 data-cy="root-signin"
                 intent="success"
                 outlined
-                onClick={() => router.push(keycloak.createLoginUrl())}
+                onClick={() => router.push(keycloak.createLoginUrl({
+                    redirectUri: `${getWorkSpaceUrl()}`
+                }))}
             >
                 Sign in / Register
             </Button>
