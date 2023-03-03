@@ -33,7 +33,7 @@ describe(
     () => {
         beforeEach(() => {
             // Given I am signed in
-            cy.login();
+            cy.login().visit('/');
             // And on "Explore EcoCommons Data"
             cy.get('[data-cy="ExploreEcoDataTab"]');
             cy.get('[data-cy="explore-eco-data"]').should(
