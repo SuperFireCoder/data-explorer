@@ -254,6 +254,8 @@ describe("IndexPage", () => {
                     should: [
                         { match: { title: "Some test search value" } },
                         { match: { description: "Some test search value" } },
+                        { wildcard: { title: "*Some test search value*" } },
+                        { wildcard: { description: "*Some test search value*" } }, 
                     ],
                 },
             },
