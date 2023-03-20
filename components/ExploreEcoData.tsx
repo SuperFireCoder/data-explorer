@@ -189,7 +189,9 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             // and description
             const innerQuery = bodybuilder()
                 .orQuery("match", "title", searchQuery)
-                .orQuery("match", "description", searchQuery);
+                .orQuery("match", "description", searchQuery)
+                .orQuery("wildcard", "title", `*${searchQuery}*`)
+                .orQuery("wildcard", "description", `*${searchQuery}*`);
 
             return {
                 modified: true,
