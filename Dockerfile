@@ -37,8 +37,12 @@ FROM builder as release
 
 ARG NODE_ENV
 ARG BUILD_DIR
+ARG BUILD_ID
 
 COPY --from=builder $BUILD_DIR/.next ./.next
+
+# exposed to client
+ENV NEXT_PUBLIC_BUILD_ID=$BUILD_ID
 
 # set ARG here as build will fail without TS dependencies if NODE_ENV=production
 ENV NODE_ENV=$NODE_ENV
