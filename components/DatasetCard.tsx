@@ -13,8 +13,9 @@ import {
 } from "@blueprintjs/core";
 import classnames from "classnames";
 import { Col, Row } from "react-grid-system";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { useRouter } from "next/router";
 
 import { DatasetType } from "../interfaces/DatasetType";
 import { getDDMMMYYYY } from "../util/date";
@@ -60,7 +61,6 @@ export interface Props {
     selected?: boolean;
     onSelect?: (uuid: string) => void;
     setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>
-
 }
 
 export default function DatasetCard({
@@ -81,7 +81,11 @@ export default function DatasetCard({
     const { keycloak } = useKeycloakInfo();
     const { dataManager } = useDataManager();
     const { mergeStyles } = useTheme();
+    const router = useRouter();
 
+    const showInfoView = router.query.showInfo === "1";
+    const datasetId_url = router.query.datasetId;
+    
     const themedStyles = mergeStyles(styles, "Styles::DatasetCard");
 
     const currentUserId = keycloak?.tokenParsed?.sub;
@@ -116,6 +120,12 @@ export default function DatasetCard({
     const renderViewTitle = useMemo(() => {
         return disabledView ? "This dataset cannot be currently visualised" : ""
     }, [disabledView]);
+
+    useEffect(() => {
+        if (datasetId_url && showInfoView) {
+            openMetadataDrawer()
+        }
+    }, [])
 
     const {
         isOpen: metadataDrawerOpen,
