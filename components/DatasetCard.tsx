@@ -122,10 +122,8 @@ export default function DatasetCard({
     }, [disabledView]);
 
     useEffect(() => {
-        console.log("datasetId_url", datasetId_url)
         if (datasetId_url && showInfoView) {
-            // openMetadataDrawer()
-            console.log("openMetadataDrawer2")
+            openMetadataDrawer()
         }
     }, [])
 
