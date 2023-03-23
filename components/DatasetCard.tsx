@@ -83,8 +83,8 @@ export default function DatasetCard({
     const { mergeStyles } = useTheme();
     const router = useRouter();
 
-    const showInfoView = router.query.showInfo === "1";
-    const datasetId_url = router.query.datasetId;
+    const showInfoView = router?.query.showInfo === "1";
+    const datasetId_url = router?.query.datasetId;
     
     const themedStyles = mergeStyles(styles, "Styles::DatasetCard");
 
