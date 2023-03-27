@@ -267,13 +267,10 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
         id: "facetTimeDomain",
         facetApplicationFn: (formState, query) => {
             let newTimeDomain: string[] = [];
-            if (formState.facetTimeDomain[0] === NEW_TIME_DOMAIN_VAL) {
-                newTimeDomain = [OLD_TIME_DOMAIN_VAL]
-            } else {
                 formState.facetTimeDomain.map(item => {
-                    newTimeDomain.push(item)
+                    const newitem =(item === NEW_TIME_DOMAIN_VAL) ? OLD_TIME_DOMAIN_VAL : item
+                    newTimeDomain.push(newitem)
                 })
-            }
             return addTermAggregationFacetStateToQuery(
                 query,
                 "time_domain",
@@ -597,6 +594,24 @@ export default function IndexPage() {
         };
     }, [router.query,searchTriggerValue]);
 
+// Setting defaults
+    useEffect(() => {
+        updateFormState({
+            "facetYearMin": NaN,
+            "facetYearMax": NaN,
+            "facetCollection": [],
+            "facetTimeDomain": [OLD_TIME_DOMAIN_VAL],
+            "facetSpatialDomain": [],
+            "facetResolution": [],
+            "facetScientificType": [],
+            "facetDomain": [],
+            "facetGcm": [],
+            "facetMonth": ["Non monthly data"],
+            "facetDataCategory": []
+        })
+}, []);
+
+
     const updateFormState = useCallback(
         (formState: Partial<FormState>) => {
             // Copy out state and replace NaN values with empty strings
@@ -612,6 +627,18 @@ export default function IndexPage() {
                     state[key] = "" as any;
                 }
             }
+            
+            if(state["facetTimeDomain"] != undefined && state["facetTimeDomain"].length > 1){
+                let selectedTimeDomainItems: (string)[] = []
+                state["facetTimeDomain"].forEach(element => {
+                    if(element === OLD_TIME_DOMAIN_VAL) {
+                        element = NEW_TIME_DOMAIN_VAL
+                    }
+                    selectedTimeDomainItems.push(element)
+                    
+                });
+                state["facetTimeDomain"] = selectedTimeDomainItems?.filter((v,i) =>selectedTimeDomainItems?.indexOf(v) == i)   
+            }  
 
             // Update query params for this page, which will update `formState`
             // above
