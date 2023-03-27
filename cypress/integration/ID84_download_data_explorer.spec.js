@@ -14,7 +14,7 @@ const specTitle = require("cypress-sonarqube-reporter/specTitle");
 
 const exampleDataset = {
     SRESA1B:
-        "Australia, Climate Projection, SRESA1B based on INM-CM30, 30 arcsec (~1km) - 2025",
+        "Australia, exCHELSA (extended bioclim) (1980, 30 arcsec (~1km))",
     SRESA1FI:
         "Australia, Climate Projection, SRESA1FI based on NCAR-PCM1, 30 arcsec (~1km) - 2075",
     SRTM: "3 second SRTM Derived Digital Elevation Model (DEM) Version 1.0"
