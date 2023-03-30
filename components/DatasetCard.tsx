@@ -84,7 +84,7 @@ export default function DatasetCard({
     const router = useRouter();
 
     const showInfoView = router?.query.showInfo === "1";
-    const datasetId_url = router?.query.datasetId;
+    const datasetIdUrl = router?.query.datasetId;
     
     const themedStyles = mergeStyles(styles, "Styles::DatasetCard");
 
@@ -122,7 +122,7 @@ export default function DatasetCard({
     }, [disabledView]);
 
     useEffect(() => {
-        if (datasetId_url && showInfoView) {
+        if (datasetIdUrl && showInfoView) {
             openMetadataDrawer()
         }
     }, [])

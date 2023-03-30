@@ -251,13 +251,30 @@ describe("IndexPage", () => {
         expect(mockAxios.post.mock.calls[3][1]).toMatchObject({
             query: {
                 bool: {
-                    should: [
-                        { match: { title: "Some test search value" } },
-                        { match: { description: "Some test search value" } },
-                        { wildcard: { title: "*Some test search value*" } },
-                        { wildcard: { description: "*Some test search value*" } }, 
-                    ],
-                },
+                    "must": [
+                        {
+                            "bool": {
+                                should: [
+                                    { match: { title: "Some test search value" } },
+                                    { match: { description: "Some test search value" } },
+                                    { wildcard: { title: "*Some test search value*" } },
+                                    { wildcard: { description: "*Some test search value*" } },
+                                ]
+                            }
+                        },
+                        {
+                            bool: {
+                                should: [{ match: { time_domain: "Current" } }],
+                            },
+                        },
+                        {
+                            bool: {
+                                should: [{ match: { month: "Non monthly data" }}],
+                            },
+                        },
+                    ]
+
+                }
             },
         });
     });
@@ -328,6 +345,23 @@ describe("IndexPage", () => {
                             { key: "Global", doc_count: 8 },
                         ],
                     },
+                    facetTimeDomain: {
+                        doc_count_error_upper_bound: 0,
+                        sum_other_doc_count: 0,
+                        buckets: [
+                            { key: "Current", doc_count: 228 },
+                            { key: "Future", doc_count: 38 },
+                        ],
+                    },
+                    facetMonth: {
+                        doc_count_error_upper_bound: 0,
+                        sum_other_doc_count: 0,
+                        buckets: [
+                            { key: "Non Monthly", doc_count: 228 },
+                            { key: "January", doc_count: 38 },
+                            { key: "Febraury", doc_count: 8 },
+                        ],
+                    },
                 },
             },
         });
@@ -381,6 +415,12 @@ describe("IndexPage", () => {
                     must: [
                         {
                             bool: {
+                                should: [{ match: { time_domain: "Current", } }],
+                            },
+                        },
+                        {
+
+                            bool: {
                                 should: [
                                     { match: { spatial_domain: "Regional" } },
                                     { match: { spatial_domain: "Australia" } },
@@ -392,6 +432,12 @@ describe("IndexPage", () => {
                                 should: [{ match: { gcm: "MIROC3.2-MEDRES" } }],
                             },
                         },
+                        {
+                            bool: {
+                                should: [{ match: { month: "Non monthly data", } }],
+                            },
+                        },
+
                     ],
                 },
             },
