@@ -1,4 +1,4 @@
-import { Drawer, Classes, Position, ProgressBar } from "@blueprintjs/core";
+import { Button, Drawer, Classes, Position, ProgressBar } from "@blueprintjs/core";
 import { Col, Row } from "@ecocommons-australia/ui-library";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -38,6 +38,8 @@ export default function VisualiserDrawer({
         data: {
             currentVisibleLayers,
             setCurrentVisibleLayers,
+            currentMapScale,
+            setCurrentMapScale,
             setRegisteredDatasetLayers,
             baseMaps,
             currentBaseMap,
@@ -48,7 +50,7 @@ export default function VisualiserDrawer({
     } = useVisualiserSupport();
 
     const { getNewEcMapVisualiserRequest } = useEcMapVisualiserRequest();
-
+    const [optionsPanelOpen, setOptionsPanelOpen] = useState<boolean>(false)
     const [metadata, setMetadata] = useState<
         | { type: "dataset"; datasetId: string; data: Dataset }
         | { type: "error"; datasetId: string; error: any }
@@ -128,14 +130,17 @@ export default function VisualiserDrawer({
                             <img src={props._legendImages[0]} />
                         )}
                     </div>
+                   <Button minimal className={styles.SliderButton}  onClick={()=>{setOptionsPanelOpen(!optionsPanelOpen)}}><p>OPTIONS</p></Button>
                     <VisualiserLayersControl<LayerInfo>
-                        defaultOptionsVisible
+                        isOpen={optionsPanelOpen}
                         layers={layerInfo}
                         currentLayer={currentLayer}
                         onCurrentLayerChange={handleCurrentLayerChange}
                         baseMaps={baseMaps}
                         currentBaseMap={currentBaseMap}
                         onCurrentBaseMapChange={setCurrentBaseMap}
+                        currentMapScale={currentMapScale}
+                        onCurrentMapScaleChange={setCurrentMapScale}
                     />
                 </>
             );
@@ -146,7 +151,10 @@ export default function VisualiserDrawer({
             currentVisibleLayers,
             baseMaps,
             currentBaseMap,
+            optionsPanelOpen,
             setCurrentBaseMap,
+            currentMapScale,
+            setCurrentMapScale
         ]
     );
 
@@ -161,11 +169,12 @@ export default function VisualiserDrawer({
 
             setRegisteredDatasetLayers(
                 layerInfo.map(
-                    ({ datasetId, dataType, label, layerName, layerUrl }) => {
+                    ({ datasetId, dataType, label, layerName, layerUrl}) => {
                         const mapRequest = getNewEcMapVisualiserRequest(
                             layerUrl,
                             layerName,
                             dataType,
+                            currentMapScale,
                             datasetId,
                         );
                         mapRequest.getBearerToken = getBearerTokenFn;
@@ -200,6 +209,7 @@ export default function VisualiserDrawer({
             ]);
         },
         [
+            currentMapScale,
             layerInfo,
             getNewEcMapVisualiserRequest,
             getBearerTokenFn,
@@ -249,7 +259,7 @@ export default function VisualiserDrawer({
                 cancellationToken.cancel();
             };
         },
-        [getBearerTokenFn, datasetId, isOpen, metadata?.datasetId]
+        [getBearerTokenFn, datasetId, optionsPanelOpen, isOpen, metadata?.datasetId]
     );
 
     return (
