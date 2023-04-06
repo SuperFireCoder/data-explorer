@@ -130,7 +130,7 @@ export default function VisualiserDrawer({
                             <img src={props._legendImages[0]} />
                         )}
                     </div>
-                   <Button minimal className={styles.SliderButton}  onClick={()=>{setOptionsPanelOpen(!optionsPanelOpen)}}><p>OPTIONS</p></Button>
+                   <Button minimal className={styles.SliderButton}  onClick={()=>{setOptionsPanelOpen(!optionsPanelOpen)}}>OPTIONS</Button>
                     <VisualiserLayersControl<LayerInfo>
                         isOpen={optionsPanelOpen}
                         layers={layerInfo}
