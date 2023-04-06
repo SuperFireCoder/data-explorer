@@ -12,30 +12,31 @@
 }
 
 .optionsToggleButtonContainerOptionsVisible > button {
-    background: #fff;
+    background: #fdfdfd89;
     color: #000;
 }
 
 .optionsToggleButtonContainerOptionsVisible > button:hover,
 .optionsToggleButtonContainerOptionsVisible > button:focus {
-    background: #fff;
+    background: #fdfdfd89;
 }
 
 .optionsContainer {
-    background: #fdfdfd;
+    background: #fdfdfd89;
     position: absolute;
     top: 3em;
-    right: 0.5em;
+    right: 3em;
     padding: 0.5em 0.75em;
     border-radius: 4px;
     box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.2);
-    max-width: 20em;
+    width:50%;
+    height:90%;
 }
 
 .radioGroup {
     font-size: 0.85em;
     padding: 0 0.5em;
-    max-height: 15em;
+    max-height: 50%;
     overflow-y: auto;
 }
 
@@ -46,7 +47,7 @@
     top: 0;
     padding: 0.25em 0;
     margin: 0 -0.5em;
-    background: #fdfdfd;
+    background:  #fdfdfd89;
 }
 
 .radioGroup > :global(label.bp3-label),

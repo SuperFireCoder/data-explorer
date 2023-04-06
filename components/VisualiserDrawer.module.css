@@ -21,3 +21,32 @@
     max-height: 20em;
     overflow-y: scroll;
 }
+.SliderButton{
+    position: absolute;
+    top: 40%;
+    min-height: 3%;
+    max-height: 5%;
+    min-width: 10%;
+    max-width: 5%;
+    right: -5.7em;
+    opacity: 70%;
+    border-radius: 5px;
+    color:white !important;
+    background-color: rgba(0, 59, 136, 0.551) !important;
+    border: 3px rgba(255, 255, 255, 0.876) solid;
+    transform: rotate(-90deg) !important;
+
+}
+.SliderButton:hover{
+    opacity: 100%;
+}
+.SliderButton p{
+    transform: rotate(-90deg) !important;
+    width:100% !important;
+    color: white !important;
+    font-weight: bold;
+    
+    
+
+}
+
