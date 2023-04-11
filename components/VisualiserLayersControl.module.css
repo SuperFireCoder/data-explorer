@@ -22,15 +22,15 @@
 }
 
 .optionsContainer {
-    background: #fdfdfd89;
+    background: #fdfdfdcb;
     position: absolute;
-    top: 3em;
-    right: 3em;
+    top: 3vw !important;
+    right: 3vw !important;
     padding: 0.5em 0.75em;
     border-radius: 4px;
     box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.2);
-    width:50%;
-    height:90%;
+    width:50vw !important;
+    height:50vh !important;
 }
 
 .radioGroup {
@@ -54,3 +54,22 @@
 .radioGroup > :global(label.bp3-control) {
     margin-bottom: 0.5em;
 }
+
+
+@media only screen and  (max-width: 1600px) {
+    .optionsContainer {
+      right: 4vw !important;
+    }
+   }
+@media only screen and  (max-width: 1000px) {
+    .optionsContainer {
+      right: 12vw !important;
+      height: 60vw !important;
+    }
+   }
+@media only screen and  (max-width: 600px) {
+    .optionsContainer {
+      width: 100vw !important;
+      height: 80vw !important;
+    }
+   }
