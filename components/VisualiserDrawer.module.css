@@ -24,11 +24,8 @@
 .SliderButton{
     position: absolute;
     top: 20vh;
-    min-height: 35px;
-    max-height: 35px;
-    min-width: 150px;
-    max-width: 150px;
-    right: -3.1vw;
+    right: -2.0em !important;
+    float: right !important;
     opacity: 70%;
     border-radius: 5px;
     color:white !important;
@@ -45,13 +42,10 @@
     width:100% !important;
     color: white !important;
     font-weight: bold;
-    
-    
-
 }
 
 
-@media only screen and  (min-width: 1600px) {
+/* @media only screen and  (min-width: 1600px) {
     .SliderButton {
       right: -2vw !important;
     }
@@ -87,4 +81,4 @@
       top: 60vw !important;
       right: -12vw !important;
     }
-   }
+   } */
