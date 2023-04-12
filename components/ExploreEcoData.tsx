@@ -116,7 +116,7 @@ function addTermAggregationFacetStateToQuery(
     let innerQuery = bodybuilder();
 
     facetValues.forEach(
-        (x) => (innerQuery = innerQuery.orQuery("match", facetEsTerm, x))
+        (x) => (innerQuery = innerQuery.orQuery("match", facetEsTerm, x).rawOption("track_total_hits",true))
     );
 
     const newQueryBuilder = queryState.bodyBuilder.query(
@@ -191,7 +191,8 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                 .orQuery("match", "title", searchQuery)
                 .orQuery("match", "description", searchQuery)
                 .orQuery("wildcard", "title", `*${searchQuery}*`)
-                .orQuery("wildcard", "description", `*${searchQuery}*`);
+                .orQuery("wildcard", "description", `*${searchQuery}*`)
+                .rawOption("track_total_hits", true);
 
             return {
                 modified: true,
@@ -402,8 +403,8 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                 const innerQuery = bodybuilder().notFilter(
                     "terms",
                     "allowed_principals",
-                    [userId,"role:admin"]
-                )
+                    [userId, "role:admin"]
+                ).rawOption("track_total_hits", true);
 
                 return {
                     ...query,
@@ -419,7 +420,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                 "terms",
                 "allowed_principals",
                 formState.filterPrincipals
-            )
+            ).rawOption("track_total_hits", true);
             
             return {
                 ...query,
@@ -482,7 +483,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             // The search box value is used for a query against title
             // and description
             const innerQuery = bodybuilder()
-                .orQuery("match", "uuid", datasetId)
+                .orQuery("match", "uuid", datasetId).rawOption("track_total_hits",true);
 
             return {
                 modified: true,
@@ -531,7 +532,60 @@ export default function IndexPage() {
         },
         [triggerSearch]
     );
-    
+
+    const updateFormState = useCallback(
+        (formState: Partial<FormState>) => {
+            // Copy out state and replace NaN values with empty strings
+            //
+            // This means that those keys with NaN values are removed from the
+            // query params when it gets passed through
+            // `stripEmptyStringQueryParams()` below
+            const state = { ...formState };
+
+            for (const key of Object.keys(state) as (keyof typeof state)[]) {
+                if (Number.isNaN(state[key])) {
+                    // Deliberately set the value as empty string
+                    state[key] = "" as any;
+                }
+            }
+
+            // Remove the OLD_TIME_DOMAIN_VAL from the routing url to avoid conflict
+            if (state["facetTimeDomain"] !== undefined) {
+                let selectedTimeDomainItems: (string)[] = []
+                state["facetTimeDomain"].forEach(element => {
+                    if (router.query.facetTimeDomain !== undefined && element === OLD_TIME_DOMAIN_VAL && (router.query.facetTimeDomain?.includes(OLD_TIME_DOMAIN_VAL))) {
+                        //avoid adding the items to list
+                    } else {
+                        selectedTimeDomainItems.push(element)
+                    }
+                });
+                state["facetTimeDomain"] = selectedTimeDomainItems?.filter((v, i) => selectedTimeDomainItems?.indexOf(v) == i)
+            }
+
+            // Set back defaults for all datasets
+            if (formState.filterPrincipals?.length === 0) {
+                state["facetMonth"] = ["Non monthly data"]
+                state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL]
+            }
+            // Disable defaults for shared and owned datasets
+            if (formState.filterPrincipals !== undefined && formState.filterPrincipals.length > 0) {
+                state["facetTimeDomain"] = []
+                state["facetMonth"] = []
+            }
+
+            // Update query params for this page, which will update `formState`
+            // above
+            router.push({
+                query: stripEmptyStringQueryParams({
+                    ...router.query,
+                    ...state,
+                }),
+            });
+        },
+        [router.query]
+    );
+
+
     /**
      * Extracts the current page parameters from the URL query parameter values.
      */
@@ -594,64 +648,19 @@ export default function IndexPage() {
         };
     }, [router.query,searchTriggerValue]);
 
-// Setting defaults
     useEffect(() => {
-        updateFormState({
-            "facetYearMin": NaN,
-            "facetYearMax": NaN,
-            "facetCollection": [],
-            "facetTimeDomain": [OLD_TIME_DOMAIN_VAL],
-            "facetSpatialDomain": [],
-            "facetResolution": [],
-            "facetScientificType": [],
-            "facetDomain": [],
-            "facetGcm": [],
-            "facetMonth": ["Non monthly data"],
-            "facetDataCategory": []
-        })
-}, []);
-
-
-    const updateFormState = useCallback(
-        (formState: Partial<FormState>) => {
-            // Copy out state and replace NaN values with empty strings
-            //
-            // This means that those keys with NaN values are removed from the
-            // query params when it gets passed through
-            // `stripEmptyStringQueryParams()` below
-            const state = { ...formState };
-
-            for (const key of Object.keys(state) as (keyof typeof state)[]) {
-                if (Number.isNaN(state[key])) {
-                    // Deliberately set the value as empty string
-                    state[key] = "" as any;
-                }
-            }
-            
-            if(state["facetTimeDomain"] != undefined && state["facetTimeDomain"].length > 1){
-                let selectedTimeDomainItems: (string)[] = []
-                state["facetTimeDomain"].forEach(element => {
-                    if(element === OLD_TIME_DOMAIN_VAL) {
-                        element = NEW_TIME_DOMAIN_VAL
-                    }
-                    selectedTimeDomainItems.push(element)
-                    
-                });
-                state["facetTimeDomain"] = selectedTimeDomainItems?.filter((v,i) =>selectedTimeDomainItems?.indexOf(v) == i)   
-            }  
-
-            // Update query params for this page, which will update `formState`
-            // above
-            router.push({
+        const state = { ...formState };
+        if (state["facetMonth"].length === 0 || state["facetTimeDomain"].length === 0) {
+            state["facetMonth"] = ["Non monthly data"]
+            state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL]
+            triggerSearch()
+            router.replace({
                 query: stripEmptyStringQueryParams({
-                    ...router.query,
                     ...state,
                 }),
             });
-        },
-        [router.query]
-    );
-
+        }
+    }, []);
 
     const getProcessedQueryResult = (): Array<any> | undefined => {
         //Removes dataset from dataset list if user deleted it.

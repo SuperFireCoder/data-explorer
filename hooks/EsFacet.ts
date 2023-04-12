@@ -157,7 +157,7 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
         // As the Elasticsearch query being built here is only for the fetching
         // of aggregation values, we don't care for the actual results, so the
         // pagination values are set to 0
-        const bodyBuilder = bodybuilder().size(0).from(0);
+        const bodyBuilder = bodybuilder().size(0).from(0).rawOption("track_total_hits",true);
 
         let queryState = { bodyBuilder, modified: false };
 
@@ -176,7 +176,7 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
     const constructEsQueryObject = useCallback(() => {
         const { pageSize, pageStart } = formState;
 
-        const bodyBuilder = bodybuilder().size(pageSize).from(pageStart);
+        const bodyBuilder = bodybuilder().size(pageSize).from(pageStart).rawOption("track_total_hits",true);
 
         let queryState = { bodyBuilder, modified: false };
 
