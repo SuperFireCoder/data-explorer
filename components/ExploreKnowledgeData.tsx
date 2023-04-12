@@ -83,7 +83,7 @@ function addTermAggregationFacetStateToQuery(
     let innerQuery = bodybuilder();
 
     facetValues.forEach(
-        (x) => (innerQuery = innerQuery.orQuery("match", facetEsTerm, x))
+        (x) => (innerQuery = innerQuery.orQuery("match", facetEsTerm, x).rawOption("track_total_hits",true))
     );
 
     let newQueryBuilder = queryState.bodyBuilder;
@@ -137,7 +137,8 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             // and description
             const innerQuery = bodybuilder()
                 .orQuery("match", "title", searchQuery)
-                .orQuery("match", "description", searchQuery);
+                .orQuery("match", "description", searchQuery)
+                .rawOption("track_total_hits",true);
 
             return {
                 modified: true,

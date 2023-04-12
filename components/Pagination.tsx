@@ -41,7 +41,7 @@ export default function Pagination({ currentIndex, max, onSelect }: Props) {
 
         // Render two pages around current index and itself
         const lowerLocalBound = Math.max(currentIndex - 2, 1);
-        const upperLocalBound = Math.min(currentIndex + 2, max - 2);
+        const upperLocalBound = Math.min(currentIndex + 2, (max > 1000 ? 1000 : max) - 2);
 
         // Add padding where the lower bound around the current index is greater
         // than the 1st page
@@ -60,7 +60,12 @@ export default function Pagination({ currentIndex, max, onSelect }: Props) {
         }
 
         // Always render final page
-        indicesToRender.push(max - 1);
+        if(max > 1000){
+            indicesToRender.push(1000 - 1);
+        } else {
+            indicesToRender.push(max - 1);
+        }
+        
 
         // Generate the buttons
         indicesToRender.forEach((i, pos) =>
