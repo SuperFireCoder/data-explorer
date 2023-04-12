@@ -264,7 +264,9 @@ describe("IndexPage", () => {
                         },
                         {
                             bool: {
-                                should: [{ match: { time_domain: "Current" } }],
+                                should: [{ match: { time_domain: "Current", } },
+                                // Added new value for UX i.e Current/Historic is later converted to current and removed from router path
+                                { match: { time_domain: "Current", }},],  
                             },
                         },
                         {
@@ -415,7 +417,9 @@ describe("IndexPage", () => {
                     must: [
                         {
                             bool: {
-                                should: [{ match: { time_domain: "Current", } }],
+                                should: [{ match: { time_domain: "Current", } },
+                                // Added new value for UX i.e Current/Historic is later converted to current and removed from router path
+                                { match: { time_domain: "Current", }},],
                             },
                         },
                         {
