@@ -31,7 +31,7 @@ export const useVisualiserSupport = () => {
         BaseMaps.BCCVL_DEFAULT_BASE_MAPS[0]
     );
 
-    const [currentMapScale, setCurrentMapScale] = useState<string>("linear");
+    const [currentMapScale, setCurrentMapScale] = useState<"linear" | "log">("linear");
 
 
     const [registeredDatasetLayers, setRegisteredDatasetLayers] = useState<

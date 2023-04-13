@@ -16,8 +16,8 @@ export interface Props<L extends LayerInfo | MapLayer> {
     isOpen: boolean;
     currentLayer?: L;
     onCurrentLayerChange?: (layer: L) => void;
-    currentMapScale: string;
-    onCurrentMapScaleChange:(scale: string) => void;
+    currentMapScale: "log" | "linear";
+    onCurrentMapScaleChange:(scale: "log" | "linear") => void;
     baseMaps: readonly MapLayer[];
     currentBaseMap: MapLayer;
     onCurrentBaseMapChange: (baseMap: MapLayer) => void;
@@ -76,7 +76,7 @@ export default function VisualiserLayersControl<
         (e) =>
         
             onCurrentMapScaleChange(
-                e.currentTarget.value
+                e.currentTarget.value as typeof currentMapScale
             ),
             
         [currentMapScale, onCurrentMapScaleChange]

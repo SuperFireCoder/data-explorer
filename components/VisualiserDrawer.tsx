@@ -294,55 +294,6 @@ export default function VisualiserDrawer({
                     nowrap
                     style={{ flex: 1 }}
                 >
-                    {/* <Col xs={3}>
-                        {layerInfo === undefined && (
-                            <Row>
-                                <Col xs={12}>
-                                    {metadata?.type === "error" ? (
-                                        <>
-                                            <H4>
-                                                <Icon
-                                                    icon="error"
-                                                    intent="danger"
-                                                />{" "}
-                                                Error
-                                            </H4>
-                                            <p>
-                                                An error occurred when fetching
-                                                this dataset
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <p>Please wait...</p>
-                                    )}
-                                </Col>
-                            </Row>
-                        )}
-                        {layerInfo !== undefined && (
-                            <Row>
-                                <Col xs={12}>
-                                    <RadioGroup
-                                        label="Layers"
-                                        onChange={handleLayersChange}
-                                        selectedValue={
-                                            currentVisibleLayers[0] &&
-                                            currentVisibleLayers[0].layerName
-                                        }
-                                    >
-                                        {layerInfo.map(
-                                            ({ layerName, label }) => (
-                                                <Radio
-                                                    key={layerName}
-                                                    label={label}
-                                                    value={layerName}
-                                                />
-                                            )
-                                        )}
-                                    </RadioGroup>
-                                </Col>
-                            </Row>
-                        )}
-                    </Col> */}
                     <Col
                         xs={12}
                         style={{ position: "relative", display: "flex" }}
