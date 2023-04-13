@@ -32,7 +32,7 @@ export const useVisualiserSupport = () => {
     );
 
     const [currentMapScale, setCurrentMapScale] = useState<"linear" | "log">("linear");
-
+    const [currentMapStyle, setCurrentMapStyle] = useState<string>("Default");
 
     const [registeredDatasetLayers, setRegisteredDatasetLayers] = useState<
         readonly {
@@ -83,6 +83,8 @@ export const useVisualiserSupport = () => {
             setCurrentVisibleLayers,
             currentMapScale,
             setCurrentMapScale,
+            currentMapStyle,
+            setCurrentMapStyle,
             baseMaps: registeredBaseLayers,
             currentBaseMap,
             setCurrentBaseMap,

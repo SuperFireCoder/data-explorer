@@ -40,6 +40,8 @@ export default function VisualiserDrawer({
             setCurrentVisibleLayers,
             currentMapScale,
             setCurrentMapScale,
+            currentMapStyle,
+            setCurrentMapStyle,
             setRegisteredDatasetLayers,
             baseMaps,
             currentBaseMap,
@@ -141,6 +143,8 @@ export default function VisualiserDrawer({
                         onCurrentBaseMapChange={setCurrentBaseMap}
                         currentMapScale={currentMapScale}
                         onCurrentMapScaleChange={setCurrentMapScale}
+                        currentMapStyle={currentMapStyle}
+                        onCurrentMapStyleChange={setCurrentMapStyle}
                     />
                 </>
             );
@@ -154,7 +158,9 @@ export default function VisualiserDrawer({
             optionsPanelOpen,
             setCurrentBaseMap,
             currentMapScale,
-            setCurrentMapScale
+            setCurrentMapScale,
+            currentMapStyle,
+            setCurrentMapStyle
         ]
     );
 
@@ -175,6 +181,7 @@ export default function VisualiserDrawer({
                             layerName,
                             dataType,
                             currentMapScale,
+                            currentMapStyle,
                             datasetId,
                         );
                         mapRequest.getBearerToken = getBearerTokenFn;
@@ -210,6 +217,7 @@ export default function VisualiserDrawer({
         },
         [
             currentMapScale,
+            currentMapStyle,
             layerInfo,
             getNewEcMapVisualiserRequest,
             getBearerTokenFn,

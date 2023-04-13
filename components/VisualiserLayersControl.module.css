@@ -30,13 +30,13 @@
     border-radius: 4px;
     box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.2);
     width:50vw !important;
-    height:50vh !important;
+    height:70vh !important;
 }
 
 .radioGroup {
     font-size: 0.85em;
     padding: 0 0.5em;
-    max-height: 50%;
+    max-height: 20vh;
     overflow-y: auto;
 }
 
@@ -45,9 +45,9 @@
     position: sticky;
     z-index: 1;
     top: 0;
-    padding: 0.25em 0;
+    padding: 0.25em 0.5em;
     margin: 0 -0.5em;
-    background:  #fdfdfd89;
+    background:  #fdfdfd;
 }
 
 .radioGroup > :global(label.bp3-label),
