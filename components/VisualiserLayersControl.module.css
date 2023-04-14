@@ -64,12 +64,18 @@
 @media only screen and  (max-width: 1000px) {
     .optionsContainer {
       right: 12vw !important;
-      height: 60vw !important;
+      height: 60vh !important;
     }
    }
 @media only screen and  (max-width: 600px) {
     .optionsContainer {
       width: 100vw !important;
       height: 80vh !important;
+    }
+   }
+
+   @media only screen and  (max-height: 1000px) {
+    .optionsContainer {
+      height: 100vh !important;
     }
    }
