@@ -63,7 +63,7 @@ export default function DatasetSharingAddUserButton({
                 }
 
                 // Check user email and get user information
-                const { promise } = userManagement.lookupUserByEmail(userEmail);
+                const { promise } = userManagement.lookupUserByEmail(userEmail.toLowerCase());
                 const userInfo = await promise;
 
                 if (userInfo.length === 0) {
