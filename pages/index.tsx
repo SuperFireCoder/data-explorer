@@ -27,11 +27,11 @@ const subBarLinks = [
       href: "/?tab=knowledge-data",
       label: "Explore Knowledge Network Data",
     },
-    {
-        key: "pinned-data",
-        href: "/?tab=pinned-data",
-        label: "Pinned Data",
-      },
+    // {
+    //     key: "pinned-data",
+    //     href: "/?tab=pinned-data",
+    //     label: "Pinned Data",
+    //   },
     {
       key: "import",
       href: getDataExplorerSubbarImportData() || "#",
@@ -46,6 +46,7 @@ export default function IndexPage() {
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
     const keycloakToken = keycloak?.token;
+    const isEmbed = router.query.embed === "1";
     //let initialTab = router.query.tab as string | undefined;
     let initialTab = "eco-data";
 
@@ -71,14 +72,18 @@ export default function IndexPage() {
     useEffect(() => {    
     }, []);
 
+    if (isEmbed){
+        return (<ExploreEcoData />);
+   }
+
     const renderTab = () => {
         switch (currentTab) {
             case "eco-data":
                 return <ExploreEcoData />;
             case "knowledge-data":
                 return <ExploreKnowledgeData />;
-            case "pinned-data":
-                return <PinnedData />;
+            // case "pinned-data":
+            //     return <PinnedData />;
             default:
                 return null;
         }
