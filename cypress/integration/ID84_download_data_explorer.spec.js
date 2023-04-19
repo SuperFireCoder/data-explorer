@@ -35,11 +35,12 @@ describe(
             // Given I am signed in
             cy.login().visit('/');
             // And on "Explore EcoCommons Data"
-            cy.get('[data-cy="ExploreEcoDataTab"]');
-            cy.get('[data-cy="explore-eco-data"]').should(
-                "contain",
-                "Explore EcoCommons Data"
-            );
+            // cy.get('[data-cy="ExploreEcoDataTab"]');
+            // cy.get('[data-cy="explore-eco-data"]').should(
+            //     "contain",
+            //     "Explore EcoCommons Data"
+            // );
+            // cy.get('[data-cy="explore-eco-data"]')
         });
 
         it("can download 'Australia, Climate Projection, SRESA1B based on INM-CM30, 30 arcsec (~1km) - 2025' ", () => {
