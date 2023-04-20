@@ -76,6 +76,6 @@
 
    @media only screen and  (max-height: 1000px) {
     .optionsContainer {
-      height: 100vh !important;
+      height: 80vh !important;
     }
    }
