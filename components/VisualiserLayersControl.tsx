@@ -1,11 +1,29 @@
-import { Icon, Radio, RadioGroup } from "@blueprintjs/core";
+import {Radio, RadioGroup } from "@blueprintjs/core";
 import { MapLayer } from "@ecocommons-australia/visualiser-client-geospatial";
 import classnames from "classnames";
-import { FormEventHandler, useCallback, useMemo, useState } from "react";
-
+import { FormEventHandler, useCallback, useMemo } from "react";
 import styles from "./VisualiserLayersControl.module.css";
 
 type LayerInfo = { layerName: string; label: string };
+
+
+const visualiserStyles = [
+    'Default',
+    'Absence',
+    'Boolean',
+    'Default-Binary',
+    'Default-Unit8',
+    'Monthly-Rainfall',
+    'Occurance',
+    'PH',
+    'Presence-Absence',
+    'Rainfall',
+    'Range-Change',
+    'Single-Value',
+    'Suitability',
+    'Temperature',
+    'Trait-Projection'
+]
 
 const isLayerInfo = (x: object): x is LayerInfo => {
     const o = x as any;
@@ -13,12 +31,14 @@ const isLayerInfo = (x: object): x is LayerInfo => {
 };
 
 export interface Props<L extends LayerInfo | MapLayer> {
-    defaultOptionsVisible?: boolean;
-
     layers?: readonly L[];
+    isOpen: boolean;
     currentLayer?: L;
     onCurrentLayerChange?: (layer: L) => void;
-
+    currentMapScale: "log" | "linear";
+    onCurrentMapScaleChange:(scale: "log" | "linear") => void;
+    currentMapStyle: string;
+    onCurrentMapStyleChange:(style: string) => void;
     baseMaps: readonly MapLayer[];
     currentBaseMap: MapLayer;
     onCurrentBaseMapChange: (baseMap: MapLayer) => void;
@@ -27,19 +47,19 @@ export interface Props<L extends LayerInfo | MapLayer> {
 export default function VisualiserLayersControl<
     L extends LayerInfo | MapLayer
 >({
-    defaultOptionsVisible = false,
+    isOpen,
 
     layers,
     currentLayer,
     onCurrentLayerChange,
-
+    currentMapScale,
+    onCurrentMapScaleChange,
+    currentMapStyle,
+    onCurrentMapStyleChange,
     baseMaps,
     currentBaseMap,
     onCurrentBaseMapChange,
 }: Props<L>) {
-    const [optionsVisible, setOptionsVisible] = useState<boolean>(
-        defaultOptionsVisible
-    );
 
     const sortedBaseMaps = useMemo(
         () => [...baseMaps].sort((a, b) => a.label.localeCompare(b.label)),
@@ -72,28 +92,37 @@ export default function VisualiserLayersControl<
         [layers, onCurrentLayerChange]
     );
 
+
+    const handleCurrentMapScaleChange = useCallback<
+        FormEventHandler<HTMLInputElement>
+    >(
+        (e) =>
+        
+            onCurrentMapScaleChange(
+                e.currentTarget.value as typeof currentMapScale
+            ),
+            
+        [currentMapScale, onCurrentMapScaleChange]
+    );
+
+    const handleCurrentMapStyleChange = useCallback<
+        FormEventHandler<HTMLInputElement>
+    >(
+        (e) =>
+        
+            onCurrentMapStyleChange(
+                e.currentTarget.value
+            ),
+            
+        [currentMapStyle, onCurrentMapStyleChange]
+    );
+
+
+
     return (
         <>
-            <div
-                className={classnames("ol-unselectable", "ol-control", {
-                    [styles.optionsToggleButtonContainer]: true,
-                    [styles.optionsToggleButtonContainerOptionsVisible]:
-                        optionsVisible,
-                })}
-            >
-                <button
-                    type="button"
-                    title="Toggle layer options"
-                    onClick={() => setOptionsVisible((x) => !x)}
-                >
-                    <Icon
-                        icon="layers"
-                        iconSize={14}
-                        color={optionsVisible ? "#000" : "#fff"}
-                    />
-                </button>
-            </div>
-            {optionsVisible && (
+            {isOpen && (
+                
                 <div className={styles.optionsContainer}>
                     {layers && (
                         <RadioGroup
@@ -125,6 +154,21 @@ export default function VisualiserLayersControl<
                             })}
                         </RadioGroup>
                     )}
+                                        <RadioGroup
+                        label="Style"
+                        onChange={handleCurrentMapStyleChange}
+                        selectedValue={currentMapStyle}
+                        className={styles.radioGroup}
+                        
+                    >
+                    {visualiserStyles.map((style, index) => (
+                            <Radio
+                                key={index}
+                                label={style}
+                                value={style}
+                            />
+                        ))}
+                    </RadioGroup>
 
                     <RadioGroup
                         label="Base maps"
@@ -139,6 +183,23 @@ export default function VisualiserLayersControl<
                                 value={layer.handle}
                             />
                         ))}
+                    </RadioGroup>
+                    <RadioGroup
+                        label="Scale"
+                        onChange={handleCurrentMapScaleChange}
+                        selectedValue={currentMapScale}
+                        className={styles.radioGroup}
+                    >
+                        <Radio
+                            key={1}
+                            label="Linear"
+                            value="linear"
+                        />
+                        <Radio
+                            key={2}
+                            label="Log"
+                            value="log"
+                        />
                     </RadioGroup>
                 </div>
             )}

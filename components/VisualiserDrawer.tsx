@@ -1,4 +1,4 @@
-import { Drawer, Classes, Position, ProgressBar } from "@blueprintjs/core";
+import { Button, Drawer, Classes, Position, ProgressBar } from "@blueprintjs/core";
 import { Col, Row } from "@ecocommons-australia/ui-library";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -38,6 +38,10 @@ export default function VisualiserDrawer({
         data: {
             currentVisibleLayers,
             setCurrentVisibleLayers,
+            currentMapScale,
+            setCurrentMapScale,
+            currentMapStyle,
+            setCurrentMapStyle,
             setRegisteredDatasetLayers,
             baseMaps,
             currentBaseMap,
@@ -48,7 +52,7 @@ export default function VisualiserDrawer({
     } = useVisualiserSupport();
 
     const { getNewEcMapVisualiserRequest } = useEcMapVisualiserRequest();
-
+    const [optionsPanelOpen, setOptionsPanelOpen] = useState<boolean>(false)
     const [metadata, setMetadata] = useState<
         | { type: "dataset"; datasetId: string; data: Dataset }
         | { type: "error"; datasetId: string; error: any }
@@ -128,14 +132,19 @@ export default function VisualiserDrawer({
                             <img src={props._legendImages[0]} />
                         )}
                     </div>
+                   <Button minimal className={styles.SliderButton}  onClick={()=>{setOptionsPanelOpen(!optionsPanelOpen)}}>OPTIONS</Button>
                     <VisualiserLayersControl<LayerInfo>
-                        defaultOptionsVisible
+                        isOpen={optionsPanelOpen}
                         layers={layerInfo}
                         currentLayer={currentLayer}
                         onCurrentLayerChange={handleCurrentLayerChange}
                         baseMaps={baseMaps}
                         currentBaseMap={currentBaseMap}
                         onCurrentBaseMapChange={setCurrentBaseMap}
+                        currentMapScale={currentMapScale}
+                        onCurrentMapScaleChange={setCurrentMapScale}
+                        currentMapStyle={currentMapStyle}
+                        onCurrentMapStyleChange={setCurrentMapStyle}
                     />
                 </>
             );
@@ -146,7 +155,12 @@ export default function VisualiserDrawer({
             currentVisibleLayers,
             baseMaps,
             currentBaseMap,
+            optionsPanelOpen,
             setCurrentBaseMap,
+            currentMapScale,
+            setCurrentMapScale,
+            currentMapStyle,
+            setCurrentMapStyle
         ]
     );
 
@@ -161,11 +175,13 @@ export default function VisualiserDrawer({
 
             setRegisteredDatasetLayers(
                 layerInfo.map(
-                    ({ datasetId, dataType, label, layerName, layerUrl }) => {
+                    ({ datasetId, dataType, label, layerName, layerUrl}) => {
                         const mapRequest = getNewEcMapVisualiserRequest(
                             layerUrl,
                             layerName,
                             dataType,
+                            currentMapScale,
+                            currentMapStyle,
                             datasetId,
                         );
                         mapRequest.getBearerToken = getBearerTokenFn;
@@ -200,6 +216,8 @@ export default function VisualiserDrawer({
             ]);
         },
         [
+            currentMapScale,
+            currentMapStyle,
             layerInfo,
             getNewEcMapVisualiserRequest,
             getBearerTokenFn,
@@ -249,7 +267,7 @@ export default function VisualiserDrawer({
                 cancellationToken.cancel();
             };
         },
-        [getBearerTokenFn, datasetId, isOpen, metadata?.datasetId]
+        [getBearerTokenFn, datasetId, optionsPanelOpen, isOpen, metadata?.datasetId]
     );
 
     return (
@@ -284,55 +302,6 @@ export default function VisualiserDrawer({
                     nowrap
                     style={{ flex: 1 }}
                 >
-                    {/* <Col xs={3}>
-                        {layerInfo === undefined && (
-                            <Row>
-                                <Col xs={12}>
-                                    {metadata?.type === "error" ? (
-                                        <>
-                                            <H4>
-                                                <Icon
-                                                    icon="error"
-                                                    intent="danger"
-                                                />{" "}
-                                                Error
-                                            </H4>
-                                            <p>
-                                                An error occurred when fetching
-                                                this dataset
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <p>Please wait...</p>
-                                    )}
-                                </Col>
-                            </Row>
-                        )}
-                        {layerInfo !== undefined && (
-                            <Row>
-                                <Col xs={12}>
-                                    <RadioGroup
-                                        label="Layers"
-                                        onChange={handleLayersChange}
-                                        selectedValue={
-                                            currentVisibleLayers[0] &&
-                                            currentVisibleLayers[0].layerName
-                                        }
-                                    >
-                                        {layerInfo.map(
-                                            ({ layerName, label }) => (
-                                                <Radio
-                                                    key={layerName}
-                                                    label={label}
-                                                    value={layerName}
-                                                />
-                                            )
-                                        )}
-                                    </RadioGroup>
-                                </Col>
-                            </Row>
-                        )}
-                    </Col> */}
                     <Col
                         xs={12}
                         style={{ position: "relative", display: "flex" }}
