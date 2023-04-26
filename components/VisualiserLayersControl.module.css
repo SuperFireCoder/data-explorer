@@ -12,31 +12,30 @@
 }
 
 .optionsToggleButtonContainerOptionsVisible > button {
-    background: #fdfdfd89;
+    background: #fff;
     color: #000;
 }
 
 .optionsToggleButtonContainerOptionsVisible > button:hover,
 .optionsToggleButtonContainerOptionsVisible > button:focus {
-    background: #fdfdfd89;
+    background: #fff;
 }
 
 .optionsContainer {
-    background: #fdfdfdcb;
+    background: #fdfdfd;
     position: absolute;
-    top: 3vw !important;
-    right: 3vw !important;
+    top: 3em;
+    right: 0.5em;
     padding: 0.5em 0.75em;
     border-radius: 4px;
     box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.2);
-    width:50vw !important;
-    height:70vh !important;
+    max-width: 20em;
 }
 
 .radioGroup {
     font-size: 0.85em;
     padding: 0 0.5em;
-    max-height: 20vh;
+    max-height: 15em;
     overflow-y: auto;
 }
 
@@ -45,37 +44,12 @@
     position: sticky;
     z-index: 1;
     top: 0;
-    padding: 0.25em 0.5em;
+    padding: 0.25em 0;
     margin: 0 -0.5em;
-    background:  #fdfdfd;
+    background: #fdfdfd;
 }
 
 .radioGroup > :global(label.bp3-label),
 .radioGroup > :global(label.bp3-control) {
     margin-bottom: 0.5em;
 }
-
-
-@media only screen and  (max-width: 1600px) {
-    .optionsContainer {
-      right: 4vw !important;
-    }
-   }
-@media only screen and  (max-width: 1000px) {
-    .optionsContainer {
-      right: 12vw !important;
-      height: 60vh !important;
-    }
-   }
-@media only screen and  (max-width: 600px) {
-    .optionsContainer {
-      width: 100vw !important;
-      height: 80vh !important;
-    }
-   }
-
-   @media only screen and  (max-height: 1000px) {
-    .optionsContainer {
-      height: 80vh !important;
-    }
-   }
