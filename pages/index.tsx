@@ -36,6 +36,7 @@ const subBarLinks = [
       key: "import",
       href: getDataExplorerSubbarImportData() || "#",
       label: "Import data",
+      align: "right"
     },
   ];
 
