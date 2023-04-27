@@ -45,7 +45,7 @@ export class DataManager {
             {
                 errorResponse.title = error.response.data.error.title;
                 errorResponse.code = error.response.data.error.code;
-                errorResponse.description = error.response.data.error.description;
+                errorResponse.description = error.response.data.error.description? error.response.data.error.description : undefined;
             } 
             } else {
             // Handle other errors
