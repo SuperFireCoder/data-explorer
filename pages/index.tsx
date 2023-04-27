@@ -72,10 +72,6 @@ export default function IndexPage() {
     useEffect(() => {    
     }, []);
 
-    if (isEmbed){
-        return (<ExploreEcoData />);
-   }
-
     const renderTab = () => {
         switch (currentTab) {
             case "eco-data":
@@ -87,6 +83,15 @@ export default function IndexPage() {
             default:
                 return null;
         }
+    }
+
+    if (isEmbed === true){
+        return (
+            <>
+                <HtmlHead title={["Datasets", "Explore data"]} />
+                <ExploreEcoData />
+            </>
+        );
     }
 
     return (
