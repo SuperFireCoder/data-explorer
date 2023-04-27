@@ -663,6 +663,7 @@ export default function IndexPage() {
             triggerSearch()
             router.replace({
                 query: stripEmptyStringQueryParams({
+                    ...router.query,
                     ...state,
                 }),
             });
