@@ -27,11 +27,11 @@ const subBarLinks = [
       href: "/?tab=knowledge-data",
       label: "Explore Knowledge Network Data",
     },
-    {
-        key: "pinned-data",
-        href: "/?tab=pinned-data",
-        label: "Pinned Data",
-      },
+    // {
+    //     key: "pinned-data",
+    //     href: "/?tab=pinned-data",
+    //     label: "Pinned Data",
+    //   },
     {
       key: "import",
       href: getDataExplorerSubbarImportData() || "#",
@@ -77,8 +77,8 @@ export default function IndexPage() {
                 return <ExploreEcoData />;
             case "knowledge-data":
                 return <ExploreKnowledgeData />;
-            case "pinned-data":
-                return <PinnedData />;
+            // case "pinned-data":
+            //     return <PinnedData />;
             default:
                 return null;
         }
