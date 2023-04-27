@@ -5,7 +5,9 @@ const ENDPOINTS = {
     DATASET: "/api/dataset/",
     PERMISSION: "/api/permission/",
 };
-import { toast } from 'react-toastify';
+import { Toaster, Position } from '@blueprintjs/core';
+
+const AppToaster = Toaster.create({ position: Position.TOP });
 
 export class DataManager {
     private readonly axios: AxiosInstance;
@@ -53,7 +55,7 @@ export class DataManager {
             errorResponse.title = "Something went wrong with that request.";
             errorResponse.code = "GE-DE-001"
             errorResponse.description = "";
-            toast.error(`${errorResponse.code}: ${errorResponse.title}`);
+            AppToaster.show({ message: `${errorResponse.code}: ${errorResponse.title}`, intent: "danger" });
         }
 
         return Promise.reject(errorResponse);
