@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { KeycloakInstance } from "../interfaces/Keycloak";
+import { IHttpResponseError } from "../interfaces/ErrorResponse"
 const ENDPOINTS = {
     DATASET: "/api/dataset/",
     PERMISSION: "/api/permission/",
@@ -35,7 +36,7 @@ export class DataManager {
         axiosInstance.interceptors.response.use(
         (response) => response,
         (error) => {
-            const errorResponse = {
+            const errorResponse: IHttpResponseError = {
                 title: '',
                 code: "",
                 description: ""
