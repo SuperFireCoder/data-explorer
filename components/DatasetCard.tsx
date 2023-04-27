@@ -1,5 +1,6 @@
 import {
     AnchorButton,
+    Alert,
     Button,
     ButtonGroup,
     Card,
@@ -82,6 +83,9 @@ export default function DatasetCard({
     const { dataManager } = useDataManager();
     const { mergeStyles } = useTheme();
     const router = useRouter();
+
+    const [errorMessage, setErrorMessage] = useState("");
+    const [isErrorAlertOpen, setIsErrorAlertOpen] = useState(false);
 
     const showInfoView = router?.query.showInfo === "1";
     const datasetIdUrl = router?.query.datasetId;
@@ -194,6 +198,8 @@ export default function DatasetCard({
                     setDatasetUUIDToDelete(datasetId)
                 })
                 .catch(error => {
+                    setErrorMessage(error.code + " : " + error.title);
+                    setIsErrorAlertOpen(true);
                     setIsDeleteInProgress(false)
                 })
     }
@@ -203,6 +209,15 @@ export default function DatasetCard({
     // for users of browsers not supporting the `line-clamp` CSS property
     return (
         <>
+            {isErrorAlertOpen && (
+            <Alert
+            intent="danger"
+            isOpen={isErrorAlertOpen}
+            onClose={() => setIsErrorAlertOpen(false)}
+            >
+            <p>{errorMessage}</p>
+            </Alert>
+            )}
             <Card
                 className={classnames({
                     [themedStyles.datasetCard]: true,

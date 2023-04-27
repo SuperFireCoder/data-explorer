@@ -5,9 +5,6 @@ const ENDPOINTS = {
     DATASET: "/api/dataset/",
     PERMISSION: "/api/permission/",
 };
-import { Toaster, Position } from '@blueprintjs/core';
-
-const AppToaster = Toaster.create({ position: Position.TOP });
 
 export class DataManager {
     private readonly axios: AxiosInstance;
@@ -55,7 +52,6 @@ export class DataManager {
             errorResponse.title = "Something went wrong with that request.";
             errorResponse.code = "GE-DE-001"
             errorResponse.description = "";
-            AppToaster.show({ message: `${errorResponse.code}: ${errorResponse.title}`, intent: "danger" });
         }
 
         return Promise.reject(errorResponse);
@@ -133,14 +129,14 @@ export class DataManager {
     public getDatasetTemporaryUrl(uuid: string) {
         const cancellationToken = this.getNewAxiosCancellationToken();
         return this.xhrGet<{ url: string, status: string }>(
-            `${ENDPOINTS.DATASET}${uuid}/tempurl`
+            `${ENDPOINTS.DATASET}${uuid}/tempurl/`
         );
     }
 
 
     public removeDataset(uuid: string) {
         return this.xhrDelete<{}>(
-            `${ENDPOINTS.DATASET}${uuid}/delete`
+            `${ENDPOINTS.DATASET}${uuid}/delete/`
         );
     }
 
