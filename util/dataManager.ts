@@ -5,6 +5,7 @@ const ENDPOINTS = {
     DATASET: "/api/dataset/",
     PERMISSION: "/api/permission/",
 };
+import { toast } from 'react-toastify';
 
 export class DataManager {
     private readonly axios: AxiosInstance;
@@ -52,6 +53,7 @@ export class DataManager {
             errorResponse.title = "Something went wrong with that request.";
             errorResponse.code = "GE-DE-001"
             errorResponse.description = "";
+            toast.error(`${errorResponse.code}: ${errorResponse.title}`);
         }
 
         return Promise.reject(errorResponse);
