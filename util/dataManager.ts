@@ -49,8 +49,8 @@ export class DataManager {
             } 
             } else {
             // Handle other errors
-            errorResponse.title = "We are expriencing problem";
-            errorResponse.code = "MS-001"
+            errorResponse.title = "Something went wrong with that request.";
+            errorResponse.code = "GE-DE-001"
             errorResponse.description = "Our system is unreachable. We are on it!";
         }
 
