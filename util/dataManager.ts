@@ -43,15 +43,15 @@ export class DataManager {
               };
         if (error.response){
             {
-                errorResponse.title = error.response.data.error.title;
-                errorResponse.code = error.response.data.error.code;
-                errorResponse.description = error.response.data.error.description? error.response.data.error.description : undefined;
+                errorResponse.title = error.response.data.title;
+                errorResponse.code = error.response.data.code;
+                errorResponse.description = error.response.data.description? error.response.data.error.description : undefined;
             } 
             } else {
             // Handle other errors
             errorResponse.title = "Something went wrong with that request.";
             errorResponse.code = "GE-DE-001"
-            errorResponse.description = "Our system is unreachable. We are on it!";
+            errorResponse.description = "";
         }
 
         return Promise.reject(errorResponse);
