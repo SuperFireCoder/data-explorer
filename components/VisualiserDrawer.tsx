@@ -180,8 +180,8 @@ export default function VisualiserDrawer({
                             layerUrl,
                             layerName,
                             dataType,
-                            currentMapScale,
                             currentMapStyle,
+                            currentMapScale,
                             datasetId,
                         );
                         mapRequest.getBearerToken = getBearerTokenFn;
