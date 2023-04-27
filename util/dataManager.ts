@@ -41,25 +41,21 @@ export class DataManager {
                 code: "",
                 description: ""
               };
-        if (error.response.status === 401) {
-        // Handle 401 error
-          errorResponse.title = error.response.data.error.title;
-          errorResponse.code = error.response.data.error.code;
-          errorResponse.description = error.response.data.error.description;
-        } else if (error.response.status === 404) {
-        // Handle 404 error
-        errorResponse.title = "Resource not found";
-        errorResponse.code = "MS-002"
-        errorResponse.description = "The requested resource unavailable";
-        } else {
-        // Handle other errors
-        errorResponse.title = "We are expriencing problem";
-        errorResponse.code = "MS-001"
-        errorResponse.description = "Our system is unreachable. We are on it!";
-      }
+        if (error.response){
+            {
+                errorResponse.title = error.response.data.error.title;
+                errorResponse.code = error.response.data.error.code;
+                errorResponse.description = error.response.data.error.description;
+            } 
+            } else {
+            // Handle other errors
+            errorResponse.title = "We are expriencing problem";
+            errorResponse.code = "MS-001"
+            errorResponse.description = "Our system is unreachable. We are on it!";
+        }
 
-      return Promise.reject(errorResponse);
-    });
+        return Promise.reject(errorResponse);
+        });
 
         const injectAuthHeaderInterceptor =
             axiosInstance.interceptors.request.use((requestConfig) => {
