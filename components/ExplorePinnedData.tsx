@@ -888,7 +888,7 @@ export default function IndexPage() {
     }
 
     return (
-        <Row data-cy="ExploreEcoDataTab">
+        <Row data-cy="ExplorePinnedDataTab">
             <Col xs={2}>
                 <Row disableDefaultMargins>
                     <Col>

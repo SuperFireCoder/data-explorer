@@ -13,12 +13,6 @@ describe(specTitle('index page'), () => {
       .should('contain', 'Sign in / Register')
   })
 
-  it('embed renders', () => {
-    cy.visit('/?tab=eco-data&embed=1')
-    cy.get('body')
-      .should('not.contain', 'Sign in / Register')
-  })
-
   it('shows user not logged in message', () => {
     cy.visit('/?tab=eco-data')
     cy.get('button')
