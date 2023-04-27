@@ -30,10 +30,6 @@ export const useVisualiserSupport = () => {
     const [currentBaseMap, setCurrentBaseMap] = useState<MapLayer>(
         BaseMaps.BCCVL_DEFAULT_BASE_MAPS[0]
     );
-
-    const [currentMapScale, setCurrentMapScale] = useState<"linear" | "log">("linear");
-    const [currentMapStyle, setCurrentMapStyle] = useState<string>("Default");
-
     const [registeredDatasetLayers, setRegisteredDatasetLayers] = useState<
         readonly {
             datasetId: string;
@@ -71,7 +67,7 @@ export const useVisualiserSupport = () => {
         });
 
         return visibleMapLayers;
-    }, [currentVisibleLayers, registeredDatasetLayers, currentMapScale]);
+    }, [currentVisibleLayers, registeredDatasetLayers]);
 
     const registeredBaseLayers = BaseMaps.BCCVL_DEFAULT_BASE_MAPS;
 
@@ -81,10 +77,6 @@ export const useVisualiserSupport = () => {
         data: {
             currentVisibleLayers,
             setCurrentVisibleLayers,
-            currentMapScale,
-            setCurrentMapScale,
-            currentMapStyle,
-            setCurrentMapStyle,
             baseMaps: registeredBaseLayers,
             currentBaseMap,
             setCurrentBaseMap,
