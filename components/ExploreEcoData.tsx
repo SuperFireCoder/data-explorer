@@ -563,14 +563,16 @@ export default function IndexPage() {
             }
 
             // Set back defaults for all datasets
-            if (formState.filterPrincipals?.length === 0) {
+            if (formState.filterPrincipals?.length === 0 ) {
                 state["facetMonth"] = ["Non monthly data"]
                 state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL]
+                state["datasetId"] = ""
             }
             // Disable defaults for shared and owned datasets
-            if (formState.filterPrincipals !== undefined && formState.filterPrincipals.length > 0) {
+            if ((formState.filterPrincipals !== undefined && formState.filterPrincipals.length > 0 ) || (formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
                 state["facetTimeDomain"] = []
                 state["facetMonth"] = []
+                state["datasetId"] = ""
             }
 
             // Update query params for this page, which will update `formState`
@@ -656,7 +658,7 @@ export default function IndexPage() {
                 state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL]
             }
             // Disable defaults for shared and owned datasets
-            if (formState.filterPrincipals !== undefined && formState.filterPrincipals.length > 0) {
+            if ((formState.filterPrincipals !== undefined && formState.filterPrincipals.length > 0 ) || (formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
                 state["facetTimeDomain"] = []
                 state["facetMonth"] = []
             }
@@ -668,7 +670,7 @@ export default function IndexPage() {
                 }),
             });
         }
-    }, []);
+    }, [router.asPath === "/?tab=eco-data"]);
 
     const getProcessedQueryResult = (): Array<any> | undefined => {
         //Removes dataset from dataset list if user deleted it.
