@@ -658,7 +658,6 @@ export default function IndexPage() {
                 state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL]
             }
             triggerSearch()
-            alert()
             router.replace({
                 query: stripEmptyStringQueryParams({
                     ...router.query,
