@@ -670,7 +670,7 @@ export default function IndexPage() {
                 }),
             });
         }
-    }, [router.asPath === "/?tab=eco-data"]);
+    }, [router.asPath === "/?tab=eco-data" || router.asPath === ""]);
 
     const getProcessedQueryResult = (): Array<any> | undefined => {
         //Removes dataset from dataset list if user deleted it.
