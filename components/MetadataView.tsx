@@ -82,7 +82,7 @@ export default function MetadataView({ datasetId }: Props) {
             const categoryVariables= data.parameters ? Object.entries(data.parameters)?.[0][1]?.categoryEncoding : null
             const displayedMetadata = {
                 // Species
-                "Scientific name": bccvlMetadata.scientificName?.join(" "),
+                "Scientific name": Array.isArray(bccvlMetadata.scientificName) ? bccvlMetadata.scientificName?.join(" ") : bccvlMetadata.scientificName,
                 // Raster
                 Resolution: bccvlMetadata.resolution,
                 Description: bccvlMetadata.description,
