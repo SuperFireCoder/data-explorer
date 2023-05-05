@@ -652,16 +652,17 @@ export default function IndexPage() {
 
     useEffect(() => {
         const state = { ...formState };
-        if (state["facetMonth"].length === 0 || state["facetTimeDomain"].length === 0) {
+        if ((state["facetMonth"].length === 0 || state["facetTimeDomain"].length === 0) && formState.filterPrincipals?.length === 0) {
             if (formState.filterPrincipals?.length === 0) {
                 state["facetMonth"] = ["Non monthly data"]
                 state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL]
             }
-            // Disable defaults for shared and owned datasets
-            if ((formState.filterPrincipals !== undefined && formState.filterPrincipals.length > 0 ) || (formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
+             // Disable defaults for shared and owned datasets
+             if ((formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
                 state["facetTimeDomain"] = []
                 state["facetMonth"] = []
             }
+
             triggerSearch()
             router.replace({
                 query: stripEmptyStringQueryParams({
