@@ -11,11 +11,12 @@ import {
     Col,
     Row,
 } from "@ecocommons-australia/ui-library";
-
+import getConfig from "next/config";
 import ExploreEcoData from "../components/ExploreEcoData";
 import ExploreKnowledgeData from "../components/ExploreKnowledgeData";
 import PinnedData from "../components/ExplorePinnedData"
 import Header from "../components/Header";
+const config = getConfig();
 
 const subBarLinks = [
     {key: "eco-data",
@@ -67,11 +68,11 @@ export default function IndexPage() {
         setCurrentTab(tab as string || initialTab); 
         //set the active sub bar link 
         setSubBarActiveKey(tab as string || initialTab)
+        if(router.query.tab === undefined && router.asPath === `${config.publicRuntimeConfig
+            .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_DATASETS}/`){
+                router.push("/?tab=eco-data", undefined, { shallow: true })
+        }
     }, [router.query]);
-
-
-    useEffect(() => {    
-    }, []);
 
     const renderTab = () => {
         switch (currentTab) {
