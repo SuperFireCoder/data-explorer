@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { KeycloakInstance } from "../interfaces/Keycloak";
+import { IHttpResponseError } from "../interfaces/ErrorResponse"
 const ENDPOINTS = {
     DATASET: "/api/dataset/",
     PERMISSION: "/api/permission/",
@@ -29,6 +30,31 @@ export class DataManager {
     private initNewAxiosInstance() {
         const axiosInstance = axios.create({
             baseURL: this.serverBaseUrl,
+        });
+
+        // interceptor to handle the response
+        axiosInstance.interceptors.response.use(
+        (response) => response,
+        (error) => {
+            const errorResponse: IHttpResponseError = {
+                title: '',
+                code: "",
+                description: ""
+              };
+        if (error.response){
+            {
+                errorResponse.title = error.response.data.title;
+                errorResponse.code = error.response.data.code;
+                errorResponse.description = error.response.data.description? error.response.data.error.description : undefined;
+            } 
+            } else {
+            // Handle other errors
+            errorResponse.title = "Something went wrong with that request.";
+            errorResponse.code = "GE-DE-001"
+            errorResponse.description = "";
+        }
+
+        return Promise.reject(errorResponse);
         });
 
         const injectAuthHeaderInterceptor =
@@ -103,14 +129,14 @@ export class DataManager {
     public getDatasetTemporaryUrl(uuid: string) {
         const cancellationToken = this.getNewAxiosCancellationToken();
         return this.xhrGet<{ url: string, status: string }>(
-            `${ENDPOINTS.DATASET}${uuid}/tempurl`
+            `${ENDPOINTS.DATASET}${uuid}/tempurl/`
         );
     }
 
 
     public removeDataset(uuid: string) {
         return this.xhrDelete<{}>(
-            `${ENDPOINTS.DATASET}${uuid}/delete`
+            `${ENDPOINTS.DATASET}${uuid}/delete/`
         );
     }
 
