@@ -142,6 +142,7 @@ describe("DatasetCard", () => {
     it("displays 'N/A' when lastUpdated prop is not provided", () => {
         render(
           <DatasetCard
+          datasetId="test-dataset-id"
           title="Test dataset"
           description="This is a test dataset."
           />
