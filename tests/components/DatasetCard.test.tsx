@@ -128,4 +128,18 @@ describe("DatasetCard", () => {
             expect(screen.queryByTestId("visualiser-drawer")).toBeFalsy()
         );
     });
+    it("displays the title and description when provided", () => {
+        render(
+            <DatasetCard
+                title="Test dataset"
+                description="This is a test dataset"
+                lastUpdated={new Date("2021-05-21")}
+            />
+        );
+    
+        expect(screen.getByTestId("view-button")).toHaveTextContent(
+            "Test datasetThis is a test dataset"
+        );
+    });
+    
 });
