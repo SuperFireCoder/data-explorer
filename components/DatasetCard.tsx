@@ -240,7 +240,6 @@ export default function DatasetCard({
                         </H5>
                         {status === "IMPORTING" && (
                             <p
-                                data-testid={status}
                                 className={classnames(
                                     themedStyles.description,
                                     Classes.TEXT_DISABLED
@@ -251,7 +250,7 @@ export default function DatasetCard({
                         )}
                         {status === "FAILED" && (
                             <>
-                                <p data-testid={status}
+                                <p
                                     className={classnames(
                                         themedStyles.description,
                                         Classes.TEXT_DISABLED

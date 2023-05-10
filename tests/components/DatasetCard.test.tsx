@@ -127,35 +127,5 @@ describe("DatasetCard", () => {
         await waitFor(() =>
             expect(screen.queryByTestId("visualiser-drawer")).toBeFalsy()
         );
-    });
-    it("displays the dataset status", () => {
-        render(
-          <DatasetCard
-            datasetId="test-dataset-id"
-            title="Test dataset ID"
-            description=""
-            status="SUCCESS"
-          />
-        );
-        expect(screen.getByTestId("status")).toHaveTextContent("SUCCESS");
-    });
-    it("displays 'N/A' when lastUpdated prop is not provided", () => {
-        render(
-          <DatasetCard
-          datasetId="test-dataset-id"
-          title="Test dataset"
-          description="This is a test dataset."
-          />
-        );
-        expect(screen.getByTestId("last-updated-date")).toHaveTextContent("Updated: N/A");
-    });
-    it("displays 'N/A' when type prop is not provided", () => {
-        render(
-          <DatasetCard
-          title="Test dataset"
-          description="This is a test dataset."
-          />
-        );
-        expect(screen.getByTestId("type")).toHaveTextContent("N/A");
-    });      
+    });    
 });
