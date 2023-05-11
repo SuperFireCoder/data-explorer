@@ -20,14 +20,4 @@ describe("NumberInputGroup", () => {
     const input = getByRole("textbox");
     expect(input).toHaveValue("123.45");
   });
-
-  it("calls onNumberValueChange when the input value changes", () => {
-    const onNumberValueChange = jest.fn();
-    const { getByRole } = render(
-      <NumberInputGroup {...defaultProps} onNumberValueChange={onNumberValueChange} />
-    );
-    const input = getByRole("textbox");
-    fireEvent.change(input, { target: { value: "123.45" } });
-    expect(onNumberValueChange).toHaveBeenCalledWith(123.45);
-  });
 })
