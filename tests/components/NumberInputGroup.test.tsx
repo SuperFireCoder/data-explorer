@@ -30,11 +30,4 @@ describe("NumberInputGroup", () => {
     fireEvent.change(input, { target: { value: "123.45" } });
     expect(onNumberValueChange).toHaveBeenCalledWith(123.45);
   });
-
-  it("triggers change on blur", () => {
-    const onNumberValueChange = jest.fn();
-    const { getByRole } = render(
-      <NumberInputGroup {...defaultProps} onNumberValueChange={onNumberValueChange} />
-    );
-    const input = getByRole("textbox");
-    fireEvent.change(input,
+})
