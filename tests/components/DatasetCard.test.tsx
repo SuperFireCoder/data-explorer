@@ -127,5 +127,5 @@ describe("DatasetCard", () => {
         await waitFor(() =>
             expect(screen.queryByTestId("visualiser-drawer")).toBeFalsy()
         );
-    });
+    });    
 });
