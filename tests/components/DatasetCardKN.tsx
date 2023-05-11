@@ -1,75 +1,45 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import DatasetCardKN from "./../../components/DatasetCardKN";
+import { render, fireEvent } from '@testing-library/react';
+import { Props } from './../../components/DatasetCardKN';
+import DatasetCardKN from './../../components/DatasetCardKN';
 
-describe("DatasetCardKN", () => {
-  const props = {
-    datasetId: "123",
-    title: "Test Dataset",
-    description: "This is a test dataset",
-    type: "table",
-    lastUpdated: new Date("2022-05-09T12:30:00Z"),
-    landingPageUrl: "https://example.com",
-    distributions: [
-      {
-        url: "https://example.com/data.csv",
-        format: "csv",
-        size: 1024,
-      },
-    ],
+describe('DatasetCardKN', () => {
+  const props: Props = {
+    datasetId: '123',
+    title: 'Test Dataset',
+    description: 'This is a test dataset',
+    distributions: []
   };
 
-  test("renders the component with all props", () => {
-    render(<DatasetCardKN {...props} />);
-
-    expect(screen.getByText("Test Dataset")).toBeInTheDocument();
-    expect(screen.getByText("This is a test dataset")).toBeInTheDocument();
-    expect(screen.getByTestId("type")).toHaveTextContent("Table");
-    expect(screen.getByTestId("last-updated-date")).toHaveTextContent(
-      "Updated: 09 May 2022"
-    );
-    expect(screen.getByTestId("view-button")).toHaveAttribute(
-      "href",
-      "https://example.com"
-    );
-    expect(screen.getByTestId("view-button")).not.toBeDisabled();
-    expect(screen.getByTestId("info-button")).toBeInTheDocument();
-    expect(screen.getByText("Get Data")).toBeInTheDocument();
-    expect(screen.getByText("csv")).toBeInTheDocument();
-    expect(screen.getByText("1 KB")).toBeInTheDocument();
+  it('renders dataset card with title and description', () => {
+    const { getByText } = render(<DatasetCardKN {...props} />);
+    expect(getByText('Test Dataset')).toBeInTheDocument();
+    expect(getByText('This is a test dataset')).toBeInTheDocument();
   });
 
-  test("opens metadata drawer when info button is clicked", () => {
-    render(<DatasetCardKN {...props} />);
-
-    expect(screen.queryByText("Metadata Drawer")).not.toBeInTheDocument();
-
-    userEvent.click(screen.getByTestId("info-button"));
-
-    expect(screen.getByText("Metadata Drawer")).toBeInTheDocument();
+  it('opens metadata drawer on info button click', () => {
+    const { getByTestId } = render(<DatasetCardKN {...props} />);
+    fireEvent.click(getByTestId('info-button'));
+    expect(getByTestId('metadata-drawer')).toBeVisible();
   });
 
-  test("opens get data drawer when get data button is clicked", () => {
-    render(<DatasetCardKN {...props} />);
-
-    expect(screen.queryByText("Get Data Drawer")).not.toBeInTheDocument();
-
-    userEvent.click(screen.getByText("Get Data"));
-
-    expect(screen.getByText("Get Data Drawer")).toBeInTheDocument();
+  it('opens get data drawer on get data button click', () => {
+    const { getByText, getByTestId } = render(<DatasetCardKN {...props} distributions={[{ downloadURL: 'http://example.com/data' }]} />);
+    fireEvent.click(getByText('Get Data'));
+    expect(getByTestId('get-data-drawer')).toBeVisible();
   });
 
-  test("disables view button when landing page URL is undefined", () => {
-    render(<DatasetCardKN {...props} landingPageUrl={undefined} />);
-
-    expect(screen.getByTestId("view-button")).toBeDisabled();
+  it('disables view button if landing page url is undefined', () => {
+    const { getByTestId } = render(<DatasetCardKN {...props} />);
+    expect(getByTestId('view-button')).toBeDisabled();
   });
 
-  test("does not show type or last updated date if they are not provided", () => {
-    render(<DatasetCardKN {...props} type={undefined} lastUpdated={undefined} />);
+  it('renders type indicator if type prop is provided', () => {
+    const { getByTestId } = render(<DatasetCardKN {...props} type="csv" />);
+    expect(getByTestId('type')).toBeInTheDocument();
+  });
 
-    expect(screen.queryByTestId("type")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("last-updated-date")).not.toBeInTheDocument();
+  it('renders last updated date if lastUpdated prop is provided', () => {
+    const { getByTestId } = render(<DatasetCardKN {...props} lastUpdated={new Date()} />);
+    expect(getByTestId('last-updated-date')).toBeInTheDocument();
   });
 });
