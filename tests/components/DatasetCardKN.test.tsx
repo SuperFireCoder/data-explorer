@@ -1,6 +1,6 @@
 import { render, fireEvent } from '@testing-library/react';
-import { Props } from './../../components/DatasetCardKN';
-import DatasetCardKN from './../../components/DatasetCardKN';
+import { Props } from '../../components/DatasetCardKN';
+import DatasetCardKN from '../../components/DatasetCardKN';
 
 describe('DatasetCardKN', () => {
   const props: Props = {
