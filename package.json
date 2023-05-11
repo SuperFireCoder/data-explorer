@@ -19,6 +19,7 @@
     "@ecocommons-australia/ui-library": "1.6.19-dev-59d030d9.0",
     "@ecocommons-australia/visualiser-client-geospatial": "1.7.1",
     "@react-keycloak/ssr": "3.3.0",
+    "@testing-library/user-event": "14.4.3",
     "axios": "0.21.1",
     "bodybuilder": "2.3.0",
     "classnames": "2.2.6",
@@ -31,9 +32,7 @@
     "papaparse": "5.3.0",
     "react": ">=16.0.0",
     "react-dom": ">=16.0.0",
-    "react-grid-system": "7.1.1",
-    "react-toastify": "9.1.2",
-    "toastify": "2.0.1"
+    "react-grid-system": "7.1.1"
   },
   "devDependencies": {
     "@testing-library/dom": "7.28.1",
