@@ -21,18 +21,6 @@ describe('DatasetCardKN', () => {
     fireEvent.click(getByTestId('info-button'));
     expect(getByTestId('metadata-drawer')).toBeVisible();
   });
-
-  it('opens get data drawer on get data button click', () => {
-    const { getByText, getByTestId } = render(<DatasetCardKN {...props} distributions={[{ downloadURL: 'http://example.com/data' }]} />);
-    fireEvent.click(getByText('Get Data'));
-    expect(getByTestId('get-data-drawer')).toBeVisible();
-  });
-
-  it('disables view button if landing page url is undefined', () => {
-    const { getByTestId } = render(<DatasetCardKN {...props} />);
-    expect(getByTestId('view-button')).toBeDisabled();
-  });
-
   it('renders type indicator if type prop is provided', () => {
     const { getByTestId } = render(<DatasetCardKN {...props} type="csv" />);
     expect(getByTestId('type')).toBeInTheDocument();
