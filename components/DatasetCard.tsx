@@ -273,6 +273,16 @@ export default function DatasetCard({
                         >
                             {description}
                         </p>
+                        {status === "FAILED" && (
+                            <p className="bp3-text-small" data-testid="type">
+                                <DatasetTypeIndicator type={
+                                    ({
+                                        type: "failed",
+                                        subtype: "Import Failed"
+                                    } as unknown as DatasetType)
+                                } />
+                            </p>
+                        )}
                         {type && (
                             <p className="bp3-text-small" data-testid="type">
                                 <DatasetTypeIndicator type={type} />
