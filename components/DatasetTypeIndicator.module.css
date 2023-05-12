@@ -22,6 +22,15 @@
 .indicator[data-type="biological"] {
     background: #5dc2e7;
 }
+
 .indicator[data-type="environmental"] {
     background: #0fa996;
+}
+
+.indicator[data-type="failed"] {
+    background: #B33A3A;
+}
+
+.indicator[data-type="failed"] .type{
+    display: none;
 }
