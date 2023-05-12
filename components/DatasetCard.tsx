@@ -204,6 +204,11 @@ export default function DatasetCard({
                 })
     }
 
+    const displayFilureMessage = useMemo(() => {
+        // keep this function for personalised message in the future
+        return "Dataset failed to import"
+    }, [failureMessage])
+
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
     // for users of browsers not supporting the `line-clamp` CSS property
@@ -256,8 +261,7 @@ export default function DatasetCard({
                                         Classes.TEXT_DISABLED
                                     )}
                                 >
-                                    {failureMessage ??
-                                        "Dataset failed to import"}
+                                    {displayFilureMessage}
                                 </p>
                             </>
                         )}
@@ -269,6 +273,16 @@ export default function DatasetCard({
                         >
                             {description}
                         </p>
+                        {status === "FAILED" && (
+                            <p className="bp3-text-small" data-testid="type">
+                                <DatasetTypeIndicator type={
+                                    ({
+                                        type: "failed",
+                                        subtype: "Import Failed"
+                                    } as unknown as DatasetType)
+                                } />
+                            </p>
+                        )}
                         {type && (
                             <p className="bp3-text-small" data-testid="type">
                                 <DatasetTypeIndicator type={type} />

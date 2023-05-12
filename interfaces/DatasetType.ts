@@ -2,6 +2,7 @@ export type DatasetType =
     DatasetTypeBiological
     | DatasetTypeEnvironmental
     | DatasetTypeFile
+    | DatasetFailed
 
 interface DatasetTypeBiological {
     type: "biological";
@@ -30,4 +31,11 @@ interface DatasetTypeFile {
     subtype: 
         | "spatialShape"
         | "file";
+}
+
+interface DatasetFailed {
+    type: "failed"
+    // may have more subtypes for `others` later
+    subtype: 
+        | "Import Failed";
 }
