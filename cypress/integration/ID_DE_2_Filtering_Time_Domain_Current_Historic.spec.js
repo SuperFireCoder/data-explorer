@@ -31,7 +31,7 @@ describe(
                 .get('[data-cy="DatasetCard-card"]').first()
                 .invoke('text').then(($text)=>{
                     // get year
-                    var regEx = /(?:\bdigit-|\s|^)(\d{4})(?=[.?\s]|-digit\b|)/;
+                    var regEx = /\b[0-9]{4}/;
                     const yearText = parseInt(regEx.exec($text)[0])
                     // assert year is current to historic
                     expect(yearText).to.be.below(2024)
