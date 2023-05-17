@@ -136,7 +136,7 @@ export class DataManager {
 
     public removeDataset(uuid: string) {
         return this.xhrDelete<{}>(
-            `${ENDPOINTS.DATASET}${uuid}/delete/`
+            `${ENDPOINTS.DATASET}${uuid}/delete`
         );
     }
 
