@@ -1508,10 +1508,10 @@
   "resolved" "https://gitlab.com/api/v4/projects/22528765/packages/npm/@ecocommons-australia/ui-library/-/@ecocommons-australia/ui-library-1.6.19-dev-59d030d9.0.tgz"
   "version" "1.6.19-dev-59d030d9.0"
 
-"@ecocommons-australia/visualiser-client-geospatial@1.6.8-dev-427e63b6.0":
-  "integrity" "sha1-GgQ/9uYu98G79JdN5lgK5WLbqro="
-  "resolved" "https://gitlab.com/api/v4/projects/28568126/packages/npm/@ecocommons-australia/visualiser-client-geospatial/-/@ecocommons-australia/visualiser-client-geospatial-1.6.8-dev-427e63b6.0.tgz"
-  "version" "1.6.8-dev-427e63b6.0"
+"@ecocommons-australia/visualiser-client-geospatial@1.7.1":
+  "integrity" "sha1-JoNKWfzfSK5++moltH70H3toGR0="
+  "resolved" "https://gitlab.com/api/v4/projects/28568126/packages/npm/@ecocommons-australia/visualiser-client-geospatial/-/@ecocommons-australia/visualiser-client-geospatial-1.7.1.tgz"
+  "version" "1.7.1"
 
 "@hapi/accept@5.0.1":
   "integrity" "sha512-fMr4d7zLzsAXo28PRRQPXR1o2Wmu+6z+VY1UzDp0iFo13Twj8WePakwXBiqn3E1aAlTpSNzCXdnnQXFhst8h8Q=="

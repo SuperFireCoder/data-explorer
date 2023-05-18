@@ -176,14 +176,14 @@ export default function VisualiserDrawer({
             setRegisteredDatasetLayers(
                 layerInfo.map(
                     ({ datasetId, dataType, label, layerName, layerUrl}) => {
-                        const mapRequest = getNewEcMapVisualiserRequest(
-                            layerUrl,
-                            layerName,
-                            dataType,
-                            currentMapStyle,
-                            currentMapScale,
-                            datasetId,
-                        );
+                        const mapRequest = getNewEcMapVisualiserRequest({
+                            dataUrl: layerUrl,
+                            dataLayer: layerName,
+                            dataType: dataType,
+                            mapStyle: currentMapStyle,
+                            mapScale: currentMapScale,
+                            datasetId: datasetId,
+                    });
                         mapRequest.getBearerToken = getBearerTokenFn;
 
                         return {
