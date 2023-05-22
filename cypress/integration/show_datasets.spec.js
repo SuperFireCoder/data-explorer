@@ -13,6 +13,7 @@ describe(
     () => {
         beforeEach(() => {
             cy.login().visit('/');
+            cy.contains('Datasets').click()
             cy.get('h6[data-cy="show-datasets-label"]', {
                 timeout: 5000
             }).should("contain", "Show Datasets");
@@ -26,6 +27,7 @@ describe(
         });
 
         it("can show only my datasets", () => {
+            cy.visit("/");
             cy.get('[data-cy="show-datasets-button"]').click();
             cy.get(
                 `a[data-cy="show-datasets-menuItem"][data-testid="${datasetsSelectionLabels.my_datasets}"]`

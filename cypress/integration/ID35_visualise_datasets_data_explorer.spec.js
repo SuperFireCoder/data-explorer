@@ -22,6 +22,7 @@ const DATA_EXPLORER_API = Cypress.env(
 describe(specTitle("Visualise datasets on a map"), () => {
     beforeEach(() => {
         cy.login().visit('/');
+        cy.contains('Datasets').click()
         cy.intercept("POST", VISUALISER_API + "/api/maps/").as("newVisualiser");
         cy.intercept("GET", VISUALISER_API + "/api/maps/*/status").as(
             "getMapStatus"

@@ -129,7 +129,7 @@ export class DataManager {
     public getDatasetTemporaryUrl(uuid: string) {
         const cancellationToken = this.getNewAxiosCancellationToken();
         return this.xhrGet<{ url: string, status: string }>(
-            `${ENDPOINTS.DATASET}${uuid}/tempurl/`
+            `${ENDPOINTS.DATASET}${uuid}/tempurl`
         );
     }
 
