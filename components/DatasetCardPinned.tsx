@@ -90,35 +90,20 @@ export default function DatasetCard({
 
     const [errorMessage, setErrorMessage] = useState("");
     const [isErrorAlertOpen, setIsErrorAlertOpen] = useState(false);
-    //const [pinned, setPinned] = useState(dataStore.isDatasetPinned(datasetId));
-
-    console.log("datasetId..... ", datasetId)
-    console.log("dataStore.isDatasetPinned(datasetId)........   ",dataStore.isDatasetPinned(datasetId))
+    const [pinned, setPinned] = useState(dataStore.isDatasetPinned(datasetId));
 
     const handleTogglePin = () => {
-        console.log("statusssssss....................pinned   ", dataStore.isDatasetPinned(datasetId))
-        if (dataStore.isDatasetPinned(datasetId)){
+        if (pinned){
             console.log("before removal length.................",  dataStore.pinnedDatasets.length)
-            const { promise: unPinnedDataPromise } = dataManager.unPinDataset(datasetId)
-            unPinnedDataPromise
-                .then(() => {
-                    dataStore.removeDataset(datasetId)
-            })
-            // dataStore.removeDataset(datasetId)
-            // dataManager.unPinDataset(datasetId)
+            dataStore.removeDataset(datasetId)
+            dataManager.unPinDataset(datasetId)
             console.log("After removal length...............", dataStore.pinnedDatasets.length)
         }
         else {
-            // const pinnedData = dataManager.pinDataset(datasetId)
-            const { promise: pinnedDataPromise } = dataManager.pinDataset(datasetId)
-
-            pinnedDataPromise
-                .then((pinnedData) => {
-                    dataStore.addDataset(pinnedData[0])
-            })
+            //dataStore.addDataset(datasetId)
+            dataManager.pinDataset(datasetId)
         }
-        // setPinned(!pinned);
-        // console.log("statusssssss....................pinned   ", pinned)
+        setPinned(!pinned);
       };
 
     const showInfoView = router?.query.showInfo === "1";
@@ -332,10 +317,10 @@ export default function DatasetCard({
                         )}
                     </Col>
                     <Button
-                        icon={dataStore.isDatasetPinned(datasetId) ? "star" : "star-empty"}
+                        icon={pinned ? "star" : "star-empty"}
                         className={styles.favoriteButton}
                         onClick={handleTogglePin}
-                        style={{ color: dataStore.isDatasetPinned(datasetId) ? "yellow" : "inherit" }}
+                        style={{ color: pinned ? "yellow" : "inherit" }}
                     />
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">

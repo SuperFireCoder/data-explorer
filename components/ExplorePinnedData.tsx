@@ -27,6 +27,8 @@ import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
 import { itemSortKeyAlpha, monthItemSort, resolutionItemSort } from "./FacetMultiSelect";
 import FacetNumberRangeFacetState2 from "./FacetNumberRangeFacetState2";
 import FacetSelectFacetState2 from "./FacetSelectFacetState2";
+import { useDataStore } from "./PinnedDataStore";
+import { useDataManager } from "../hooks/DataManager";
 
 interface QueryParameters {
     /** Results per page */
@@ -73,6 +75,8 @@ interface FormState {
     facetMonth: readonly string[];
     facetDataCategory: readonly string[];
 }
+
+//const dataManager = useDataManager();
 
 function stripEmptyStringQueryParams(
     queryParams: ParsedUrlQueryInput
@@ -497,7 +501,51 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
 
 ];
 
+
 export default function IndexPage() {
+
+    const dataStore = useDataStore.getState();
+    const pinnedDataset =  dataStore.pinnedDatasets;
+    console.log("pinnedDataset..........pinnedDataset.............................")
+    console.log(pinnedDataset)
+    console.log("yyyyyyyyy...............yyyyyyyyyyyy.............................")
+    const testDataset =[ {
+        id: 3,
+        uuid: "77888",
+        title: "title",
+        description: "descriptionnnn",
+        attributes: {id: 1, name: "test"},
+        owner: "678899",
+        acl: {id: 1, year: 2023},
+        status: "Pending",
+        message: "message",
+        created: "2013-01-12",
+        ES_index_enabled: true,
+        collection: null,
+        data: ["name", "title"]
+      }, {
+        id: 4,
+        uuid: "677",
+        title: "title1",
+        description: "descriptionnnn2",
+        attributes: {id: 2, name: "test2"},
+        owner: "678899889",
+        acl: {id: 2, year: 2024},
+        status: "Success",
+        message: "message2",
+        created: "2013-01-01",
+        ES_index_enabled: true,
+        collection: null,
+        data: ["name2", "title2"]
+      }
+    ]
+    
+
+    // dataStore.setPinnedDatasets(testDataset) 
+    // console.log("TEST HHHHHHH.............................")
+    // console.log(pinnedDataset)
+    // console.log("COMPLREETED GGGTHFJH.............................")
+
     const router = useRouter();
 
     const isEmbed = router.query.embed === "1";
@@ -563,14 +611,16 @@ export default function IndexPage() {
             }
 
             // Set back defaults for all datasets
-            if (formState.filterPrincipals?.length === 0) {
+            if (formState.filterPrincipals?.length === 0 ) {
                 state["facetMonth"] = ["Non monthly data"]
                 state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL]
+                state["datasetId"] = ""
             }
             // Disable defaults for shared and owned datasets
-            if (formState.filterPrincipals !== undefined && formState.filterPrincipals.length > 0) {
+            if ((formState.filterPrincipals !== undefined && formState.filterPrincipals.length > 0 ) || (formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
                 state["facetTimeDomain"] = []
                 state["facetMonth"] = []
+                state["datasetId"] = ""
             }
 
             // Update query params for this page, which will update `formState`
@@ -650,16 +700,17 @@ export default function IndexPage() {
 
     useEffect(() => {
         const state = { ...formState };
-        if (state["facetMonth"].length === 0 || state["facetTimeDomain"].length === 0) {
+        if ((state["facetMonth"].length === 0 || state["facetTimeDomain"].length === 0) && formState.filterPrincipals?.length === 0) {
             if (formState.filterPrincipals?.length === 0) {
                 state["facetMonth"] = ["Non monthly data"]
                 state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL]
             }
-            // Disable defaults for shared and owned datasets
-            if (formState.filterPrincipals !== undefined && formState.filterPrincipals.length > 0) {
+             // Disable defaults for shared and owned datasets
+             if ((formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
                 state["facetTimeDomain"] = []
                 state["facetMonth"] = []
             }
+
             triggerSearch()
             router.replace({
                 query: stripEmptyStringQueryParams({
@@ -668,7 +719,7 @@ export default function IndexPage() {
                 }),
             });
         }
-    }, []);
+    }, [router.asPath === "/?tab=eco-data"]);
 
     const getProcessedQueryResult = (): Array<any> | undefined => {
         //Removes dataset from dataset list if user deleted it.
@@ -677,6 +728,7 @@ export default function IndexPage() {
             setDatasetUUIDToDelete(undefined)
             if (indexToDelete !== -1) // if matching uuid is found, return spliced dataset list
             {
+                console.log("1111111.......")
                 return queryResult.hits.hits.splice(indexToDelete, 1)
             }
             else {
@@ -888,7 +940,7 @@ export default function IndexPage() {
     }
 
     return (
-        <Row data-cy="ExplorePinnedDataTab">
+        <Row data-cy="ExploreEcoDataTab">
             <Col xs={2}>
                 <Row disableDefaultMargins>
                     <Col>
