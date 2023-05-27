@@ -18,6 +18,8 @@
     "@blueprintjs/table": "^3.9.14",
     "@ecocommons-australia/ui-library": "1.6.19-dev-59d030d9.0",
     "@ecocommons-australia/visualiser-client-geospatial": "1.7.1",
+    "@fortawesome/free-solid-svg-icons": "6.4.0",
+    "@fortawesome/react-fontawesome": "0.2.0",
     "@react-keycloak/ssr": "3.3.0",
     "@testing-library/user-event": "14.4.3",
     "axios": "0.21.1",
@@ -25,6 +27,7 @@
     "classnames": "2.2.6",
     "cookie": "0.4.1",
     "docker": "1.0.0",
+    "force": "0.0.3",
     "keycloak-js": "11.0.3",
     "next": "10.0.1",
     "next-transpile-modules": "6.3.0",
@@ -32,7 +35,8 @@
     "papaparse": "5.3.0",
     "react": ">=16.0.0",
     "react-dom": ">=16.0.0",
-    "react-grid-system": "7.1.1"
+    "react-grid-system": "7.1.1",
+    "zustand": "4.3.8"
   },
   "devDependencies": {
     "@testing-library/dom": "7.28.1",
