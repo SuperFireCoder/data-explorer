@@ -728,15 +728,25 @@ export default function IndexPage() {
             setDatasetUUIDToDelete(undefined)
             if (indexToDelete !== -1) // if matching uuid is found, return spliced dataset list
             {
-                console.log("1111111.......")
+                console.log("1111111.......,,,,,.................sarrrrr")
+                console.log(queryResult.hits.hits.splice(indexToDelete, 1))
+                console.log("4444444.............5554444444444444449000000000000")
                 return queryResult.hits.hits.splice(indexToDelete, 1)
             }
             else {
+                console.log("1111111.......,,,,,.................sarrrrr")
+                console.log(queryResult.hits.hits)
+                console.log("4444444.............5554444444444444449000000000000")
                 return queryResult.hits.hits
             }
         }
         else {
-            return queryResult?.hits.hits
+            console.log("1111111.......,,,,,.................sarrrrr")
+            console.log(queryResult?.hits.hits)
+            console.log("4444444.............5554444444444444449000000000000")
+
+            //return queryResult?.hits.hits
+            return pinnedDataset
         }
 
     }
@@ -1081,35 +1091,35 @@ export default function IndexPage() {
                 </Row>
                 <Row>
                     <Col>
-                        {getProcessedQueryResult()?.map(({ _id, _source }) => (
+                        {getProcessedQueryResult()?.map(({ id, uuid, title , description , status,downloadable, message, scientific_type, allowed_principals}) => (
                             <DatasetCard
                                 data-cy="dataset-card"
                                 data-testid="dataset-card"
-                                key={_id}
-                                datasetId={_source.uuid}
-                                title={_source.title}
-                                description={_source.description}
-                                status={_source.status}
-                                downloadable={_source.downloadable}
+                                key={id}
+                                datasetId={uuid}
+                                title={title}
+                                description={description}
+                                status={status}
+                                downloadable={downloadable}
                                 failureMessage={
-                                    _source.status === "FAILED"
-                                        ? _source.message
+                                    status === "FAILED"
+                                        ? message
                                         : undefined
                                 }
-                                type={
-                                    _source.status === "SUCCESS"
-                                        ? // TODO: Clarify values for "scientific_type"
-                                        ({
-                                            type: _source.scientific_type[0],
-                                            subtype:
-                                                _source.scientific_type[1],
-                                        } as unknown as DatasetType)
-                                        : undefined
-                                }
+                                // type={
+                                //     status === "SUCCESS"
+                                //         ? // TODO: Clarify values for "scientific_type"
+                                //         ({
+                                //             type: scientific_type[0],
+                                //             subtype:
+                                //                 scientific_type[1],
+                                //         } as unknown as DatasetType)
+                                //         : undefined
+                                // }
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
-                                ownerId={_source.allowed_principals as string[]}
-                                selected={formState.selectedDatasetId === _source.uuid}
+                                ownerId={allowed_principals as string[]}
+                                selected={formState.selectedDatasetId === uuid}
                                 onSelect={isEmbed === true ? onDatasetSelect : undefined}
                                 setDatasetUUIDToDelete={setDatasetUUIDToDelete}
                             />

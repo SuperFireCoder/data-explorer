@@ -92,18 +92,33 @@ export default function DatasetCard({
     const [isErrorAlertOpen, setIsErrorAlertOpen] = useState(false);
     const [pinned, setPinned] = useState(dataStore.isDatasetPinned(datasetId));
 
+    console.log("datasetId..... ", datasetId)
+    console.log("dataStore.isDatasetPinned(datasetId)........   ",dataStore.isDatasetPinned(datasetId))
+
     const handleTogglePin = () => {
+        console.log("statusssssss....................pinned   ", pinned)
         if (pinned){
             console.log("before removal length.................",  dataStore.pinnedDatasets.length)
-            dataStore.removeDataset(datasetId)
-            dataManager.unPinDataset(datasetId)
+            const { promise: unPinnedDataPromise } = dataManager.unPinDataset(datasetId)
+            unPinnedDataPromise
+                .then(() => {
+                    dataStore.removeDataset(datasetId)
+            })
+            // dataStore.removeDataset(datasetId)
+            // dataManager.unPinDataset(datasetId)
             console.log("After removal length...............", dataStore.pinnedDatasets.length)
         }
         else {
-            //dataStore.addDataset(datasetId)
-            dataManager.pinDataset(datasetId)
+            // const pinnedData = dataManager.pinDataset(datasetId)
+            const { promise: pinnedDataPromise } = dataManager.pinDataset(datasetId)
+
+            pinnedDataPromise
+                .then((pinnedData) => {
+                    dataStore.addDataset(pinnedData[0])
+            })
         }
         setPinned(!pinned);
+        console.log("statusssssss....................pinned   ", pinned)
       };
 
     const showInfoView = router?.query.showInfo === "1";
