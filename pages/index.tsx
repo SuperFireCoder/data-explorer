@@ -60,6 +60,7 @@ export default function IndexPage() {
 
     const [currentTab, setCurrentTab] = useState("eco-data")
     const [subBarActiveKey, setSubBarActiveKey] = useState("eco-data");
+    const [isPinnedDataLoaded, setIsPinnedDataLoaded] = useState(false)
   
     useEffect(() => {
         
@@ -91,21 +92,24 @@ export default function IndexPage() {
         pinnedDataResponsePromise
         .then((pinnedDataResponse: any) => {
             dataStore.setPinnedDatasets(pinnedDataResponse) 
+            setIsPinnedDataLoaded(true)
         })
       }, [dataManager, userSessionActive, keycloakToken]);
 
     const renderTab = () => {
-        switch (currentTab) {
-            case "eco-data":
-                return <ExploreEcoData />;
-            case "knowledge-data":
-                return <ExploreKnowledgeData />;
-            case "pinned-data":
-                return <PinnedData />;
-            default:
-                return null;
-        }
-    }
+            if (isPinnedDataLoaded) {
+                switch (currentTab) {
+                    case "eco-data":
+                        return <ExploreEcoData />;
+                    case "knowledge-data":
+                        return <ExploreKnowledgeData />;
+                    case "pinned-data":
+                        return <PinnedData />;
+                    default:
+                        return null;
+                }
+            } 
+    };   
 
     if (isEmbed === true){
         return (
