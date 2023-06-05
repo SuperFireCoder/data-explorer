@@ -1,7 +1,7 @@
-import {FormEvent,useCallback,useEffect,useState,} from "react";
+import { FormEvent, useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import bodybuilder, { Bodybuilder } from "bodybuilder";
-import { InputGroup, Button, H6, Switch, FocusStyleManager } from "@blueprintjs/core";
+import { InputGroup, Button, H6, Switch, FocusStyleManager, Spinner } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 import {getDataExplorerSubbarImportData,} from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
@@ -43,7 +43,7 @@ const subBarLinks = [
 
 export default function IndexPage() {
     /** Hide the blue outline when mouse down. Only show the switch's blue outline for accessibility when users using keyboard tab. */
-    FocusStyleManager.onlyShowFocusOnTabs();
+    //FocusStyleManager.onlyShowFocusOnTabs();
 
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
@@ -55,24 +55,24 @@ export default function IndexPage() {
     const [currentTab, setCurrentTab] = useState("eco-data")
     const [subBarActiveKey, setSubBarActiveKey] = useState("eco-data");
   
-    useEffect(() => {
-       if(router.asPath === "/") {
-        router.push("/?tab=eco-data", undefined, { shallow: true })
-       }
-    }, [router.asPath])
+    // useEffect(() => {
+    //    if(router.asPath === "/") {
+    //     router.push("/?tab=eco-data", undefined, { shallow: true })
+    //    }
+    // }, [router.asPath])
 
 
-    useEffect(() => {
-        const tab = router.query.tab;
-        // set the tab
-        setCurrentTab(tab as string || initialTab); 
-        //set the active sub bar link 
-        setSubBarActiveKey(tab as string || initialTab)
-        if(router.query.tab === undefined && router.asPath === `${config.publicRuntimeConfig
-            .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_DATASETS}/`){
-                router.push("/?tab=eco-data", undefined, { shallow: true })
-        }
-    }, [router.query]);
+    // useEffect(() => {
+    //     const tab = router.query.tab;
+    //     // set the tab
+    //     setCurrentTab(tab as string || initialTab); 
+    //     //set the active sub bar link 
+    //     setSubBarActiveKey(tab as string || initialTab)
+    //     if(router.query.tab === undefined && router.asPath === `${config.publicRuntimeConfig
+    //         .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_DATASETS}/`){
+    //             router.push("/?tab=eco-data", undefined, { shallow: true })
+    //     }
+    // }, [router.query]);
 
     const renderTab = () => {
         switch (currentTab) {
@@ -93,6 +93,14 @@ export default function IndexPage() {
                 <HtmlHead title={["Datasets", "Explore data"]} />
                 <ExploreEcoData />
             </>
+        );
+    }
+
+    if (keycloak?.authenticated === undefined) {
+        return (
+            <div  style={{ 'padding': 200 }}>
+                <Spinner/>
+            </div>
         );
     }
 
