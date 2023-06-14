@@ -11,6 +11,9 @@
     "cypress": "cypress open",
     "cy:open": "cypress open",
     "cy:run": "cypress run"
+
+
+
   },
   "dependencies": {
     "@blueprintjs/core": "3.35.0",
