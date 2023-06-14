@@ -55,11 +55,11 @@ export default function IndexPage() {
     const [currentTab, setCurrentTab] = useState("eco-data")
     const [subBarActiveKey, setSubBarActiveKey] = useState("eco-data");
   
-    // useEffect(() => {
-    //    if(router.asPath === "/") {
-    //     router.push("/?tab=eco-data", undefined, { shallow: true })
-    //    }
-    // }, [router.asPath])
+    useEffect(() => {
+       if(router.asPath === "/") {
+        router.replace("/?tab=eco-data", undefined, { shallow: true })
+       }
+    }, [router.asPath])
 
 
     // useEffect(() => {

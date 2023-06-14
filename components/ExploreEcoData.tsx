@@ -601,14 +601,14 @@ export default function IndexPage() {
             filterPrincipals = [],
             facetYearMin = "",
             facetYearMax = "",
-            facetTimeDomain = [NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL],
+            facetTimeDomain = [],
             facetSpatialDomain = [],
             facetResolution = [],
             facetScientificType = [],
             facetDomain = [],
             facetCollection = [],
             facetGcm = [],
-            facetMonth = ["Non monthly data"],  
+            facetMonth = [],  
             facetDataCategory=[]
         } = router.query as QueryParameters;
 
@@ -650,28 +650,28 @@ export default function IndexPage() {
         };
     }, [router.query,searchTriggerValue]);
 
-    // useEffect(() => {
-    //     const state = { ...formState };
-    //     if ((state["facetMonth"].length === 0 || state["facetTimeDomain"].length === 0) && formState.filterPrincipals?.length === 0) {
-    //         if (formState.filterPrincipals?.length === 0) {
-    //             state["facetMonth"] = ["Non monthly data"]
-    //             state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL]
-    //         }
-    //          // Disable defaults for shared and owned datasets
-    //          if ((formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
-    //             state["facetTimeDomain"] = []
-    //             state["facetMonth"] = []
-    //         }
+    useEffect(() => {
+        const state = { ...formState };
+        if ((state["facetMonth"].length === 0 || state["facetTimeDomain"].length === 0) && formState.filterPrincipals?.length === 0) {
+            if (formState.filterPrincipals?.length === 0) {
+                state["facetMonth"] = ["Non monthly data"]
+                state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL]
+            }
+             // Disable defaults for shared and owned datasets
+             if ((formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
+                state["facetTimeDomain"] = []
+                state["facetMonth"] = []
+            }
 
-    //         triggerSearch()
-    //         router.replace({
-    //             query: stripEmptyStringQueryParams({
-    //                 ...router.query,
-    //                 ...state,
-    //             }),
-    //         });
-    //     }
-    // }, [router.asPath === "/?tab=eco-data"]);
+            triggerSearch()
+            router.replace({
+                query: stripEmptyStringQueryParams({
+                    ...router.query,
+                    ...state,
+                })
+            }, undefined, { shallow: true });
+        }
+    }, [router.asPath === "/?tab=eco-data"]);
 
     const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
         facets: FACETS,
