@@ -1,7 +1,7 @@
-import {FormEvent,useCallback,useEffect,useState,} from "react";
+import { FormEvent, useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import bodybuilder, { Bodybuilder } from "bodybuilder";
-import { InputGroup, Button, H6, Switch, FocusStyleManager } from "@blueprintjs/core";
+import { InputGroup, Button, H6, Switch, FocusStyleManager, Spinner } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 import {getDataExplorerSubbarImportData,} from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
@@ -57,11 +57,13 @@ export default function IndexPage() {
   
     useEffect(() => {
        if(router.asPath === "/") {
-        router.push("/?tab=eco-data", undefined, { shallow: true })
+        router.replace("/?tab=eco-data", undefined, { shallow: true })
        }
     }, [router.asPath])
 
-
+    /** 
+     * Set the current tab based on 'router.query.tab'
+     */
     useEffect(() => {
         const tab = router.query.tab;
         // set the tab
@@ -93,6 +95,14 @@ export default function IndexPage() {
                 <HtmlHead title={["Datasets", "Explore data"]} />
                 <ExploreEcoData />
             </>
+        );
+    }
+
+    if (keycloak?.authenticated === undefined) {
+        return (
+            <div  style={{ 'padding': 200 }}>
+                <Spinner/>
+            </div>
         );
     }
 
