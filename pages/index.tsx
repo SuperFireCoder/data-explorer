@@ -99,7 +99,7 @@ export default function IndexPage() {
       }, [dataManager, userSessionActive, keycloakToken]);
 
     const renderTab = () => {
-            // if (isPinnedDataLoaded) {
+            if (isPinnedDataLoaded) {
                 switch (currentTab) {
                     case "eco-data":
                         return <ExploreEcoData />;
@@ -110,7 +110,7 @@ export default function IndexPage() {
                     default:
                         return null;
                 }
-            // } 
+            } 
     };   
 
     if (isEmbed === true){
