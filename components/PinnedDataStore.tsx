@@ -32,7 +32,7 @@ export const useDataStore = createStore<DataStore>()(devtools((set, get) => ({
   isDatasetPinned: (datasetId) => {
     const pinnedDatasets = get().pinnedDatasets;
 
-    if (pinnedDatasets) {
+    if (Array.isArray(pinnedDatasets)) {
       return pinnedDatasets.some((dataset) => dataset.uuid === datasetId);
     }
 
