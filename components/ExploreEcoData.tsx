@@ -719,7 +719,7 @@ export default function IndexPage() {
                 })
             }, undefined, { shallow: true });
         }
-    }, [router.asPath === "/?tab=eco-data" || router.asPath === ""]);
+    }, [router.asPath === "/?tab=eco-data"]);
 
     const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
         facets: FACETS,

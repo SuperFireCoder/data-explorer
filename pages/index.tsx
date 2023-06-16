@@ -68,7 +68,9 @@ export default function IndexPage() {
        }
     }, [router.asPath])
 
-    
+    /** 
+     * Set the current tab based on 'router.query.tab'
+     */
     useEffect(() => {
         const tab = router.query.tab;
         // set the tab
