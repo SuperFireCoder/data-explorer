@@ -716,29 +716,10 @@ export default function IndexPage() {
                 query: stripEmptyStringQueryParams({
                     ...router.query,
                     ...state,
-                }),
-            });
+                })
+            }, undefined, { shallow: true });
         }
     }, [router.asPath === "/?tab=eco-data"]);
-
-    const getProcessedQueryResult = (): Array<any> | undefined => {
-        //Removes dataset from dataset list if user deleted it.
-        if (datasetUUIDToDelete && queryResult) {
-            let indexToDelete = queryResult?.hits.hits.findIndex(x => x._source.uuid == datasetUUIDToDelete)
-            setDatasetUUIDToDelete(undefined)
-            if (indexToDelete !== -1) // if matching uuid is found, return spliced dataset list
-            {
-                return queryResult.hits.hits.splice(indexToDelete, 1)
-            }
-            else {
-                return queryResult.hits.hits
-            }
-        }
-        else {
-            return queryResult?.hits.hits
-        }
-
-    }
 
     const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
         facets: FACETS,
@@ -880,6 +861,25 @@ export default function IndexPage() {
         () => Math.ceil(totalNumberOfResults / formState.pageSize),
         [totalNumberOfResults, formState.pageSize]
     );
+
+    const processedQueryResult = useMemo((): Array<any> | undefined => {
+        //Removes dataset from dataset list if user deleted it.
+        if (datasetUUIDToDelete && queryResult) {
+            const indexToDelete = queryResult?.hits.hits.findIndex(x => x._source.uuid == datasetUUIDToDelete)
+            setDatasetUUIDToDelete(undefined)
+            if (indexToDelete !== -1) // if matching uuid is found, return spliced dataset list
+            {
+                return queryResult.hits.hits.splice(indexToDelete, 1)
+            }
+            else {
+                return queryResult.hits.hits
+            }
+        }
+        else {
+            return queryResult?.hits.hits
+        }
+    }, [queryResult, datasetUUIDToDelete]);
+
 
     /**
      * Handler to change page query parameter values via URL query parameters.
@@ -1080,7 +1080,7 @@ export default function IndexPage() {
                 </Row>
                 <Row>
                     <Col>
-                        {getProcessedQueryResult()?.map(({ _id, _source }) => (
+                        {processedQueryResult?.map(({ _id, _source }) => (
                             <DatasetCard
                                 data-cy="dataset-card"
                                 data-testid="dataset-card"
