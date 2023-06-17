@@ -93,7 +93,7 @@ export default function IndexPage() {
         const { promise: pinnedDataResponsePromise } = dataManager.getPinnedDataset({"token":keycloakToken});
         pinnedDataResponsePromise
         .then((pinnedDataResponse: any) => {
-            dataStore.setPinnedDatasets(pinnedDataResponse) 
+            dataStore.setPinnedDatasets(pinnedDataResponse.results) 
             setIsPinnedDataLoaded(true)
         })
       }, [dataManager, userSessionActive, keycloakToken]);
