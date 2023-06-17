@@ -331,12 +331,6 @@ export default function DatasetCard({
                             </div>
                         )}
                     </Col>
-                    <Button
-                        icon={pinned ? "star" : "star-empty"}
-                        className={styles.favoriteButton}
-                        onClick={handleTogglePin}
-                        style={{ color: pinned ? "yellow" : "inherit" }}
-                    />
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
                             {onSelect ?

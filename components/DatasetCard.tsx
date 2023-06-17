@@ -10,8 +10,10 @@ import {
     MenuItem,
     Popover,
     Position,
-    Spinner
+    Spinner,
+    Icon,
 } from "@blueprintjs/core";
+import {IconNames} from "@blueprintjs/icons"
 import classnames from "classnames";
 import { Col, Row } from "react-grid-system";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
@@ -331,11 +333,10 @@ export default function DatasetCard({
                             </div>
                         )}
                     </Col>
-                    <Button
-                        icon={pinned ? "star" : "star-empty"}
-                        className={styles.favoriteButton}
+                    <Icon
+                        icon={ pinned? IconNames.STAR : IconNames.STAR_EMPTY}
                         onClick={handleTogglePin}
-                        style={{ color: pinned ? "yellow" : "inherit" }}
+                        color={pinned? "#e1a96a" : ""}
                     />
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
