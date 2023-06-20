@@ -247,9 +247,13 @@ export default function IndexPage() {
         if (item.title.toLowerCase().includes(formState.searchQuery.toLowerCase())) {
             filteredList.push(item);
         }
+        dataStore.setFilteredPinnedDataset(filteredList)
         }
+        console.log("...........filteredList.......  ", filteredList)
+        console.log(".........formState...........   ", formState)
+        console.log("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
         const modifiedList = filteredList.slice(formState.pageStart, formState.pageStart + formState.pageSize)
-        console.log(modifiedList)
+        console.log("modifiedList.............,,,,,," ,modifiedList)
         return modifiedList
        }
        
@@ -266,7 +270,7 @@ export default function IndexPage() {
 
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
 
-    const numberOfAllResults = dataStore.pinnedDatasets.length
+    const numberOfAllResults =  dataStore.filteredPinnedDataset.length
 
     const searchQuery = useEsIndividualFacetFreeText(esFacetRoot, {
         id: "searchQuery",

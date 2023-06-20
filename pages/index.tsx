@@ -60,7 +60,7 @@ export default function IndexPage() {
 
     const [currentTab, setCurrentTab] = useState("eco-data")
     const [subBarActiveKey, setSubBarActiveKey] = useState("eco-data");
-    const [isPinnedDataLoaded, setIsPinnedDataLoaded] = useState(false)
+    const [isPinnedDataLoaded, setIsPinnedDataLoaded] = useState(false);
   
     useEffect(() => {
         
@@ -94,9 +94,14 @@ export default function IndexPage() {
         pinnedDataResponsePromise
         .then((pinnedDataResponse: any) => {
             dataStore.setPinnedDatasets(pinnedDataResponse) 
+            dataStore.setFilteredPinnedDataset(pinnedDataResponse)
             setIsPinnedDataLoaded(true)
+            if (!dataStore.isPageRefreshed){
+                window.location.reload();
+                dataStore.setIsPageRefreshed(true)
+            }
         })
-      }, [dataManager, userSessionActive, keycloakToken]);
+      }, [dataManager, userSessionActive, keycloakToken, isPinnedDataLoaded, setIsPinnedDataLoaded]);
 
     const renderTab = () => {
            // if (isPinnedDataLoaded) {

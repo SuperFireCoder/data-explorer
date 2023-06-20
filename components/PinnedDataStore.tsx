@@ -1,6 +1,6 @@
-import { createStore } from 'zustand';
+import { create, createStore } from 'zustand';
 import { useDataManager } from "../hooks/DataManager";
-import { devtools } from 'zustand/middleware'
+import { persist, createJSONStorage,devtools } from 'zustand/middleware'
 import { Dataset } from "./../interfaces/PinnedDataset"
 
 // export interface Dataset {
@@ -45,26 +45,53 @@ interface DataStore {
   setPinnedDatasets: (datasets: Dataset[]) => void;
   addDataset: (dataset: Dataset) => void;
   removeDataset: (datasetId: string) => void;
+  filteredPinnedDataset: Dataset[];
+  setFilteredPinnedDataset: (datasets: Dataset[]) => void;
+  addFilteredPinnedDataset: (dataset: Dataset) => void;
+  removeFilteredPinnedDataset: (datasetId: string) => void;
+  isPageRefreshed: boolean
+  setIsPageRefreshed: (status: boolean) => void;
 }
 
 
-export const useDataStore = createStore<DataStore>()(devtools((set, get) => ({
-  pinnedDatasets: [],
-  isDatasetPinned: (datasetId) => {
-    const pinnedDatasets = get().pinnedDatasets;
+export const useDataStore = create<DataStore>()(devtools((
+  persist(
+    (set, get) => ({
+    pinnedDatasets: [],
+    isDatasetPinned: (datasetId) => {
+      const pinnedDatasets = get().pinnedDatasets;
 
-    if (Array.isArray(pinnedDatasets)) {
-      return pinnedDatasets.some((dataset) => dataset.uuid === datasetId);
-    }
+      if (Array.isArray(pinnedDatasets)) {
+        return pinnedDatasets.some((dataset) => dataset.uuid === datasetId);
+      }
 
-    return false;
-  },
-  setPinnedDatasets: (datasets) => {
-    set({ pinnedDatasets: datasets });
-  },
-  addDataset: (dataset: Dataset) => set((state) => ({ pinnedDatasets: [...state.pinnedDatasets, dataset] })),
-  removeDataset: (datasetId) =>
+      return false;
+    },
+    setPinnedDatasets: (datasets) => {
+      set({ pinnedDatasets: datasets });
+    },
+    addDataset: (dataset: Dataset) => set((state) => ({ pinnedDatasets: [...state.pinnedDatasets, dataset] })),
+    removeDataset: (datasetId) =>
+      set((state) => ({
+        pinnedDatasets: state.pinnedDatasets.filter((dataset) => dataset.uuid !== datasetId),
+      })),
+    filteredPinnedDataset: [],
+    setFilteredPinnedDataset: (datasets) => {
+        set({ filteredPinnedDataset: datasets });
+    },
+    addFilteredPinnedDataset: (dataset: Dataset) => set((state) => ({ filteredPinnedDataset: [...state.filteredPinnedDataset, dataset] })),
+    removeFilteredPinnedDataset: (datasetId) =>
     set((state) => ({
-      pinnedDatasets: state.pinnedDatasets.filter((dataset) => dataset.uuid !== datasetId),
+      filteredPinnedDataset: state.filteredPinnedDataset.filter((dataset) => dataset.uuid !== datasetId),
     })),
-})));
+    isPageRefreshed: false,
+    setIsPageRefreshed: (status) => {
+      set({isPageRefreshed: status})
+    },
+  }),
+  {
+    name:'pinneddata-storage',
+    storage: createJSONStorage(() => sessionStorage),
+  }
+  )
+  )));

@@ -105,6 +105,7 @@ export default function DatasetCard({
             unPinnedDataPromise
                 .then(() => {
                     dataStore.removeDataset(datasetId)
+                    dataStore.removeFilteredPinnedDataset(datasetId)
             })
             // dataStore.removeDataset(datasetId)
             // dataManager.unPinDataset(datasetId)
@@ -117,6 +118,7 @@ export default function DatasetCard({
             pinnedDataPromise
                 .then((pinnedData) => {
                     dataStore.addDataset(pinnedData[0])
+                    dataStore.addFilteredPinnedDataset(pinnedData[0])
             })
         }
         setPinned(!pinned);
