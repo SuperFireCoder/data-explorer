@@ -1,4 +1,4 @@
-export interface Dataset {
+export interface PinnedDataset {
     id: number;
     uuid: string;
     title: string;

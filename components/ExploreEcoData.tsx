@@ -27,7 +27,7 @@ import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
 import { itemSortKeyAlpha, monthItemSort, resolutionItemSort } from "./FacetMultiSelect";
 import FacetNumberRangeFacetState2 from "./FacetNumberRangeFacetState2";
 import FacetSelectFacetState2 from "./FacetSelectFacetState2";
-import { useDataStore } from "./PinnedDataStore";
+import { usePinnedDataStore } from "./../interfaces/PinnedDataStore";
 import { useDataManager } from "../hooks/DataManager";
 
 interface QueryParameters {
@@ -504,7 +504,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
 
 export default function IndexPage() {
 
-    const dataStore = useDataStore.getState();
+    const dataStore = usePinnedDataStore.getState();
     const pinnedDataset =  dataStore.pinnedDatasets;
     console.log("pinnedDataset..........pinnedDataset.............................")
     console.log(pinnedDataset)

@@ -19,9 +19,9 @@ import {
     useEsIndividualFacetFreeText,
 } from "../hooks/EsFacet";
 import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
-import { useDataStore } from "./PinnedDataStore";
+import { usePinnedDataStore } from "./../interfaces/PinnedDataStore";
 import { useDataManager } from "../hooks/DataManager";
-import { Dataset } from "./../interfaces/PinnedDataset";
+import { PinnedDataset } from "./../interfaces/PinnedDataset";
 
 interface QueryParameters {
     /** Results per page */
@@ -118,7 +118,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
 
 export default function IndexPage() {
 
-    const dataStore = useDataStore.getState();
+    const dataStore = usePinnedDataStore.getState();
 
     const router = useRouter();
 
@@ -214,7 +214,7 @@ export default function IndexPage() {
         };
     }, [router.query,searchTriggerValue]);
 
-    const getProcessedQueryResult = (): Dataset [] => {
+    const getProcessedQueryResult = (): PinnedDataset [] => {
         //Removes dataset from dataset list if user deleted it.
         if (datasetUUIDToDelete && dataStore.pinnedDatasets) {
             let indexToDelete = dataStore.pinnedDatasets.findIndex(x => x.uuid == datasetUUIDToDelete)
@@ -241,15 +241,19 @@ export default function IndexPage() {
         console.log("formState.pageStart   ", formState.pageStart)
         console.log("formState.pageSize   ", formState.pageSize)
         console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        const filteredList : Dataset[] = []
+        const filteredList : PinnedDataset[] = []
 
         for (const item of dataStore.pinnedDatasets) {
         if (item.title.toLowerCase().includes(formState.searchQuery.toLowerCase())) {
             filteredList.push(item);
         }
+        dataStore.setFilteredPinnedDataset(filteredList)
         }
+        console.log("...........filteredList.......  ", filteredList)
+        console.log(".........formState...........   ", formState)
+        console.log("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
         const modifiedList = filteredList.slice(formState.pageStart, formState.pageStart + formState.pageSize)
-        console.log(modifiedList)
+        console.log("modifiedList.............,,,,,," ,modifiedList)
         return modifiedList
        }
        
@@ -266,7 +270,7 @@ export default function IndexPage() {
 
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
 
-    const numberOfAllResults = dataStore.pinnedDatasets.length
+    const numberOfAllResults =  dataStore.filteredPinnedDataset.length
 
     const searchQuery = useEsIndividualFacetFreeText(esFacetRoot, {
         id: "searchQuery",
