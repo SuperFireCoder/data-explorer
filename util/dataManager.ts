@@ -5,42 +5,42 @@ const ENDPOINTS = {
     DATASET: "/api/dataset/",
     PERMISSION: "/api/permission/",
 };
-
-export interface Dataset {
-    id: number;
-    uuid: string;
-    title: string;
-    description: string;
-    attributes: {
-      uuid: string;
-      year: number;
-      title: string;
-      domain: string;
-      partof: string[];
-      license: null | any;
-      categories: string[];
-      resolution: string;
-      year_range: [number, number];
-      time_domain: string;
-      extent_wgs84: {
-        top: number;
-        left: number;
-        right: number;
-        bottom: number;
-      };
-      external_url: null | any;
-      spatial_domain: string;
-      acknowledgement: null | any;
-    };
-    owner: string;
-    acl: object;
-    status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
-    message: string;
-    created: string;
-    ES_index_enabled: Boolean;
-    collection: null;
-    data: string[];
-  }
+import { PinnedDataset } from "./../interfaces/PinnedDataset";
+// export interface Dataset {
+//     id: number;
+//     uuid: string;
+//     title: string;
+//     description: string;
+//     attributes: {
+//       uuid: string;
+//       year: number;
+//       title: string;
+//       domain: string;
+//       partof: string[];
+//       license: null | any;
+//       categories: string[];
+//       resolution: string;
+//       year_range: [number, number];
+//       time_domain: string;
+//       extent_wgs84: {
+//         top: number;
+//         left: number;
+//         right: number;
+//         bottom: number;
+//       };
+//       external_url: null | any;
+//       spatial_domain: string;
+//       acknowledgement: null | any;
+//     };
+//     owner: string;
+//     acl: object;
+//     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
+//     message: string;
+//     created: string;
+//     ES_index_enabled: Boolean;
+//     collection: null;
+//     data: string[];
+//   }
 
 export class DataManager {
     private readonly axios: AxiosInstance;
@@ -208,7 +208,7 @@ export class DataManager {
     }
 
     public pinDataset(uuid: string) {
-        return this.xhrPost<Dataset []>(
+        return this.xhrPost<PinnedDataset []>(
             "/userpinneddatasets/",
             {"uuid": uuid}
         );
@@ -220,7 +220,7 @@ export class DataManager {
     }
 
     public getPinnedDataset(permissions: Record<string, string|undefined>) {
-        return this.xhrGet<Dataset[]>(
+        return this.xhrGet<PinnedDataset[]>(
             "/userpinneddatasets/",
         );
     }

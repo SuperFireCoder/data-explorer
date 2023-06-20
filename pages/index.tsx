@@ -16,7 +16,7 @@ import ExploreEcoData from "../components/ExploreEcoData";
 import ExploreKnowledgeData from "../components/ExploreKnowledgeData";
 import PinnedData from "../components/ExplorePinnedData"
 import Header from "../components/Header";
-import { useDataStore } from "./../components/PinnedDataStore";
+import { usePinnedDataStore } from "./../interfaces/PinnedDataStore";
 import { useDataManager } from "../hooks/DataManager";
 
 const config = getConfig();
@@ -49,7 +49,7 @@ export default function IndexPage() {
     /** Hide the blue outline when mouse down. Only show the switch's blue outline for accessibility when users using keyboard tab. */
     FocusStyleManager.onlyShowFocusOnTabs();
     const {dataManager, userSessionActive} = useDataManager();
-    const dataStore = useDataStore.getState();
+    const dataStore = usePinnedDataStore.getState();
 
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();

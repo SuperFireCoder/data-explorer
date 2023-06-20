@@ -33,7 +33,7 @@ import { useTheme } from "@ecocommons-australia/ui-library";
 import styles from "./DatasetCard.module.css";
 import DatasetSharingDrawer from "./DatasetSharingDrawer";
 import { useKeycloakInfo } from "../util/keycloak";
-import { useDataStore } from "./PinnedDataStore";
+import { usePinnedDataStore } from "./../interfaces/PinnedDataStore";
 
 export interface Props {
     /** ID of dataset to load for metadata view, etc. */
@@ -64,7 +64,7 @@ export interface Props {
     onSelect?: (uuid: string) => void;
     setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>
 }
-const dataStore = useDataStore.getState();
+const dataStore = usePinnedDataStore.getState();
 
 
 export default function DatasetCard({
@@ -84,7 +84,7 @@ export default function DatasetCard({
 }: Props) {
     const { keycloak } = useKeycloakInfo();
     const { dataManager } = useDataManager();
-    const dataStore = useDataStore.getState();
+    const dataStore = usePinnedDataStore.getState();
     const { mergeStyles } = useTheme();
     const router = useRouter();
 
