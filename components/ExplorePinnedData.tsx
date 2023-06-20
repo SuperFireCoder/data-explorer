@@ -21,7 +21,7 @@ import {
 import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
 import { useDataStore } from "./PinnedDataStore";
 import { useDataManager } from "../hooks/DataManager";
-import { Dataset } from "./PinnedDataStore";
+import { Dataset } from "./../interfaces/PinnedDataset";
 
 interface QueryParameters {
     /** Results per page */
