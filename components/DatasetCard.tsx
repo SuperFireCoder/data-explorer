@@ -232,6 +232,7 @@ export default function DatasetCard({
                 .promise.then(() => {
                     setIsDeleteInProgress(false);
                     setDatasetUUIDToDelete(datasetId)
+                    dataStore.removeDataset(datasetId)
                 })
                 .catch(error => {
                     setErrorMessage(error.code + " : " + error.title);
