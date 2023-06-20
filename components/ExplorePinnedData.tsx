@@ -234,13 +234,7 @@ export default function IndexPage() {
     }
 
     const fetchDataFromDataStore = (formState: Partial<FormState>) => {
-        console.log("form State.......", formState)
-       console.log("&&&&&&&&&&&&&&&&&&&&&&&&&")
-       console.log(dataStore.pinnedDatasets)
        if (formState.pageSize && formState.pageStart !== undefined && formState.searchQuery !== undefined){
-        console.log("formState.pageStart   ", formState.pageStart)
-        console.log("formState.pageSize   ", formState.pageSize)
-        console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
         const filteredList : PinnedDataset[] = []
 
         for (const item of dataStore.pinnedDatasets) {
@@ -249,11 +243,7 @@ export default function IndexPage() {
         }
         dataStore.setFilteredPinnedDataset(filteredList)
         }
-        console.log("...........filteredList.......  ", filteredList)
-        console.log(".........formState...........   ", formState)
-        console.log("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm")
         const modifiedList = filteredList.slice(formState.pageStart, formState.pageStart + formState.pageSize)
-        console.log("modifiedList.............,,,,,," ,modifiedList)
         return modifiedList
        }
        
