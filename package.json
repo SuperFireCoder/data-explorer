@@ -10,7 +10,8 @@
     "test": "jest",
     "cypress": "cypress open",
     "cy:open": "cypress open",
-    "cy:run": "cypress run"
+    "cy:run": "cypress run",
+    "test-coverage": "jest --coverageReporters='text-summary'"
   },
   "dependencies": {
     "@blueprintjs/core": "3.35.0",
