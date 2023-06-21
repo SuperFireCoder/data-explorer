@@ -616,7 +616,7 @@ export default function IndexPage() {
             facetDomain = [],
             facetCollection = [],
             facetGcm = [],
-            facetMonth = [],
+            facetMonth = [],  
             facetDataCategory=[]
         } = router.query as QueryParameters;
 
