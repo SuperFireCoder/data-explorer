@@ -13,4 +13,6 @@ module.exports = {
         ".+\\.(css|styl|less|sass|scss)$",
     ],
     transformIgnorePatterns: [`/node_modules/(?!${esModules})`],
+    coverageReporters: ["test-summary"],
+    collectCoverage: true
 };
