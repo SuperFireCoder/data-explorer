@@ -18,7 +18,7 @@ interface PinnedDataStore {
 }
 
 
-export const usePinnedDataStore = create<PinnedDataStore>()(devtools((
+export const usePinnedDataStore = create<PinnedDataStore>()(
   persist(
     (set, get) => ({
     pinnedDatasets: [],
@@ -57,5 +57,4 @@ export const usePinnedDataStore = create<PinnedDataStore>()(devtools((
     name:'pinneddata-storage',
     storage: createJSONStorage(() => sessionStorage),
   }
-  )
-  )));
+  ));

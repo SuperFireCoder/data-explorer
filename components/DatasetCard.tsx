@@ -331,6 +331,7 @@ export default function DatasetCard({
                         icon={ pinned? IconNames.STAR : IconNames.STAR_EMPTY}
                         onClick={handleTogglePin}
                         color={pinned? "#e1a96a" : ""}
+                        style={{ cursor: "pointer" }}
                     />
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
