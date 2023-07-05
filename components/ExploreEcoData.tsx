@@ -506,6 +506,8 @@ export default function IndexPage() {
 
     const dataStore = usePinnedDataStore.getState();
 
+    dataStore.setIsPinnedPage(false)
+
     const router = useRouter();
 
     const isEmbed = router.query.embed === "1";

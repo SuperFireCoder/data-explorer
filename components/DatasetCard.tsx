@@ -101,6 +101,9 @@ export default function DatasetCard({
                 .then(() => {
                     dataStore.removeDataset(datasetId)
                     dataStore.removeFilteredPinnedDataset(datasetId)
+                    if (dataStore.isPinnedPage){
+                        setDatasetUUIDToDelete(datasetId)
+                    }
             })
         }
         else {

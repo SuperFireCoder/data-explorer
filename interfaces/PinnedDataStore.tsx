@@ -15,6 +15,8 @@ interface PinnedDataStore {
   removeFilteredPinnedDataset: (datasetId: string) => void;
   isPageRefreshed: boolean
   setIsPageRefreshed: (status: boolean) => void;
+  isPinnedPage: boolean;
+  setIsPinnedPage: (page: boolean) => void;
 }
 
 
@@ -52,6 +54,10 @@ export const usePinnedDataStore = create<PinnedDataStore>()(
     setIsPageRefreshed: (status) => {
       set({isPageRefreshed: status})
     },
+    isPinnedPage: false,
+    setIsPinnedPage: (page) => {
+      set({isPinnedPage: page})
+    }
   }),
   {
     name:'pinneddata-storage',
