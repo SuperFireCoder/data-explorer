@@ -13,4 +13,5 @@ export interface PinnedDataset {
     owner: string;
     status: DataStatus;
     message: string;
+    created: string;
   }
