@@ -164,19 +164,19 @@ export class DataManager {
 
     public pinDataset(uuid: string) {
         return this.xhrPost<PinnedDataset []>(
-            "/userpinneddatasets/",
+            "/api/userpinneddatasets/",
             {"uuid": uuid}
         );
     }
 
     public unPinDataset(uuid: string) {
-        const url = `/userpinneddatasets/?uuid=${uuid}`;
+        const url = `/api/userpinneddatasets/?uuid=${uuid}`;
         return this.xhrDelete<unknown>(url);
     }
 
     public getPinnedDataset(permissions: Record<string, string|undefined>) {
         return this.xhrGet<PinnedDataset[]>(
-            "/userpinneddatasets/",
+            "/api/userpinneddatasets/",
         );
     }
 }
