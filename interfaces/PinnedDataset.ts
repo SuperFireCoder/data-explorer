@@ -9,13 +9,8 @@ export interface PinnedDataset {
     uuid: string;
     title: string;
     description: string;
-    categories: string[];
+    scientific_type: string[];
     owner: string;
-    acl: object;
     status: DataStatus;
     message: string;
-    created: string;
-    ES_index_enabled: Boolean;
-    collection: null;
-    data: string[];
   }

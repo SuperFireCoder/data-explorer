@@ -431,8 +431,8 @@ export default function IndexPage() {
                                     item.status === "SUCCESS"
                                         ? // TODO: Clarify values for "scientific_type"
                                         ({
-                                            type:  item.categories[0],
-                                            subtype:item.categories[1],
+                                            type:  item.scientific_type[0],
+                                            subtype:item.scientific_type[1],
                                         } as unknown as DatasetType)
                                         : undefined
                                 }
