@@ -14,5 +14,5 @@ module.exports = {
     ],
     transformIgnorePatterns: [`/node_modules/(?!${esModules})`],
     coverageReporters: ["test-summary"],
-    collectCoverage: true,
+    collectCoverage: true
 };
