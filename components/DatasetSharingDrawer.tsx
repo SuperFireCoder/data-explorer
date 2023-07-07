@@ -173,24 +173,31 @@ export default function DatasetSharingDrawer({
         closeDiscardChangesAlert();
     }, [closeDiscardChangesAlert]);
 
-    const addNewUser = useCallback(
-        (userId: string) => {
+    const addNewUsers = useCallback((userIds: string[]) => {
+        //set working permissions for each user addeded
+        setWorkingPermissions((prevPermissions) => {
+          const newPermissions: Record<string, Permission[]> = { ...prevPermissions };
+      
+          userIds.forEach((userId) => {
             // Check if already present
             const workingPermissionArray: Permission[] | undefined =
-                workingPermissions[userId];
-
+              newPermissions[userId];
+            // If the permissions are previously added, no need to add them again
             if (
-                workingPermissions[userId] !== undefined &&
-                workingPermissionArray.length !== 0
+              workingPermissionArray !== undefined &&
+              workingPermissionArray.length !== 0
             ) {
-                return;
+              return;
             }
-
-            // Add to working permissions object
-            setWorkingPermissions((p) => ({ ...p, [userId]: ["view_ds"] }));
-        },
-        [workingPermissions]
-    );
+            // Add view permission by default
+            newPermissions[userId] = ["view_ds"];
+          });
+      
+          return newPermissions;
+        });
+      }, []);
+      
+    
 
     const removeUser = useCallback((userId: string) => {
         // Set user's working permission to empty array to indicate user deleted
@@ -275,34 +282,41 @@ export default function DatasetSharingDrawer({
 
             (async () => {
                 try {
-                    // Fetch permissions
-                    const {
-                        promise,
-                        cancellationToken: datasetPermissionCancellationToken,
-                    } = dataManager.getDatasetPermissions(datasetId);
-
-                    cancellationToken = datasetPermissionCancellationToken;
-
-                    const permissions = await promise;
-
-                    // Store permissions in `existingPermissions` and copy to
-                    // `newPermissions`
-                    setExistingPermissions(
-                        permissions as typeof existingPermissions
+                  // Fetch permissions
+                  const {
+                    promise,
+                    cancellationToken: datasetPermissionCancellationToken,
+                  } = dataManager.getDatasetPermissions(datasetId);
+              
+                  cancellationToken = datasetPermissionCancellationToken;
+              
+                  const permissions: Record<string, string[]> = await promise;
+              
+                  // Filter out any invalid permissions and convert to the expected type
+                  const filteredPermissions: Record<string, ("view_ds" | "delete_ds")[]> = {};
+                  for (const [userId, permissionArray] of Object.entries(permissions)) {
+                    const validPermissions = permissionArray.filter(permission =>
+                      ["view_ds", "delete_ds"].includes(permission)
                     );
-                    setWorkingPermissions(
-                        permissions as typeof workingPermissions
-                    );
+                    filteredPermissions[userId] = validPermissions as ("view_ds" | "delete_ds")[];
+                  }
+              
+                  // Store permissions in `existingPermissions` and copy to `workingPermissions`
+                  setExistingPermissions(filteredPermissions);
+                  setWorkingPermissions({ ...filteredPermissions });
                 } catch (e) {
-                    // Ignore cancellation events
-                    if (axios.isCancel(e)) {
-                        return;
-                    }
-
-                    console.error(e);
-                    alert(e.toString());
+                  // Ignore cancellation events
+                  if (axios.isCancel(e)) {
+                    return;
+                  }
+              
+                  console.error(e);
+                  alert(e.toString());
                 }
-            })();
+              })();
+              
+              
+              
 
             return function stopFetchingExistingPermissions() {
                 cancellationToken?.cancel();
@@ -354,7 +368,7 @@ export default function DatasetSharingDrawer({
                         <Col>
                             <DatasetSharingAddUserButton
                                 disabled={existingPermissionsLoading}
-                                onAddUser={addNewUser}
+                                onAddUsers={addNewUsers}
                             />
                         </Col>
                         <Col xs="content">
