@@ -5,7 +5,7 @@ const ENDPOINTS = {
     DATASET: "/api/dataset/",
     PERMISSION: "/api/permission/",
 };
-
+import { PinnedDataset } from "./../interfaces/PinnedDataset";
 export class DataManager {
     private readonly axios: AxiosInstance;
 
@@ -111,14 +111,14 @@ export class DataManager {
         return { promise, cancellationToken, axiosPromise };
     }
 
-    // private xhrDelete<T>(url: string) {
-    //     const cancellationToken = this.getNewAxiosCancellationToken();
-    //     const axiosPromise = this.axios.delete<T>(url, {
-    //         cancelToken: cancellationToken.token,
-    //     });
-    //     const promise = axiosPromise.then((res) => res.data);
-    //     return { promise, cancellationToken, axiosPromise };
-    // }
+    private xhrPatch<T>(url: string, data: unknown) {
+        const cancellationToken = this.getNewAxiosCancellationToken();
+        const axiosPromise = this.axios.patch<T>(url, data, {
+            cancelToken: cancellationToken.token,
+        });
+        const promise = axiosPromise.then((res) => res.data);
+        return { promise, cancellationToken, axiosPromise };
+    }
 
     public getDatasetFileStatus(url: string) {
         const cancellationToken = this.getNewAxiosCancellationToken();
@@ -160,5 +160,23 @@ export class DataManager {
         return this.xhrPost<unknown>(`${ENDPOINTS.PERMISSION}${uuid}/delete`, {
             users: userIds,
         });
+    }
+
+    public pinDataset(uuid: string) {
+        return this.xhrPost<PinnedDataset []>(
+            "/api/userpinneddatasets/",
+            {"uuid": uuid}
+        );
+    }
+
+    public unPinDataset(uuid: string) {
+        const url = `/api/userpinneddatasets/?uuid=${uuid}`;
+        return this.xhrDelete<unknown>(url);
+    }
+
+    public getPinnedDataset(permissions: Record<string, string|undefined>) {
+        return this.xhrGet<PinnedDataset[]>(
+            "/api/userpinneddatasets/",
+        );
     }
 }
