@@ -198,6 +198,7 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
 
     useEffect(
         function executeGlobalAggregationsFetch() {
+          
             const esQueryCancelToken = axios.CancelToken.source();
 
             (async () => {
@@ -274,6 +275,7 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
 
     useEffect(
         function executeEsQueryOnFormStateChange() {
+            
             const esQueryCancelToken = axios.CancelToken.source();
 
             (async () => {

@@ -10,8 +10,10 @@ import {
     MenuItem,
     Popover,
     Position,
-    Spinner
+    Spinner,
+    Icon,
 } from "@blueprintjs/core";
+import {IconNames} from "@blueprintjs/icons"
 import classnames from "classnames";
 import { Col, Row } from "react-grid-system";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
@@ -33,6 +35,7 @@ import { useTheme } from "@ecocommons-australia/ui-library";
 import styles from "./DatasetCard.module.css";
 import DatasetSharingDrawer from "./DatasetSharingDrawer";
 import { useKeycloakInfo } from "../util/keycloak";
+import { usePinnedDataStore } from "./../interfaces/PinnedDataStore";
 
 export interface Props {
     /** ID of dataset to load for metadata view, etc. */
@@ -63,6 +66,8 @@ export interface Props {
     onSelect?: (uuid: string) => void;
     setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>
 }
+const dataStore = usePinnedDataStore.getState();
+
 
 export default function DatasetCard({
     datasetId,
@@ -81,11 +86,38 @@ export default function DatasetCard({
 }: Props) {
     const { keycloak } = useKeycloakInfo();
     const { dataManager } = useDataManager();
+    const dataStore = usePinnedDataStore.getState();
     const { mergeStyles } = useTheme();
     const router = useRouter();
 
     const [errorMessage, setErrorMessage] = useState("");
     const [isErrorAlertOpen, setIsErrorAlertOpen] = useState(false);
+    const [pinned, setPinned] = useState(dataStore.isDatasetPinned(datasetId));
+
+    const handleTogglePin = () => {
+        if (pinned){
+            const { promise: unPinnedDataPromise } = dataManager.unPinDataset(datasetId)
+            unPinnedDataPromise
+                .then(() => {
+                    dataStore.removeDataset(datasetId)
+                    dataStore.removeFilteredPinnedDataset(datasetId)
+                    if (dataStore.isPinnedPage){
+                        setDatasetUUIDToDelete(datasetId)
+                    }
+            })
+        }
+        else {
+            // const pinnedData = dataManager.pinDataset(datasetId)
+            const { promise: pinnedDataPromise } = dataManager.pinDataset(datasetId)
+
+            pinnedDataPromise
+                .then((pinnedData) => {
+                    dataStore.addDataset(pinnedData[0])
+                    dataStore.addFilteredPinnedDataset(pinnedData[0])
+            })
+        }
+        setPinned(!pinned);
+      };
 
     const showInfoView = router?.query.showInfo === "1";
     const datasetIdUrl = router?.query.datasetId;
@@ -196,6 +228,7 @@ export default function DatasetCard({
                 .promise.then(() => {
                     setIsDeleteInProgress(false);
                     setDatasetUUIDToDelete(datasetId)
+                    dataStore.removeDataset(datasetId)
                 })
                 .catch(error => {
                     setErrorMessage(error.code + " : " + error.title);
@@ -297,6 +330,12 @@ export default function DatasetCard({
                             </div>
                         )}
                     </Col>
+                    <Icon
+                        icon={ pinned? IconNames.STAR : IconNames.STAR_EMPTY}
+                        onClick={handleTogglePin}
+                        color={pinned? "#e1a96a" : ""}
+                        style={{ cursor: "pointer" }}
+                    />
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
                             {onSelect ?

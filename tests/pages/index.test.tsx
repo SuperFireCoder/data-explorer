@@ -138,6 +138,22 @@ describe("IndexPage", () => {
         expect(await screen.findByText("Test title 3")).toBeTruthy();
     });
 
+    it("renders sub bar links", () => {
+        render(<IndexPage />);
+        // Assert that the sub bar links are rendered correctly
+        const ecoDataLink = screen.getByRole("link", { name: "Explore EcoCommons Data" });
+        expect(ecoDataLink).toBeInTheDocument();
+    
+        const knowledgeDataLink = screen.getByRole("link", { name: "Explore Knowledge Network Data" });
+        expect(knowledgeDataLink).toBeInTheDocument();
+    
+        const pinnedDataLink = screen.getByRole("link", { name: "Pinned Data" });
+        expect(pinnedDataLink).toBeInTheDocument();
+    
+        const importLink = screen.getByRole("link", { name: "Import data" });
+        expect(importLink).toBeInTheDocument();
+      });
+
     it("renders correct pagination buttons for more than 1 page", async () => {
         const router = getRouterMock();
 

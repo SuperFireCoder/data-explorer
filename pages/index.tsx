@@ -16,7 +16,11 @@ import ExploreEcoData from "../components/ExploreEcoData";
 import ExploreKnowledgeData from "../components/ExploreKnowledgeData";
 import PinnedData from "../components/ExplorePinnedData"
 import Header from "../components/Header";
+import { usePinnedDataStore } from "./../interfaces/PinnedDataStore";
+import { useDataManager } from "../hooks/DataManager";
+
 const config = getConfig();
+
 
 const subBarLinks = [
     {key: "eco-data",
@@ -28,11 +32,11 @@ const subBarLinks = [
       href: "/?tab=knowledge-data",
       label: "Explore Knowledge Network Data",
     },
-    // {
-    //     key: "pinned-data",
-    //     href: "/?tab=pinned-data",
-    //     label: "Pinned Data",
-    //   },
+    {
+        key: "pinned-data",
+        href: "/?tab=pinned-data",
+        label: "Pinned Data",
+      },
     {
       key: "import",
       href: getDataExplorerSubbarImportData() || "#",
@@ -44,6 +48,8 @@ const subBarLinks = [
 export default function IndexPage() {
     /** Hide the blue outline when mouse down. Only show the switch's blue outline for accessibility when users using keyboard tab. */
     FocusStyleManager.onlyShowFocusOnTabs();
+    const {dataManager, userSessionActive} = useDataManager();
+    const dataStore = usePinnedDataStore.getState();
 
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
@@ -54,8 +60,10 @@ export default function IndexPage() {
 
     const [currentTab, setCurrentTab] = useState("eco-data")
     const [subBarActiveKey, setSubBarActiveKey] = useState("eco-data");
+    const [isPinnedDataLoaded, setIsPinnedDataLoaded] = useState(false);
   
     useEffect(() => {
+        
        if(router.asPath === "/") {
         router.replace("/?tab=eco-data", undefined, { shallow: true })
        }
@@ -76,18 +84,39 @@ export default function IndexPage() {
         }
     }, [router.query]);
 
-    const renderTab = () => {
-        switch (currentTab) {
-            case "eco-data":
-                return <ExploreEcoData />;
-            case "knowledge-data":
-                return <ExploreKnowledgeData />;
-            // case "pinned-data":
-            //     return <PinnedData />;
-            default:
-                return null;
+
+    useEffect(() => {
+        if (keycloakToken === undefined)
+        {
+            return
         }
-    }
+        const { promise: pinnedDataResponsePromise } = dataManager.getPinnedDataset({"token":keycloakToken});
+        pinnedDataResponsePromise
+        .then((pinnedDataResponse: any) => {
+            dataStore.setPinnedDatasets(pinnedDataResponse) 
+            dataStore.setFilteredPinnedDataset(pinnedDataResponse)
+            setIsPinnedDataLoaded(true)
+            if (!dataStore.isPageRefreshed){
+                window.location.reload();
+                dataStore.setIsPageRefreshed(true)
+            }
+        })
+      }, [dataManager, userSessionActive, keycloakToken, isPinnedDataLoaded, setIsPinnedDataLoaded]);
+
+    const renderTab = () => {
+           // if (isPinnedDataLoaded) {
+                switch (currentTab) {
+                    case "eco-data":
+                        return <ExploreEcoData />;
+                    case "knowledge-data":
+                        return <ExploreKnowledgeData />;
+                    case "pinned-data":
+                        return <PinnedData />;
+                    default:
+                        return null;
+                }
+          //  } 
+    };   
 
     if (isEmbed === true){
         return (

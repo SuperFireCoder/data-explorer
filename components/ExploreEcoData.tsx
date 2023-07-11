@@ -27,6 +27,8 @@ import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
 import { itemSortKeyAlpha, monthItemSort, resolutionItemSort } from "./FacetMultiSelect";
 import FacetNumberRangeFacetState2 from "./FacetNumberRangeFacetState2";
 import FacetSelectFacetState2 from "./FacetSelectFacetState2";
+import { usePinnedDataStore } from "./../interfaces/PinnedDataStore";
+import { useDataManager } from "../hooks/DataManager";
 
 interface QueryParameters {
     /** Results per page */
@@ -73,6 +75,8 @@ interface FormState {
     facetMonth: readonly string[];
     facetDataCategory: readonly string[];
 }
+
+//const dataManager = useDataManager();
 
 function stripEmptyStringQueryParams(
     queryParams: ParsedUrlQueryInput
@@ -497,7 +501,13 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
 
 ];
 
+
 export default function IndexPage() {
+
+    const dataStore = usePinnedDataStore.getState();
+
+    dataStore.setIsPinnedPage(false)
+
     const router = useRouter();
 
     const isEmbed = router.query.embed === "1";
@@ -608,7 +618,7 @@ export default function IndexPage() {
             facetDomain = [],
             facetCollection = [],
             facetGcm = [],
-            facetMonth = [],
+            facetMonth = [],  
             facetDataCategory=[]
         } = router.query as QueryParameters;
 
