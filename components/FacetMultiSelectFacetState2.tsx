@@ -28,12 +28,11 @@ export default function FacetMultiSelectFacetState2<T>({
         let timeDomainItems: EsAggregationBucket[] = []
         let selectedTimeDomainItems: (EsAggregationBucket | undefined)[] = []
         items.map(item => {
-            if(item.key !== ""){
                 if (item.key === OLD_TIME_DOMAIN_VAL) {
                     item.key = NEW_TIME_DOMAIN_VAL
                 }
                 timeDomainItems.push(item)
-            }
+           
         })
         items = timeDomainItems
         selectedItems?.forEach(item => {
