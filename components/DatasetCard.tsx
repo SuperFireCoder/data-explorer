@@ -330,7 +330,7 @@ export default function DatasetCard({
                             </div>
                         )}
                     </Col>
-                    {keycloak?.authenticated !== false && (
+                    {keycloak?.authenticated === true && (
                         <Icon
                             icon={pinned ? IconNames.STAR : IconNames.STAR_EMPTY}
                             onClick={handleTogglePin}
