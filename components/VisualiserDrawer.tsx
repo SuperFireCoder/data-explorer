@@ -183,6 +183,7 @@ export default function VisualiserDrawer({
                             mapStyle: currentMapStyle,
                             mapScale: currentMapScale,
                             datasetId: datasetId,
+                            dataParameters: metadata && "data" in metadata && metadata.data.parameters[layerName]? metadata.data.parameters[layerName]: undefined
                     });
                         mapRequest.getBearerToken = getBearerTokenFn;
 

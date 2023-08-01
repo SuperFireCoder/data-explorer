@@ -338,6 +338,7 @@ export default function DatasetCard({
                             style={{ cursor: "pointer" }}
                         />
                     )}
+
                     <Col xs="content">
                         <ButtonGroup vertical alignText="left">
                             {onSelect ?

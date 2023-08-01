@@ -25,7 +25,7 @@ describe(
                 .get('.bp3-tag-remove').last().click()
                 // I select "Future" from Time Domain option
                 cy.contains('Future').click()
-                .get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]').first()
+                .get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]').should('contain', 'Future')
                 // assert only 1 Time Domain and 1 Month Domain option is chosen
                 .get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]').first().should('contain', 'Non monthly data')
                 .get('.bp3-tag').its('length').should('eq', 2)
