@@ -1,7 +1,5 @@
 /// <reference types="cypress" />
 
-const specTitle = require("cypress-sonarqube-reporter/specTitle");
-
 /**
  * Feature: ID35; Visualise datasets on a map in data explorer
  *
@@ -19,10 +17,10 @@ const DATA_EXPLORER_API = Cypress.env(
     "NEXT_PUBLIC_DATA_EXPLORER_BACKEND_SERVER_URL"
 );
 
-describe(specTitle("Visualise datasets on a map"), () => {
+describe("Visualise datasets on a map", () => {
     beforeEach(() => {
-        cy.login().visit('/');
-        cy.contains('Datasets').click()
+        cy.login().visit("/");
+        cy.contains("Datasets").click();
         cy.intercept("POST", VISUALISER_API + "/api/maps/").as("newVisualiser");
         cy.intercept("GET", VISUALISER_API + "/api/maps/*/status").as(
             "getMapStatus"
@@ -38,7 +36,8 @@ describe(specTitle("Visualise datasets on a map"), () => {
         // And I am on the "Datasets" tab
         // When I type "325Sulfur crested cockatoo.csv"
         // And press enter
-        const datasetName = "Australia, exCHELSA (extended bioclim) (1980, 30 arcsec (~1km))";
+        const datasetName =
+            "Australia, exCHELSA (extended bioclim) (1980, 30 arcsec (~1km))";
         cy.get('[data-cy="search-field"]')
             .clear()
             .type(`${datasetName}{enter}`);
