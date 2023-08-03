@@ -41,7 +41,7 @@ describe("filtering Time Domain Future", () => {
             .wait("@searchResult")
             // I should see page with filtered datasets set in future years
             // get year text
-            .get('[data-cy="DatasetCard-card"]')
+        cy.get('[data-cy="DatasetCard-card"]')
             .first()
             .invoke("text")
             .then(($text) => {
