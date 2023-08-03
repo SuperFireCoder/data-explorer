@@ -22,12 +22,7 @@ describe("Visualise datasets on a map", () => {
         cy.login().visit("/");
         cy.contains("Datasets").click();
         cy.intercept("POST", VISUALISER_API + "/api/maps/").as("newVisualiser");
-        cy.intercept("GET", VISUALISER_API + "/api/maps/*/status").as(
-            "getMapStatus"
-        );
-        cy.intercept("GET", VISUALISER_API + "/api/maps/*/wms/*", {
-            fixture: "map.png"
-        }).as("getMap");
+        cy.intercept("GET", VISUALISER_API + "/api/maps/*/status").as("getMapStatus");
         cy.intercept("GET", DATA_EXPLORER_API + "/api/dataset/*").as("newData");
     });
 

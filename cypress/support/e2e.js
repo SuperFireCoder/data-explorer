@@ -18,5 +18,15 @@ import './commands'
 
 import '@cypress/code-coverage/support';
 
+const VISUALISER_API = Cypress.env(
+    "NEXT_PUBLIC_VISUALISER_CLIENT_GEOSPATIAL_ECMAPVISUALISERREQUEST_BACKEND_SERVER_URL"
+);
+
+beforeEach(() => {
+    cy.intercept("GET", VISUALISER_API + "/api/maps/*/wms/*", {
+        fixture: "map.png"
+    }).as("getMap");
+});
+
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
