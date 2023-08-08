@@ -1073,6 +1073,7 @@ export default function IndexPage() {
                                 selected={formState.selectedDatasetId === _source.uuid}
                                 onSelect={isEmbed === true ? onDatasetSelect : undefined}
                                 setDatasetUUIDToDelete={setDatasetUUIDToDelete}
+                                acl={_source.acl}
                             />
                         ))}
                     </Col>
