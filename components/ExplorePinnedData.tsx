@@ -440,6 +440,9 @@ export default function IndexPage() {
                                 selected={formState.selectedDatasetId === item.uuid}
                                 onSelect={isEmbed === true ? onDatasetSelect : undefined}
                                 setDatasetUUIDToDelete={setDatasetUUIDToDelete}
+                                // acl={_source.acl}
+                                // Not yet enabled as pinned DS uses a different data model to the main view 
+                                // Users will get a 403 until this is sorted.
                             />
                         ))}
                     </Col>

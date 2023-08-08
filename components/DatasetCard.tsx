@@ -51,7 +51,7 @@ export interface Props {
     /** Indicate if a dataset is downloadable or not */
     downloadable?: boolean
     /** User ID of the owner of the dataset */
-    ownerId?: string | string[];
+    ownerId?: string[];
     /** Status of the dataset import */
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
     /** Import failure message */
@@ -64,7 +64,8 @@ export interface Props {
     /** Allow dataset cards to be selected */
     selected?: boolean;
     onSelect?: (uuid: string) => void;
-    setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>
+    setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>;
+    acl?: { [K: string]: any };
 }
 const dataStore = usePinnedDataStore.getState();
 
@@ -83,6 +84,7 @@ export default function DatasetCard({
     selected,
     onSelect,
     setDatasetUUIDToDelete,
+    acl={},
 }: Props) {
     const { keycloak } = useKeycloakInfo();
     const { dataManager } = useDataManager();
@@ -242,6 +244,22 @@ export default function DatasetCard({
         return "Dataset failed to import"
     }, [failureMessage])
 
+    const isDownloadDisabled: boolean = useMemo(() => {
+        // owned dataset or public dataset
+        if (currentUserId !== undefined) {
+            if (ownerId === undefined || ownerId.includes('role:admin') || ownerId.includes(currentUserId)) {
+                if (downloadable && !disabledDataset) {
+                    return false
+                }
+            } else if (!ownerId.includes(currentUserId)) { // shared dataset
+                if (downloadable && !disabledDataset && acl[currentUserId]?.includes("download_ds")) {
+                    return false
+                }
+            }
+        }
+        return true
+    }, [downloadable, disabledDataset, currentUserId, acl])
+    
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
     // for users of browsers not supporting the `line-clamp` CSS property
@@ -388,7 +406,7 @@ export default function DatasetCard({
                                                     icon="download"
                                                     text="Download"
                                                     onClick={downloadDataset}
-                                                    disabled={!downloadable || disabledDataset}
+                                                    disabled={isDownloadDisabled}
                                                     data-cy="download"
                                                 />
                                             }

@@ -27,6 +27,11 @@ const SUPPORTED_PERMISSIONS = [
         label: "Delete",
         editDisabled: false,
     },
+    {
+        permission: "download_ds",
+        label: "Download",
+        editDisabled: false,
+    }
 ] as const;
 
 const MESSAGE_TOASTER =
@@ -282,36 +287,36 @@ export default function DatasetSharingDrawer({
 
             (async () => {
                 try {
-                  // Fetch permissions
-                  const {
-                    promise,
-                    cancellationToken: datasetPermissionCancellationToken,
-                  } = dataManager.getDatasetPermissions(datasetId);
-              
-                  cancellationToken = datasetPermissionCancellationToken;
-              
-                  const permissions: Record<string, string[]> = await promise;
-              
-                  // Filter out any invalid permissions and convert to the expected type
-                  const filteredPermissions: Record<string, ("view_ds" | "delete_ds")[]> = {};
-                  for (const [userId, permissionArray] of Object.entries(permissions)) {
-                    const validPermissions = permissionArray.filter(permission =>
-                      ["view_ds", "delete_ds"].includes(permission)
-                    );
-                    filteredPermissions[userId] = validPermissions as ("view_ds" | "delete_ds")[];
-                  }
-              
-                  // Store permissions in `existingPermissions` and copy to `workingPermissions`
-                  setExistingPermissions(filteredPermissions);
-                  setWorkingPermissions({ ...filteredPermissions });
+                    // Fetch permissions
+                    const {
+                        promise,
+                        cancellationToken: datasetPermissionCancellationToken,
+                    } = dataManager.getDatasetPermissions(datasetId);
+                
+                    cancellationToken = datasetPermissionCancellationToken;
+                
+                    const permissions: Record<string, string[]> = await promise;
+                    
+                    // Filter out any invalid permissions and convert to the expected type
+                    const filteredPermissions: Record<string, ("view_ds" | "delete_ds" | "download_ds")[]> = {};
+                    for (const [userId, permissionArray] of Object.entries(permissions)) {
+                        const validPermissions = permissionArray.filter(permission =>
+                        ["view_ds", "delete_ds", "download_ds"].includes(permission)
+                        );
+                        filteredPermissions[userId] = validPermissions as ("view_ds" | "delete_ds" | "download_ds")[];
+                    }
+                
+                    // Store permissions in `existingPermissions` and copy to `workingPermissions`
+                    setExistingPermissions(filteredPermissions);
+                    setWorkingPermissions({ ...filteredPermissions });
                 } catch (e) {
-                  // Ignore cancellation events
-                  if (axios.isCancel(e)) {
-                    return;
-                  }
-              
-                  console.error(e);
-                  alert(e.toString());
+                    // Ignore cancellation events
+                    if (axios.isCancel(e)) {
+                        return;
+                    }
+                
+                    console.error(e);
+                    alert(e.toString());
                 }
               })();
               
