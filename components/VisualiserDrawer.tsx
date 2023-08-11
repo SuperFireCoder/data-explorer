@@ -93,9 +93,7 @@ export default function VisualiserDrawer({
                 label: metadata.data.parameters[layerName].observedProperty
                     .label.en,
                 layerName,
-                layerUrl: {
-                    __tempUrl: tempUrl,
-                },
+                layerUrl: tempUrl,
             };
         });
     }, [datasetId, metadata]);
