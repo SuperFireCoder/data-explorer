@@ -23,13 +23,13 @@ const SUPPORTED_PERMISSIONS = [
         editDisabled: true,
     },
     {
-        permission: "delete_ds",
-        label: "Delete",
+        permission: "download_ds",
+        label: "Download",
         editDisabled: false,
     },
     {
-        permission: "download_ds",
-        label: "Download",
+        permission: "delete_ds",
+        label: "Delete",
         editDisabled: false,
     }
 ] as const;
@@ -195,15 +195,13 @@ export default function DatasetSharingDrawer({
               return;
             }
             // Add view permission by default
-            newPermissions[userId] = ["view_ds"];
+            newPermissions[userId] = ["view_ds", "download_ds"];
           });
       
           return newPermissions;
         });
-      }, []);
+    }, []);
       
-    
-
     const removeUser = useCallback((userId: string) => {
         // Set user's working permission to empty array to indicate user deleted
         setWorkingPermissions((p) => ({ ...p, [userId]: [] }));
@@ -301,11 +299,10 @@ export default function DatasetSharingDrawer({
                     const filteredPermissions: Record<string, ("view_ds" | "delete_ds" | "download_ds")[]> = {};
                     for (const [userId, permissionArray] of Object.entries(permissions)) {
                         const validPermissions = permissionArray.filter(permission =>
-                        ["view_ds", "delete_ds", "download_ds"].includes(permission)
+                            ["view_ds", "delete_ds", "download_ds"].includes(permission)
                         );
                         filteredPermissions[userId] = validPermissions as ("view_ds" | "delete_ds" | "download_ds")[];
                     }
-                
                     // Store permissions in `existingPermissions` and copy to `workingPermissions`
                     setExistingPermissions(filteredPermissions);
                     setWorkingPermissions({ ...filteredPermissions });
@@ -320,9 +317,6 @@ export default function DatasetSharingDrawer({
                 }
               })();
               
-              
-              
-
             return function stopFetchingExistingPermissions() {
                 cancellationToken?.cancel();
             };
