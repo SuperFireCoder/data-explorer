@@ -30,6 +30,9 @@ export interface EsFacetRootConfig<T> {
         ) => readonly EsAggregationBucket[] | undefined;
     }[];
 
+    /** Default query sort **/
+    sort?: Record<string, any>[];
+
     /** ES endpoint URL */
     url: string;
 }
@@ -118,6 +121,11 @@ export interface EsIndividualFacetNumberRange<T> {
     onRangeChange: (min: number, max: number) => void;
 }
 
+export const DEFAULT_SORT = [
+    { "_score": "desc" },
+    { "created": "desc" }
+];
+
 export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
     formState: T,
     onFormStateChange: (formState: Partial<T>) => void,
@@ -193,7 +201,11 @@ export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
             };
         }
 
-        return queryState.bodyBuilder.build();
+        return queryState
+            .bodyBuilder
+            .sort(config.sort ?? DEFAULT_SORT)
+            .build();
+
     }, [formState, config.facets]);
 
     useEffect(

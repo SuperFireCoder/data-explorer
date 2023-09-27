@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import bodybuilder, { Bodybuilder } from "bodybuilder";
 import { InputGroup, Button, H6, Switch, FocusStyleManager, Spinner } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
-import {getDataExplorerSubbarImportData,} from "../util/env";
+import { getDataExplorerSubbarImportData } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
 import {
     FixedContainer,
@@ -16,40 +16,38 @@ import ExploreEcoData from "../components/ExploreEcoData";
 import ExploreKnowledgeData from "../components/ExploreKnowledgeData";
 import PinnedData from "../components/ExplorePinnedData"
 import Header from "../components/Header";
-import { usePinnedDataStore } from "./../interfaces/PinnedDataStore";
-import { useDataManager } from "../hooks/DataManager";
+
 
 const config = getConfig();
 
 
 const subBarLinks = [
-    {key: "eco-data",
-      href: "/?tab=eco-data", 
-      label: "Explore EcoCommons Data",
+    {
+        key: "eco-data",
+        href: "/?tab=eco-data", 
+        label: "Explore EcoCommons Data",
     },
     {
-      key: "knowledge-data",
-      href: "/?tab=knowledge-data",
-      label: "Explore Knowledge Network Data",
+        key: "knowledge-data",
+        href: "/?tab=knowledge-data",
+        label: "Explore Knowledge Network Data",
     },
     {
         key: "pinned-data",
         href: "/?tab=pinned-data",
         label: "Pinned Data",
-      },
-    {
-      key: "import",
-      href: getDataExplorerSubbarImportData() || "#",
-      label: "Import data",
-      align: "right"
     },
-  ];
+    {
+        key: "import",
+        href: getDataExplorerSubbarImportData() || "#",
+        label: "Import data",
+        align: "right"
+    },
+];
 
 export default function IndexPage() {
     /** Hide the blue outline when mouse down. Only show the switch's blue outline for accessibility when users using keyboard tab. */
     FocusStyleManager.onlyShowFocusOnTabs();
-    const {dataManager, userSessionActive} = useDataManager();
-    const dataStore = usePinnedDataStore.getState();
 
     const { keycloak } = useKeycloakInfo();
     const router = useRouter();
@@ -62,8 +60,10 @@ export default function IndexPage() {
     const [subBarActiveKey, setSubBarActiveKey] = useState("eco-data");
     const [isPinnedDataLoaded, setIsPinnedDataLoaded] = useState(false);
   
+    /** 
+     * Set the initial tab to 'eco-data'
+     */
     useEffect(() => {
-        
        if(router.asPath === "/") {
         router.replace("/?tab=eco-data", undefined, { shallow: true })
        }
@@ -85,24 +85,6 @@ export default function IndexPage() {
     }, [router.query]);
 
 
-    useEffect(() => {
-        if (keycloakToken === undefined)
-        {
-            return
-        }
-        const { promise: pinnedDataResponsePromise } = dataManager.getPinnedDataset({"token":keycloakToken});
-        pinnedDataResponsePromise
-        .then((pinnedDataResponse: any) => {
-            dataStore.setPinnedDatasets(pinnedDataResponse) 
-            dataStore.setFilteredPinnedDataset(pinnedDataResponse)
-            setIsPinnedDataLoaded(true)
-            if (!dataStore.isPageRefreshed){
-                window.location.reload();
-                dataStore.setIsPageRefreshed(true)
-            }
-        })
-      }, [dataManager, userSessionActive, keycloakToken, isPinnedDataLoaded, setIsPinnedDataLoaded]);
-
     const renderTab = () => {
            // if (isPinnedDataLoaded) {
                 switch (currentTab) {
@@ -118,20 +100,20 @@ export default function IndexPage() {
           //  } 
     };   
 
+    if (keycloak?.authenticated === undefined) {
+        return (
+            <div  style={{ 'padding': 200 }}>
+                <Spinner/>
+            </div>
+        );
+    }
+
     if (isEmbed === true){
         return (
             <>
                 <HtmlHead title={["Datasets", "Explore data"]} />
                 <ExploreEcoData />
             </>
-        );
-    }
-
-    if (keycloak?.authenticated === undefined) {
-        return (
-            <div  style={{ 'padding': 200 }}>
-                <Spinner/>
-            </div>
         );
     }
 

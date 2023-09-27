@@ -2,7 +2,7 @@ import { Col, Row } from "@ecocommons-australia/ui-library";
 import { FormEvent, useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import bodybuilder from "bodybuilder";
-import { Button, H6, Spinner, Popover, Position, PopoverInteractionKind, Icon, Tooltip, Classes } from "@blueprintjs/core";
+import { Button, H6, Spinner, Icon, Tooltip, Classes } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
@@ -11,7 +11,6 @@ import { useEffectTrigger } from "../hooks/EffectTrigger";
 
 import { getDataExplorerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
-import { sendDatasetId } from "../util/messages";
 import {
     EsFacetRootConfig,
     QueryState,
@@ -30,21 +29,13 @@ interface QueryParameters {
     pageStart?: string;
     /** Search query string */
     searchQuery?: string;
-    /** Search Dataset **/
-    datasetId?: string;
-    /** Selected Dataset **/
-    selectedDatasetId?: string;
 }
 
 interface FormState {
     pageSize: number;
     pageStart: number;
     searchQuery: string;
-    datasetId: string;
-    selectedDatasetId: string;
 }
-
-//const dataManager = useDataManager();
 
 function stripEmptyStringQueryParams(
     queryParams: ParsedUrlQueryInput
@@ -57,7 +48,6 @@ function stripEmptyStringQueryParams(
         )
     );
 }
-
 
 const FACETS: EsFacetRootConfig<FormState>["facets"] = [
     {
@@ -87,73 +77,44 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                 ),
             };
         },
-    },
-    {
-        id: "datasetId",
-        facetApplicationFn: (formState, query) => {
-            const datasetId = formState.datasetId.trim();
-
-            // If blank, don't apply this facet
-            if (datasetId === undefined || datasetId === "") {
-                return query;
-            }
-
-            // The search box value is used for a query against title
-            // and description
-            const innerQuery = bodybuilder()
-                .orQuery("match", "uuid", datasetId).rawOption("track_total_hits",true);
-
-            return {
-                modified: true,
-                bodyBuilder: query.bodyBuilder.query(
-                    "bool",
-                    (innerQuery.build() as any).query.bool
-                ),
-            };
-        },
-    },
-
+    }
 ];
-
 
 export default function IndexPage() {
 
+    const { dataManager, userSessionActive } = useDataManager();
+
     const dataStore = usePinnedDataStore.getState();
+
+    const [isPinnedDataLoaded, setIsPinnedDataLoaded] = useState(false);
 
     dataStore.setIsPinnedPage(true)
 
     const router = useRouter();
 
-    const isEmbed = router.query.embed === "1";
-
     const [datasetUUIDToDelete, setDatasetUUIDToDelete] =
         useState<string | undefined>(undefined);
+        
     const {
         triggerValue: searchTriggerValue,
         triggerEffect: triggerSearch,
     } = useEffectTrigger();
 
-    const [datasetHistory, setDatasetHistory] = useState<
-        { lastUpdated: Date; } | undefined
-    >(undefined);
-
-
-    useEffect(
-        function setupReloadInterval() {
-            // Trigger job fetch every 30 seconds
-            setDatasetHistory({
-                lastUpdated: new Date(),
-            });
-            const intervalHandle = window.setInterval(() => {
-                triggerSearch();
-            }, 30000);
-
-            return function stopReloadJobsInterval() {
-                window.clearInterval(intervalHandle);
-            };
-        },
-        [triggerSearch]
-    );
+    useEffect(() => {
+        if (userSessionActive === undefined){
+            return
+        }
+        const { promise: pinnedDataResponsePromise } = dataManager.getPinnedDataset();
+        pinnedDataResponsePromise.then((pinnedDataResponse: any) => {
+            dataStore.setPinnedDatasets(pinnedDataResponse) 
+            dataStore.setFilteredPinnedDataset(pinnedDataResponse)
+            setIsPinnedDataLoaded(true)
+            if (!dataStore.isPageRefreshed){
+                window.location.reload();
+                dataStore.setIsPageRefreshed(true)
+            }
+        })
+    }, [dataManager, userSessionActive, isPinnedDataLoaded, setIsPinnedDataLoaded]);
 
     const updateFormState = useCallback(
         (formState: Partial<FormState>) => {
@@ -183,7 +144,6 @@ export default function IndexPage() {
         [router.query]
     );
 
-
     /**
      * Extracts the current page parameters from the URL query parameter values.
      */
@@ -192,13 +152,7 @@ export default function IndexPage() {
             pageSize = "10",
             pageStart = "0",
             searchQuery = "",
-            datasetId = "",
-            selectedDatasetId = "",
         } = router.query as QueryParameters;
-
-        setDatasetHistory({
-            lastUpdated: new Date(),
-        });
 
         return {
             // Pagination
@@ -206,13 +160,7 @@ export default function IndexPage() {
             pageStart: parseInt(pageStart, 10) || 0,
 
             // String search query
-            searchQuery,
-
-            // Searched Dataset
-            datasetId,
-
-            // Selected Dataset
-            selectedDatasetId
+            searchQuery
         };
     }, [router.query,searchTriggerValue]);
 
@@ -250,15 +198,12 @@ export default function IndexPage() {
        }
        
        return dataStore.pinnedDatasets
-      };
+    };
       
-
-
     const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
         facets: FACETS,
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
     });
-
 
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
 
@@ -272,28 +217,6 @@ export default function IndexPage() {
 
     const { keycloak } = useKeycloakInfo();
 
-    const filterPrincipalsItems = useMemo(() => {    //dpnt remoce
-        // If user is signed in, provide option for viewing own data
-        const userId = keycloak?.subject;
-
-        if (userId === undefined) {
-            return [];
-        } else {
-            return [
-                { key: "all", label: "All datasets", disabled: false },
-                {
-                    key: userId ?? "",
-                    label: "My datasets",
-                    disabled: userId === undefined || userId.length === 0,
-                },
-                {
-                    key: `shared-${userId}`,
-                    label: "Shared datasets",
-                    disabled: userId === undefined || userId.length === 0,
-                },
-            ];
-        }
-    }, [keycloak?.subject]);
 
     const currentPageIndex = useMemo(
         () => Math.floor(formState.pageStart / formState.pageSize),
@@ -316,16 +239,6 @@ export default function IndexPage() {
             });
         },
         [updateFormState, formState.pageSize]
-    );
-
-    const onDatasetSelect = useCallback(
-        (uuid: string) => {
-            sendDatasetId(uuid);
-            updateFormState({
-                selectedDatasetId: uuid
-            });
-        },
-        [updateFormState]
     );
 
     return (
@@ -375,30 +288,7 @@ export default function IndexPage() {
                         )}
                     </Col>
                     <Col xs={6}>
-                            <div style={{ textAlign: "right" }}>
-                                <Button
-                                    icon="refresh"
-                                    minimal
-                                    small
-                                    onClick={triggerSearch}
-                                >
-                                    {datasetHistory?.lastUpdated && (
-                                <>
-                                    Last refreshed at{" "}
-                                    {new Intl.DateTimeFormat(undefined, {
-                                        year: "numeric",
-                                        month: "2-digit",
-                                        day: "2-digit",
-
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                        hour12: false,
-                                    }).format(datasetHistory.lastUpdated)}
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
-                        </Col>
+                    </Col>
                     <Col
                         style={{ textAlign: "right" }}
                         data-testid="pagination-buttons"
@@ -437,8 +327,6 @@ export default function IndexPage() {
                                         : undefined
                                 }
                                 ownerId={[item.owner]}
-                                selected={formState.selectedDatasetId === item.uuid}
-                                onSelect={isEmbed === true ? onDatasetSelect : undefined}
                                 setDatasetUUIDToDelete={setDatasetUUIDToDelete}
                                 // acl={_source.acl}
                                 // Not yet enabled as pinned DS uses a different data model to the main view 

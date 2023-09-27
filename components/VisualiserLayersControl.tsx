@@ -32,7 +32,6 @@ export default function VisualiserLayersControl<
     L extends LayerInfo | MapLayer
 >({
     isOpen,
-
     layers,
     currentLayer,
     onCurrentLayerChange,

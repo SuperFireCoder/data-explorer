@@ -174,7 +174,7 @@ export class DataManager {
         return this.xhrDelete<unknown>(url);
     }
 
-    public getPinnedDataset(permissions: Record<string, string|undefined>) {
+    public getPinnedDataset() {
         return this.xhrGet<PinnedDataset[]>(
             "/api/userpinneddatasets/",
         );
