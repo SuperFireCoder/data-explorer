@@ -54,6 +54,8 @@ export interface Props {
     ownerId?: string[];
     /** Status of the dataset import */
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
+    /** Is pinned by user */
+    isPinned?: boolean;
     /** Import failure message */
     failureMessage?: string;
     /**
@@ -78,6 +80,7 @@ export default function DatasetCard({
     lastUpdated,
     ownerId,
     status,
+    isPinned,
     downloadable,
     failureMessage,
     landingPageUrl,
@@ -94,7 +97,11 @@ export default function DatasetCard({
 
     const [errorMessage, setErrorMessage] = useState("");
     const [isErrorAlertOpen, setIsErrorAlertOpen] = useState(false);
-    const [pinned, setPinned] = useState(dataStore.isDatasetPinned(datasetId));
+
+    // Set pinned by prop if available otherwise use data store.
+    const [pinned, setPinned] = useState(
+        isPinned !== undefined ?  isPinned : dataStore.isDatasetPinned(datasetId)
+        );
 
     const handleTogglePin = () => {
         if (pinned){

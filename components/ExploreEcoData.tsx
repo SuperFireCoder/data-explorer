@@ -401,6 +401,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                 return query;           
             }
 
+            // Shared
             if (formState.filterPrincipals.length > 0 && formState.filterPrincipals[0].startsWith("shared-")) {
                 const userId = formState.filterPrincipals[0].replace('shared-','');
 
@@ -419,7 +420,26 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                 };
             }
 
-            // NOTE: still need to investigate how to improve filterPrincipals
+            // Pinned
+            if (formState.filterPrincipals.length > 0 && formState.filterPrincipals[0].startsWith("pinned-")) {
+                const userId = formState.filterPrincipals[0].replace('pinned-','');
+
+                const innerQuery = bodybuilder().filter(
+                    "terms",
+                    "pinned",
+                    [userId]
+                ).rawOption("track_total_hits", true);
+
+                return {
+                    ...query,
+                    bodyBuilder: query.bodyBuilder.query(
+                        "bool",
+                        (innerQuery.build() as any).query.bool
+                    ),
+                };
+            }
+
+            // All
             const innerQuery = bodybuilder().filter(
                 "terms",
                 "allowed_principals",
@@ -501,7 +521,6 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
 
 ];
 
-
 export default function IndexPage() {
 
     const dataStore = usePinnedDataStore.getState();
@@ -516,6 +535,9 @@ export default function IndexPage() {
 
     const [datasetUUIDToDelete, setDatasetUUIDToDelete] =
         useState<string | undefined>(undefined);
+
+    const { keycloak } = useKeycloakInfo();
+
     const {
         triggerValue: searchTriggerValue,
         triggerEffect: triggerSearch,
@@ -524,7 +546,6 @@ export default function IndexPage() {
     const [datasetHistory, setDatasetHistory] = useState<
         { lastUpdated: Date; } | undefined
     >(undefined);
-
 
     useEffect(
         function setupReloadInterval() {
@@ -662,13 +683,15 @@ export default function IndexPage() {
 
     useEffect(() => {
         const state = { ...formState };
+
+        // Set facet defaults on page load 
         if ((state["facetMonth"].length === 0 || state["facetTimeDomain"].length === 0) && formState.filterPrincipals?.length === 0) {
             if (formState.filterPrincipals?.length === 0) {
                 state["facetMonth"] = ["Non monthly data"]
                 state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL]
             }
-             // Disable defaults for shared and owned datasets
-             if ((formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
+            // Disable defaults for shared and owned datasets
+            if ((formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
                 state["facetTimeDomain"] = []
                 state["facetMonth"] = []
             }
@@ -686,6 +709,36 @@ export default function IndexPage() {
     const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
         facets: FACETS,
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
+        sort: [
+
+            /**
+             * Primary sort on relevance score so queried searches show the right order.
+             */
+            { "_score": "desc" },
+
+            /** 
+             * Secondary sort on 'pinned' facet based on current user presence in list.
+             * Pinned uses a scripted sort as the facet contains all users who pin a Dataset.
+             * (what gets returned is redacted to only the current user).
+             * 
+             * https://www.elastic.co/guide/en/elasticsearch/painless/7.17/painless-sort-context.html
+             */
+            { "_script" : {
+                "script" : {
+                    "lang": "painless",
+                    "source": "doc['pinned'].contains(params.userId) ? 1 : 0",
+                    "params": {
+                      "userId": keycloak?.subject || ""
+                    }
+                },
+                "type" : "number",
+                "order" : "desc",
+            }},
+
+            /** Tertiary sort on created date.
+             */
+            { "created": "desc" }
+        ]
     });
 
     const { totalNumberOfResults, queryInProgress, queryResult } = esFacetRoot;
@@ -765,8 +818,6 @@ export default function IndexPage() {
         itemSortFn: itemSortKeyAlpha,
     });
 
-    const { keycloak } = useKeycloakInfo();
-
     const filterPrincipalsItems = useMemo(() => {
         // If user is signed in, provide option for viewing own data
         const userId = keycloak?.subject;
@@ -786,13 +837,18 @@ export default function IndexPage() {
                     label: "Shared datasets",
                     disabled: userId === undefined || userId.length === 0,
                 },
+                {
+                    key: `pinned-${userId}`,
+                    label: "Pinned datasets",
+                    disabled: userId === undefined || userId.length === 0,
+                },
             ];
         }
     }, [keycloak?.subject]);
 
     const filterPrincipals = useEsIndividualFacetFixedArray(esFacetRoot, {
         id: "filterPrincipals",
-        label: "Show Datasets ",
+        label: "Show Datasets",
         items: filterPrincipalsItems,
         mapFromState: (allItems, itemKeys) => {       
             const selectedItemKeys = [...itemKeys];
@@ -877,7 +933,7 @@ export default function IndexPage() {
             "facetScientificType": [],
             "facetDomain": [],
             "facetGcm": [],
-            // "filterPrincipals": [],
+            "filterPrincipals": [],
             "facetMonth": [],
             "facetDataCategory": []
         })
@@ -934,7 +990,7 @@ export default function IndexPage() {
                     <FacetSelectFacetState2
                         data-cy="facet-filter-principals-select"
                         facet={filterPrincipals}
-                        allowChangeFilterPrinciples={allowChangeFilterPrinciples}
+                        enabled={allowChangeFilterPrinciples}
                     />
 
                     <Row>
@@ -1051,6 +1107,7 @@ export default function IndexPage() {
                                 title={_source.title}
                                 description={_source.description}
                                 status={_source.status}
+                                isPinned={_source.pinned?.includes(keycloak?.subject)}
                                 downloadable={_source.downloadable}
                                 failureMessage={
                                     _source.status === "FAILED"

@@ -56,7 +56,7 @@ describe("filtering Spatial Domain", () => {
             .then(($text) => {
                 // assert result is within global domain
                 // define global keywords
-                var globalKeywords = /Global|WorldClim|CHELSA|CliMond/;
+                var globalKeywords = /Global|WorldClim|CHELSA|CliMond|Australia/;
                 // find global keywords within text
                 const globalText = globalKeywords.exec($text);
                 // expect text to have keyword
