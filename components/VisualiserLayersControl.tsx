@@ -1,5 +1,5 @@
 import {Radio, RadioGroup } from "@blueprintjs/core";
-import { MapLayer, getVisualiserStyles } from "@ecocommons-australia/visualiser-client-geospatial";
+import { MapLayer, Colourmaps } from "@ecocommons-australia/visualiser-client-geospatial";
 import classnames from "classnames";
 import { FormEventHandler, useCallback, useMemo } from "react";
 import styles from "./VisualiserLayersControl.module.css";
@@ -144,7 +144,7 @@ export default function VisualiserLayersControl<
                         className={styles.radioGroup}
                         
                     >
-                    {getVisualiserStyles().map((style, index) => (
+                    {Colourmaps.getNames().map((style, index) => (
                             <Radio
                                 key={index}
                                 label={style}
