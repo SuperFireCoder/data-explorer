@@ -11,12 +11,13 @@ import {
     Popover,
     Position,
     Spinner,
+    SpinnerSize,
     Icon,
 } from "@blueprintjs/core";
 import {IconNames} from "@blueprintjs/icons"
 import classnames from "classnames";
 import { Col, Row } from "react-grid-system";
-import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 
@@ -289,7 +290,7 @@ export default function DatasetCard({
                 data-cy="DatasetCard-card"
                 data-testid={title}
             >
-                {isDeleteInProgress ? <Row justify="between"><Col><Spinner size={Spinner.SIZE_LARGE} /></Col></Row> : <Row justify="between">
+                {isDeleteInProgress ? <Row justify="between"><Col><Spinner size={SpinnerSize.LARGE} /></Col></Row> : <Row justify="between">
 
 
                     <Col>
@@ -326,13 +327,13 @@ export default function DatasetCard({
                         <p
                             className={classnames(
                                 themedStyles.description,
-                                "bp3-ui-text"
+                                "bp5-ui-text"
                             )}
                         >
                             {description}
                         </p>
                         {status === "FAILED" && (
-                            <p className="bp3-text-small" data-testid="type">
+                            <p className="bp5-text-small" data-testid="type">
                                 <DatasetTypeIndicator type={
                                     ({
                                         type: "failed",
@@ -342,13 +343,13 @@ export default function DatasetCard({
                             </p>
                         )}
                         {type && (
-                            <p className="bp3-text-small" data-testid="type">
+                            <p className="bp5-text-small" data-testid="type">
                                 <DatasetTypeIndicator type={type} />
                             </p>
                         )}
                         {lastUpdated && (
                             <div
-                                className="bp3-text-small bp3-text-disabled"
+                                className="bp5-text-small bp5-text-disabled"
                                 data-testid="last-updated-date"
                             >
                                 Updated: {getDDMMMYYYY(lastUpdated)}

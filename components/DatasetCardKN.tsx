@@ -1,7 +1,7 @@
 import { AnchorButton, Button, ButtonGroup, Card, H5 } from "@blueprintjs/core";
 import classnames from "classnames";
 import { Col, Row } from "react-grid-system";
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 
 import { DatasetType } from "../interfaces/DatasetType";
 import { getDDMMMYYYY } from "../util/date";
@@ -67,19 +67,19 @@ export default function DatasetCardKN({
                         <p
                             className={classnames(
                                 styles.description,
-                                "bp3-ui-text"
+                                "bp5-ui-text"
                             )}
                         >
                             {description}
                         </p>
                         {type && (
-                            <p className="bp3-text-small" data-testid="type">
+                            <p className="bp5-text-small" data-testid="type">
                                 <DatasetTypeIndicator type={type} />
                             </p>
                         )}
                         {lastUpdated && (
                             <div
-                                className="bp3-text-small bp3-text-disabled"
+                                className="bp5-text-small bp5-text-disabled"
                                 data-testid="last-updated-date"
                             >
                                 Updated: {getDDMMMYYYY(lastUpdated)}

@@ -1,11 +1,11 @@
 import {
     Button,
     FormGroup,
-    IIntentProps,
+    IntentProps,
     InputGroup,
     Popover,
 } from "@blueprintjs/core";
-import { FormEventHandler, useCallback, useRef, useState } from "react";
+import React, { FormEventHandler, useCallback, useRef, useState } from "react";
 import { useOpenableOpen } from "../hooks/Openable";
 import { useUserManagement } from "../hooks/UserManagement";
 
@@ -27,7 +27,7 @@ export default function DatasetSharingAddUserButton({
     const emailInputRef = useRef<HTMLInputElement | null>(null);
 
     const [emailInputDecorationState, setEmailInputDecorationState] = useState<
-        IIntentProps & { helperText: string }
+        IntentProps & { helperText: string }
     >({ helperText: "" });
     const [userAddInProgress, setUserAddInProgress] = useState<boolean>(false);
 

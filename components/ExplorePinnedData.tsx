@@ -2,7 +2,7 @@ import { Col, Row } from "@ecocommons-australia/ui-library";
 import { FormEvent, useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import bodybuilder from "bodybuilder";
-import { Button, H6, Spinner, Icon, Tooltip, Classes } from "@blueprintjs/core";
+import { Button, H6, Spinner, SpinnerSize, Icon, Tooltip, Classes } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
@@ -275,11 +275,11 @@ export default function IndexPage() {
                 <Row disableDefaultMargins align="center">
                     <Col
                         xs="content"
-                        className="bp3-ui-text bp3-text-disabled"
+                        className="bp5-ui-text bp5-text-disabled"
                         data-testid="results-count"
                     >
                         {queryInProgress ? (
-                            <Spinner size={Spinner.SIZE_SMALL} />
+                            <Spinner size={SpinnerSize.SMALL} />
                         ) : (
                             <>
                                 {numberOfAllResults} result

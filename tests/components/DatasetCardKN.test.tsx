@@ -1,4 +1,5 @@
-import { render, fireEvent } from '@testing-library/react';
+import React from 'react';
+import { act, render, fireEvent } from '@testing-library/react';
 import { Props } from '../../components/DatasetCardKN';
 import DatasetCardKN from '../../components/DatasetCardKN';
 
@@ -18,7 +19,7 @@ describe('DatasetCardKN', () => {
 
   it('opens metadata drawer on info button click', () => {
     const { getByTestId } = render(<DatasetCardKN {...props} />);
-    fireEvent.click(getByTestId('info-button'));
+    act(() => fireEvent.click(getByTestId('info-button')));
     expect(getByTestId('metadata-drawer')).toBeVisible();
   });
   it('renders type indicator if type prop is provided', () => {

@@ -55,7 +55,6 @@ export default function FacetSelectFacetState2<T>({
                                 )}
                                 onItemSelect={handleSelectChange}
                                 filterable={false}
-                                popoverProps={{ fill: true }}
                                 disabled={!enabled}
                             >
                                 <Button

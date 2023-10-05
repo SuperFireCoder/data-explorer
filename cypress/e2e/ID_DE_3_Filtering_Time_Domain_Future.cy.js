@@ -20,22 +20,22 @@ describe("filtering Time Domain Future", () => {
 
     it("Filter Time Domain Future", () => {
         // I remove "Current/Historic" from Time Domain option
-        cy.get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .last()
             .click()
-            .get(".bp3-tag-remove")
+            .get(".bp5-tag-remove")
             .last()
             .click();
         cy.wait("@searchResult");
         // I select "Future" from Time Domain option
-        cy.get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .contains("Future")
             .click();
-        cy.get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .first()
             .should("contain", "Non monthly data")
             // assert only 1 Time Domain and 1 Month Domain option is chosen
-            .get(".bp3-tag")
+            .get(".bp5-tag")
             .its("length")
             .should("eq", 2);
         cy.wait("@searchResult");

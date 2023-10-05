@@ -1,3 +1,4 @@
+import React from 'react';
 import { act, render, screen } from "@testing-library/react";
 import MetadataView from "../../components/MetadataView";
 import mockAxios from "jest-mock-axios";

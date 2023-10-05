@@ -17,25 +17,25 @@ describe("filtering Month Filter Monthly", () => {
 
     it("Filter Month Filter Monthly: January", () => {
         // I remove "Non Monthly Data" from Month Filter option
-        cy.get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .first()
             .click()
-            .get(".bp3-tag-remove")
+            .get(".bp5-tag-remove")
             .first()
             .click();
         // I select "January" from Month Filter option
         cy.contains("January")
             .click()
-            .get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+            .get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .first()
             .should("contain", "January")
             // assert only 1 Time Domain and 1 Month Filter option is chosen
             .get("body")
             .click(10, 10);
-        cy.get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .eq(1)
             .should("contain", "Current/Historic")
-            .get(".bp3-tag")
+            .get(".bp5-tag")
             .its("length")
             .should("eq", 2)
             .wait(2000)
@@ -50,25 +50,25 @@ describe("filtering Month Filter Monthly", () => {
 
     it("Filter Month Filter Monthly: November", () => {
         // I remove "Non Monthly Data" from Month Filter option
-        cy.get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .first()
             .click()
-            .get(".bp3-tag-remove")
+            .get(".bp5-tag-remove")
             .first()
             .click();
         // I select "November" from Month Filter option
         cy.contains("November")
             .click()
-            .get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+            .get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .first()
             .should("contain", "November")
             // assert only 1 Time Domain and 1 Month Filter option is chosen
             .get("body")
             .click(10, 10);
-        cy.get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .eq(1)
             .should("contain", "Current/Historic")
-            .get(".bp3-tag")
+            .get(".bp5-tag")
             .its("length")
             .should("eq", 2)
             .wait(2000)

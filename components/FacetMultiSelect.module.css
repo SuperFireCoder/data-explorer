@@ -1,4 +1,4 @@
-.selectOptionsMenu :global(.bp3-popover-content) :global(.bp3-menu) {
+.selectOptionsMenu :global(.bp5-popover-content) :global(.bp5-menu) {
     max-width: 20rem;
     max-height: 15rem;
     overflow-y: auto;
