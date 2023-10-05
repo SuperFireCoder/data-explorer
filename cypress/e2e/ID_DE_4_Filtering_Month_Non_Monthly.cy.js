@@ -17,14 +17,14 @@ describe("filtering Month Filter Non Monthly", () => {
 
     it("Filter Month Filter Non Monthly", () => {
         // Month Filter is set to 'Non monthly data'
-        cy.get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .first()
             .should("contain", "Non monthly data")
             // assert only 1 Time Domain and 1 Month Filter option is chosen
-            .get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+            .get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .last()
             .should("contain", "Current/Historic")
-            .get(".bp3-tag")
+            .get(".bp5-tag")
             .its("length")
             .should("eq", 2)
             .wait(2000);

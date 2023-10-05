@@ -86,26 +86,22 @@ export default function IndexPage() {
 
 
     const renderTab = () => {
-           // if (isPinnedDataLoaded) {
-                switch (currentTab) {
-                    case "eco-data":
-                        return <ExploreEcoData />;
-                    case "knowledge-data":
-                        return <ExploreKnowledgeData />;
-                    case "pinned-data":
-                        return <PinnedData />;
-                    default:
-                        return null;
-                }
-          //  } 
+        switch (currentTab) {
+            case "eco-data":
+                return <ExploreEcoData />;
+            case "knowledge-data":
+                return <ExploreKnowledgeData />;
+            case "pinned-data":
+                return <PinnedData />;
+            default:
+                return null;
+        }
     };   
 
     if (keycloak?.authenticated === undefined) {
-        return (
-            <div  style={{ 'padding': 200 }}>
-                <Spinner/>
-            </div>
-        );
+        // This must always return nothing as the output 
+        // must match the SSR page render (also nothing).
+        return null;
     }
 
     if (isEmbed === true){

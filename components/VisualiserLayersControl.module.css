@@ -40,7 +40,7 @@
     overflow-y: auto;
 }
 
-.radioGroup > :global(label.bp3-label) {
+.radioGroup > :global(label.bp5-label) {
     font-weight: bold;
     position: sticky;
     z-index: 1;
@@ -50,8 +50,8 @@
     background:  #fdfdfd;
 }
 
-.radioGroup > :global(label.bp3-label),
-.radioGroup > :global(label.bp3-control) {
+.radioGroup > :global(label.bp5-label),
+.radioGroup > :global(label.bp5-control) {
     margin-bottom: 0.5em;
 }
 

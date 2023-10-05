@@ -17,14 +17,14 @@ describe("filtering Time Domain Current/Historic", () => {
 
     it("Filter Time Domain Current/Historic", () => {
         // Time Domain is set to Current/Historic
-        cy.get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .last()
             .should("contain", "Current/Historic")
             // assert only 1 Time Domain and 1 Month Domain option is chosen
-            .get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+            .get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .first()
             .should("contain", "Non monthly data")
-            .get(".bp3-tag")
+            .get(".bp5-tag")
             .its("length")
             .should("eq", 2)
             .wait(2000)

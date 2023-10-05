@@ -1,9 +1,9 @@
 import {
     HTMLInputProps,
-    IInputGroupProps,
+    InputGroupProps,
     InputGroup,
 } from "@blueprintjs/core";
-import {
+import React, {
     ChangeEventHandler,
     FocusEventHandler,
     KeyboardEventHandler,
@@ -18,11 +18,10 @@ const numberToString = (x: number | null) => {
     if (x === null) {
         return "";
     }
-
     return x.toString();
 };
 
-export type Props = IInputGroupProps &
+export type Props = InputGroupProps &
     HTMLInputProps & {
         numberParseMode: "integer" | "float";
         numberValue: number | null;

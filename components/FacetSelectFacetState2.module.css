@@ -1,4 +1,4 @@
-.selectButton > :global(.bp3-button-text) {
+.selectButton > :global(.bp5-button-text) {
     flex-grow: 1;
 }
 .toolTip {

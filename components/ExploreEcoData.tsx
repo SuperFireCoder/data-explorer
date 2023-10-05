@@ -1,8 +1,8 @@
 import { Col, Row } from "@ecocommons-australia/ui-library";
-import { FormEvent, useCallback, useMemo, useEffect, useState } from "react";
+import React, { FormEvent, useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import bodybuilder from "bodybuilder";
-import { Button, H6, Spinner, Popover, Position, PopoverInteractionKind, Icon, Tooltip, Classes } from "@blueprintjs/core";
+import { Button, H6, Spinner, SpinnerSize, Popover, Position, PopoverInteractionKind, Icon, Tooltip, Classes } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
 import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
@@ -1048,11 +1048,11 @@ export default function IndexPage() {
                 <Row disableDefaultMargins align="center">
                     <Col
                         xs="content"
-                        className="bp3-ui-text bp3-text-disabled"
+                        className="bp5-ui-text bp5-text-disabled"
                         data-testid="results-count"
                     >
                         {queryInProgress ? (
-                            <Spinner size={Spinner.SIZE_SMALL} />
+                            <Spinner size={SpinnerSize.SMALL} />
                         ) : (
                             <>
                                 {totalNumberOfResults} result
@@ -1069,18 +1069,18 @@ export default function IndexPage() {
                                     onClick={triggerSearch}
                                 >
                                     {datasetHistory?.lastUpdated && (
-                                <>
-                                    Last refreshed at{" "}
-                                    {new Intl.DateTimeFormat(undefined, {
-                                        year: "numeric",
-                                        month: "2-digit",
-                                        day: "2-digit",
+                                    <>
+                                        Last refreshed at{" "}
+                                        {new Intl.DateTimeFormat(undefined, {
+                                            year: "numeric",
+                                            month: "2-digit",
+                                            day: "2-digit",
 
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                        hour12: false,
-                                    }).format(datasetHistory.lastUpdated)}
-                                        </>
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            hour12: false,
+                                        }).format(datasetHistory.lastUpdated)}
+                                    </>
                                     )}
                                 </Button>
                             </div>

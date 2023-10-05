@@ -1,10 +1,9 @@
 import cookie from "cookie";
 import { AppProps, AppContext } from "next/app";
-import Link from "next/link";
 import getConfig from "next/config";
 import { IncomingMessage } from "http";
 import { SSRKeycloakProvider, SSRCookies } from "@react-keycloak/ssr";
-import { LinkContext, buildThemeWrapper } from "@ecocommons-australia/ui-library";
+import { buildThemeWrapper } from "@ecocommons-australia/ui-library";
 import { ECMapVisualiserRequest } from "@ecocommons-australia/visualiser-client-geospatial";
 import { getKeycloakAuthParameters } from "../util/env";
 import * as gtag from "../util/gtag";
@@ -64,17 +63,15 @@ function MyApp({ Component, pageProps, cookies }: Props) {
 
     return (
         <SafeHydrate>
-            <LinkContext.Provider value={{ Link }}>
-                <SSRKeycloakProvider
-                    keycloakConfig={keycloakConfig}
-                    persistor={SSRCookies(cookies)}
-                    initOptions={{ checkLoginIframe: false }}
-                >
-                <ThemeWrapper>
-                    <Component {...pageProps} />
-                </ThemeWrapper>
-                </SSRKeycloakProvider>
-            </LinkContext.Provider>
+            <SSRKeycloakProvider
+                keycloakConfig={keycloakConfig}
+                persistor={SSRCookies(cookies)}
+                initOptions={{ checkLoginIframe: false }}
+            >
+            <ThemeWrapper>
+                <Component {...pageProps} />
+            </ThemeWrapper>
+            </SSRKeycloakProvider>
         </SafeHydrate>
     );
 }

@@ -1,6 +1,6 @@
 import {
     HTMLInputProps,
-    IInputGroupProps,
+    InputGroupProps,
     InputGroup,
 } from "@blueprintjs/core";
 import {
@@ -12,9 +12,9 @@ import {
 } from "react";
 import { EsIndividualFacetFreeText } from "../hooks/EsFacet";
 
-type InputGroupProps = IInputGroupProps & HTMLInputProps;
+type _InputGroupProps = InputGroupProps & HTMLInputProps;
 
-export interface Props<T> extends InputGroupProps {
+export interface Props<T> extends _InputGroupProps {
     facet: EsIndividualFacetFreeText<T>;
 }
 

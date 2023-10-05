@@ -1,7 +1,7 @@
-import {Radio, RadioGroup } from "@blueprintjs/core";
+import { Radio, RadioGroup } from "@blueprintjs/core";
 import { MapLayer, Colourmaps } from "@ecocommons-australia/visualiser-client-geospatial";
 import classnames from "classnames";
-import { FormEventHandler, useCallback, useMemo } from "react";
+import React, { FormEventHandler, useCallback, useMemo } from "react";
 import styles from "./VisualiserLayersControl.module.css";
 
 type LayerInfo = { layerName: string; label: string };

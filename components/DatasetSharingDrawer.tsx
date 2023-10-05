@@ -5,14 +5,17 @@ import {
     Alert,
     Button,
     H4,
-    Toaster,
+    OverlayToaster,
+    Toast
 } from "@blueprintjs/core";
 import { Col, Row } from "@ecocommons-australia/ui-library";
 import axios, { CancelTokenSource } from "axios";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useDataManager } from "../hooks/DataManager";
 import { useOpenableOpen } from "../hooks/Openable";
+import { useInterval } from "../hooks/Interval";
+
 import DatasetSharingAddUserButton from "./DatasetSharingAddUserButton";
 import DatasetSharingPermissionsList from "./DatasetSharingPermissionsList";
 
@@ -34,12 +37,12 @@ const SUPPORTED_PERMISSIONS = [
     }
 ] as const;
 
-const MESSAGE_TOASTER =
-    typeof document !== "undefined"
-        ? Toaster.create({
-              autoFocus: false,
-          })
-        : undefined;
+// const MESSAGE_TOASTER =
+//     typeof document !== "undefined"
+//         ? Toaster.create({
+//               autoFocus: false,
+//           })
+//         : undefined;
 
 type Permission = typeof SUPPORTED_PERMISSIONS[number]["permission"];
 
@@ -67,10 +70,13 @@ export default function DatasetSharingDrawer({
     const [workingPermissions, setWorkingPermissions] = useState<
         Record<string, Permission[]>
     >({});
+
     const [existingPermissions, setExistingPermissions] = useState<
         Record<string, Permission[]> | undefined
     >(undefined);
+
     const [commitInProgress, setCommitInProgress] = useState<boolean>(false);
+    const [committed, setCommitted] = useState<boolean>(false);
 
     const existingPermissionsLoading = useMemo(
         () => existingPermissions === undefined,
@@ -254,22 +260,27 @@ export default function DatasetSharingDrawer({
                 await promise;
             }
 
+            setCommitted(true);
+
             // Close drawer
             onClose?.();
 
-            // Give message to user that commit completed
-            MESSAGE_TOASTER?.show({
-                message: "Changes to dataset share saved",
-                intent: "success",
-                icon: "tick",
-            });
         } catch (e) {
             console.error(e);
             alert(e.toString());
+            setCommitted(false);
+
         } finally {
             setCommitInProgress(false);
         }
+
     }, [onClose, dataManager, datasetId, permissionsDelta]);
+
+    useInterval(() => {
+        if (committed){
+            setCommitted(false);
+        }
+    }, 5000);
 
     useEffect(
         function fetchExistingPermissions() {
@@ -397,6 +408,15 @@ export default function DatasetSharingDrawer({
             >
                 <p>Are you sure you wish to discard changes?</p>
             </Alert>
+            { committed && 
+                <OverlayToaster maxToasts={1}>
+                    <Toast 
+                        message="Changes to dataset share saved"
+                        intent="success"
+                        icon="tick"
+                    />
+                </OverlayToaster>
+            }
         </>
     );
 }

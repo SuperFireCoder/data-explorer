@@ -19,12 +19,12 @@ describe("filtering Resolution", () => {
         // I select "36 arcsec (~1km)" from Resolution option
         cy.get('[placeholder="Filter by resolution..."]')
             .click()
-            .get(".bp3-menu")
+            .get(".bp5-menu")
             .contains("36 arcsec (~1km)")
             .click()
             .wait(2000)
             // assert only 1 Time Domain, 1 Month Filter, 1 Resolution is selected
-            .get(".bp3-tag")
+            .get(".bp5-tag")
             .its("length")
             .should("eq", 3)
             // I should see page with filtered datasets in 36 arcsec (~1km) resolution
@@ -40,12 +40,12 @@ describe("filtering Resolution", () => {
         // I select "3 arcmin (~5km)" from Resolution option
         cy.get('[placeholder="Filter by resolution..."]')
             .click()
-            .get(".bp3-menu")
+            .get(".bp5-menu")
             .contains("3 arcmin (~5km)")
             .click()
             .wait(2000)
             // assert only 1 Time Domain, 1 Month Filter, 1 Resolution is selected
-            .get(".bp3-tag")
+            .get(".bp5-tag")
             .its("length")
             .should("eq", 3)
             // I should see page with filtered datasets in 3 arcmin (~5km) resolution

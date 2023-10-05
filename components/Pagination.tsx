@@ -1,5 +1,5 @@
 import { Button, ButtonGroup } from "@blueprintjs/core";
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 
 export interface Props {
     /** Current page index */

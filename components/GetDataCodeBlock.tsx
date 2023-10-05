@@ -1,5 +1,5 @@
 import { Button, Pre, Toaster } from "@blueprintjs/core";
-import { useCallback, useRef } from "react";
+import React, { useCallback, useRef } from "react";
 
 /**
  * Generates code snippet text for a given data URL

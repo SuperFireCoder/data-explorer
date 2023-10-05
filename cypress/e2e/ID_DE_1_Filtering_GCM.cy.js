@@ -11,10 +11,10 @@ const DATA_EXPLORER_API = Cypress.env(
 describe("filtering GCM", () => {
     beforeEach(() => {
         // Given I am on the "dataset" tab
-        cy.visit("http://localhost:3000/");
+        cy.visit("/");
         // And on "Explore EcoCommons Data"
         cy.get('[data-cy="ExploreEcoDataTab"]');
-        cy.get(".Header-module_subBarLinkActive__-4KUy").should(
+        cy.get('[data-cy="header-sub-bar"]').should(
             "contain",
             "Explore EcoCommons Data"
         );
@@ -22,7 +22,7 @@ describe("filtering GCM", () => {
 
     it("Filter GCM", () => {
         // Select Future from Time Domain
-        cy.get('*[class^="bp3-text-overflow-ellipsis bp3-fill"]')
+        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
             .last()
             .click();
         cy.contains("Future").click();

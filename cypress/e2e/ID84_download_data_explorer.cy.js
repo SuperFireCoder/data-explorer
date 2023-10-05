@@ -29,7 +29,7 @@ describe("download data from the data explorer on to my local computer", () => {
     beforeEach(() => {
         // Given I am signed in
         cy.login();
-        cy.contains("Datasets").click();
+        cy.visit("/");
     });
 
     it("can download 'Australia, Climate Projection, SRESA1B based on INM-CM30, 30 arcsec (~1km) - 2025' ", () => {

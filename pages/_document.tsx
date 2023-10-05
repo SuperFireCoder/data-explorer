@@ -41,6 +41,12 @@ class EcoCommonsDocument extends Document {
                             }`,
                         }}
                     />
+                    {/*
+                    Disabled due to deprecation of domain setter.  
+                    This is mainly a helper for Usersnap screenshots when content is embedded, 
+                    so non critical but would be good to identify a workaround.
+                    https://developer.chrome.com/blog/document-domain-setter-deprecation/
+                    
                     <script
                         dangerouslySetInnerHTML={{
                             // CORS workaround. Remove subdomain
@@ -53,7 +59,7 @@ class EcoCommonsDocument extends Document {
                                 }
                                 `
                         }}
-                    />
+                    />*/}
                     <script 
                         dangerouslySetInnerHTML={{
                             __html: `
