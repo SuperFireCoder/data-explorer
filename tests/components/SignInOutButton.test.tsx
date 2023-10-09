@@ -1,3 +1,4 @@
+import React from 'react';
 import { render } from "@testing-library/react";
 import SignInOutButton from "../../components/SignInOutButton";
 import * as keycloakUtil from "../../util/keycloak";
@@ -45,7 +46,7 @@ describe("SignInOutButton", () => {
 
         const button = render(<SignInOutButton />);
         expect(button.container.textContent).toBe(
-            "userTEST_GIVEN_NAMEcaret-down"
+            "TEST_GIVEN_NAME"
         );
 
         // Restore mock

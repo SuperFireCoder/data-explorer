@@ -197,11 +197,11 @@ describe("IndexPage", () => {
         expect(paginationButtons.length).toBe(3);
         // Only middle one is highlighted as `primary` due to page start = 10
         expect(paginationButtons[0].className).not.toMatch(
-            "bp3-intent-primary"
+            "bp5-intent-primary"
         );
-        expect(paginationButtons[1].className).toMatch("bp3-intent-primary");
+        expect(paginationButtons[1].className).toMatch("bp5-intent-primary");
         expect(paginationButtons[2].className).not.toMatch(
-            "bp3-intent-primary"
+            "bp5-intent-primary"
         );
     });
 

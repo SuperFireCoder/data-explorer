@@ -121,10 +121,7 @@ export interface EsIndividualFacetNumberRange<T> {
     onRangeChange: (min: number, max: number) => void;
 }
 
-export const DEFAULT_SORT = [
-    { "_score": "desc" },
-    { "created": "desc" }
-];
+export const DEFAULT_SORT = [];
 
 export const useEsFacetRoot = <T extends MinimumFormState, R = EsDataset>(
     formState: T,

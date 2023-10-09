@@ -19,11 +19,12 @@ const DATA_EXPLORER_API = Cypress.env(
 
 describe("Visualise datasets on a map", () => {
     beforeEach(() => {
-        cy.login().visit("/");
-        cy.contains("Datasets").click();
-        cy.intercept("POST", VISUALISER_API + "/api/maps/").as("newVisualiser");
+        cy.login()
+        cy.visit("/");
+        cy.intercept("POST", VISUALISER_API + "/api/maps/").as("postMap");
         cy.intercept("GET", VISUALISER_API + "/api/maps/*/status").as("getMapStatus");
-        cy.intercept("GET", DATA_EXPLORER_API + "/api/dataset/*").as("newData");
+        cy.intercept("GET", DATA_EXPLORER_API + "/api/dataset/*").as("getDataset");
+        cy.intercept("POST", DATA_EXPLORER_API + "/api/es/search/dataset").as("esSearchDataset");
     });
 
     it("ID35.1 - can Visualise occurrence datasets appropriatly", () => {
@@ -36,7 +37,12 @@ describe("Visualise datasets on a map", () => {
         cy.get('[data-cy="search-field"]')
             .clear()
             .type(`${datasetName}{enter}`);
-        cy.wait(2000);
+        cy.wait("@esSearchDataset")
+            .its("response")
+            .then((r) => {
+                expect(r.statusCode).to.be.oneOf([200, 201]);
+            });
+            
         // Then I should see the "325Sulfur crested cockatoo.csv" dataset
         // When I press the "View" button next to the "325Sulfur crested cockatoo.csv" dataset
         // Then I should see occurrence points on the map
@@ -49,7 +55,7 @@ describe("Visualise datasets on a map", () => {
             .within(() => {
                 cy.get('button[data-testid="view-button"]').click();
             });
-        cy.wait("@newVisualiser")
+        cy.wait("@postMap")
             .its("response")
             .then((r) => {
                 expect(r.statusCode).to.be.oneOf([200, 201]);
@@ -124,7 +130,7 @@ describe("Visualise datasets on a map", () => {
                 .within(() => {
                     cy.get('button[data-testid="view-button"]').click();
                 });
-            cy.wait("@newData")
+            cy.wait("@getDataset")
                 .its("response")
                 .then((r) => {
                     expect(r.statusCode).to.be.oneOf([200, 201]);
@@ -138,16 +144,16 @@ describe("Visualise datasets on a map", () => {
                     );
 
                     /**
-                     * To handle @newVisualiser for the first layer called by default
+                     * To handle @postMap for the first layer called by default
                      *
                      * 1. check if the first parameter/layer is in the test case (isFirstParameterInTestCase(variables, response))
                      * 2. yes - remove from test case and test seperately (removeFirstParameter)
-                     * 3. no - only expect statusCode for the first @newVisualiser
+                     * 3. no - only expect statusCode for the first @postMap
                      *
                      */
                     if (isFirstParameterInTestCase(example.variables, r)) {
                         // test the first layer as it's in the test case
-                        cy.wait("@newVisualiser")
+                        cy.wait("@postMap")
                             .its("response")
                             .then((r) => {
                                 expect(r.statusCode).to.be.oneOf([200, 201]);
@@ -157,15 +163,15 @@ describe("Visualise datasets on a map", () => {
                             });
                         cy.wait(5000);
                     } else {
-                        // only expect statusCode for the first @newVisualiser
-                        cy.wait("@newVisualiser")
+                        // only expect statusCode for the first @postMap
+                        cy.wait("@postMap")
                             .its("response")
                             .then((r) => {
                                 expect(r.statusCode).to.be.oneOf([200, 201]);
                             });
                     }
 
-                    // remove the first layer if it's in the test case as the @newVisualiser for it has been used
+                    // remove the first layer if it's in the test case as the @postMap for it has been used
                     const testVariables = isFirstParameterInTestCase
                         ? example.variables.filter(
                               (v) => v.id !== firstParameter
@@ -177,7 +183,7 @@ describe("Visualise datasets on a map", () => {
                         cy.get(
                             `input[type=radio][data-cy="layers-radio"][data-testid="${variable.label}"]`
                         ).check({ force: true });
-                        cy.wait("@newVisualiser")
+                        cy.wait("@postMap")
                             .its("response")
                             .then((r) => {
                                 expect(r.statusCode).to.be.oneOf([200, 201]);

@@ -19,12 +19,12 @@ describe("filtering Spatial Domain", () => {
         // I select "Australia" from Spatial Domain option
         cy.get('[placeholder="Filter by spatial domain..."]')
             .click()
-            .get(".bp3-menu")
+            .get(".bp5-menu")
             .contains("Australia")
             .click()
             .wait(2000)
             // assert only 1 Time Domain, 1 Month Filter, 1 Spatial Domain is selected
-            .get(".bp3-tag")
+            .get(".bp5-tag")
             .its("length")
             .should("eq", 3)
             // I should see page with filtered datasets with Australia data
@@ -40,12 +40,12 @@ describe("filtering Spatial Domain", () => {
         // I select "Global" from Spatial Domain option
         cy.get('[placeholder="Filter by spatial domain..."]')
             .click()
-            .get(".bp3-menu")
+            .get(".bp5-menu")
             .contains("Global")
             .click()
             .wait(2000)
             // assert only 1 Time Domain, 1 Month Filter, 1 Spatial Domain is selected
-            .get(".bp3-tag")
+            .get(".bp5-tag")
             .its("length")
             .should("eq", 3);
         // I should see page with filtered datasets with Australia data
@@ -68,12 +68,12 @@ describe("filtering Spatial Domain", () => {
         // I select "Regional" from Spatial Domain option
         cy.get('[placeholder="Filter by spatial domain..."]')
             .click()
-            .get(".bp3-menu")
+            .get(".bp5-menu")
             .contains("Regional")
             .click()
             .wait(2000)
             // assert only 1 Time Domain, 1 Month Filter, 1 Spatial Domain is selected
-            .get(".bp3-tag")
+            .get(".bp5-tag")
             .its("length")
             .should("eq", 3);
         // I should see page with filtered datasets with Australia data

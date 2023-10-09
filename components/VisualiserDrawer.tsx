@@ -299,7 +299,6 @@ export default function VisualiserDrawer({
                     align="stretch"
                     gutterWidth={0}
                     nogutter
-                    nowrap
                     style={{ flex: 1 }}
                 >
                     <Col

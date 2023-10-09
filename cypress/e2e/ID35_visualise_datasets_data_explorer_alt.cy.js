@@ -9,7 +9,7 @@ const datasetsSelectionLabels = {
 describe("login and show filtering on the basis of users on datasets", () => {
     beforeEach(() => {
         cy.login();
-        cy.contains("Datasets").click();
+        cy.visit("/");
         cy.get('[data-cy="DatasetCard-card"]');
     });
 

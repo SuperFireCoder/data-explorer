@@ -1,3 +1,4 @@
+import React from "react";
 import { DatasetType } from "../interfaces/DatasetType";
 
 import styles from "./DatasetTypeIndicator.module.css";
