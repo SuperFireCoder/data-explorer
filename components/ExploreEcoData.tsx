@@ -22,13 +22,11 @@ import {
     useEsIndividualFacetFreeText,
     useEsIndividualFacetNumberRange,
 } from "../hooks/EsFacet";
-import FacetMultiSelectFacetState2, { NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL } from "./FacetMultiSelectFacetState2";
+import FacetMultiSelectFacetState2 from "./FacetMultiSelectFacetState2";
 import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
 import { itemSortKeyAlpha, monthItemSort, resolutionItemSort } from "./FacetMultiSelect";
 import FacetNumberRangeFacetState2 from "./FacetNumberRangeFacetState2";
 import FacetSelectFacetState2 from "./FacetSelectFacetState2";
-import { usePinnedDataStore } from "./../interfaces/PinnedDataStore";
-import { useDataManager } from "../hooks/DataManager";
 
 interface QueryParameters {
     /** Results per page */
@@ -76,16 +74,42 @@ interface FormState {
     facetDataCategory: readonly string[];
 }
 
-//const dataManager = useDataManager();
+export enum FacetTimeMonth {
+    NON_MONTHLY_DATA    = "Non monthly data"
+    // ... partial list
+}
 
+export enum FacetTimeDomain {
+    CURRENT         = "Current",
+    FUTURE          = "Future",
+    UNCLASSIFIED    = "Unclassified"
+}
+
+const ALL_DATASETS_FACET_MONTH_DEFAULT = [
+    FacetTimeMonth.NON_MONTHLY_DATA
+];
+
+/** 
+ */
+const ALL_DATASETS_FACET_TIME_DOMAIN_DEFAULT = [
+    FacetTimeDomain.CURRENT,
+    FacetTimeDomain.UNCLASSIFIED
+];
+
+/**
+ * Create a new object from page params such that empty string values are dropped.
+ */
 function stripEmptyStringQueryParams(
     queryParams: ParsedUrlQueryInput
 ): ParsedUrlQueryInput {
-    // Create a new object from page params such that empty string values are
-    // dropped
+
     return Object.fromEntries(
-        Object.entries(queryParams).filter(
-            ([_k, v]) => typeof v !== "string" || v.length !== 0
+        Object.entries(queryParams)
+        .filter(
+            ([k, v]) => Number.isNaN(v) === false
+        )
+        .filter(
+            ([k, v]) => typeof v !== "string" || v.length !== 0
         )
     );
 }
@@ -93,6 +117,9 @@ function stripEmptyStringQueryParams(
 function normaliseAsReadonlyStringArray(
     value: string | readonly string[]
 ): readonly string[] {
+    if (value === ''){
+        return [];
+    }
     return typeof value === "string" ? [value] : value;
 }
 
@@ -144,7 +171,7 @@ function addTermAggregationFacetStateToQuery(
  * @param facetEsTerms String identifier for the terms used in Elasticsearch query
  * @param facetValues
  */
- function addTermsAggregationFacetStateToQuery(
+function addTermsAggregationFacetStateToQuery(
     queryState: QueryState,
     facetEsTerms: string[],
     facetValues: readonly string[]
@@ -156,11 +183,10 @@ function addTermAggregationFacetStateToQuery(
 
     // Add all selected facet values
     let innerQuery = bodybuilder();
-    console.log(facetValues,facetEsTerms)
 
-     facetValues.forEach(
-         (x) => (facetEsTerms.forEach(facetEsTerm => innerQuery = innerQuery.orQuery("match", facetEsTerm, x)))
-     );
+    facetValues.forEach(
+        (x) => (facetEsTerms.forEach(facetEsTerm => innerQuery = innerQuery.orQuery("match", facetEsTerm, x)))
+    );
 
     const newQueryBuilder = queryState.bodyBuilder.query(
         "bool",
@@ -271,15 +297,10 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
     {
         id: "facetTimeDomain",
         facetApplicationFn: (formState, query) => {
-            let newTimeDomain: string[] = [];
-                formState.facetTimeDomain.map(item => {
-                    const newitem =(item === NEW_TIME_DOMAIN_VAL) ? OLD_TIME_DOMAIN_VAL : item
-                    newTimeDomain.push(newitem)
-                })
             return addTermAggregationFacetStateToQuery(
                 query,
                 "time_domain",
-                newTimeDomain
+                formState.facetTimeDomain
             )
         },
         aggregationApplicationFn: (query) => {
@@ -401,8 +422,12 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                 return query;           
             }
 
+            if (formState.filterPrincipals[0] === 'all') {
+                return query;           
+            }
+
             // Shared
-            if (formState.filterPrincipals.length > 0 && formState.filterPrincipals[0].startsWith("shared-")) {
+            if (formState.filterPrincipals[0].startsWith("shared-")) {
                 const userId = formState.filterPrincipals[0].replace('shared-','');
 
                 const innerQuery = bodybuilder().notFilter(
@@ -421,7 +446,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             }
 
             // Pinned
-            if (formState.filterPrincipals.length > 0 && formState.filterPrincipals[0].startsWith("pinned-")) {
+            if (formState.filterPrincipals[0].startsWith("pinned-")) {
                 const userId = formState.filterPrincipals[0].replace('pinned-','');
 
                 const innerQuery = bodybuilder().filter(
@@ -443,7 +468,8 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             const innerQuery = bodybuilder().filter(
                 "terms",
                 "allowed_principals",
-                formState.filterPrincipals
+                // Strip 'all' as we just need to send empty 
+                formState.filterPrincipals.filter(p => p !== 'all')
             ).rawOption("track_total_hits", true);
             
             return {
@@ -523,10 +549,6 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
 
 export default function IndexPage() {
 
-    const dataStore = usePinnedDataStore.getState();
-
-    dataStore.setIsPinnedPage(false)
-
     const router = useRouter();
 
     const isEmbed = router.query.embed === "1";
@@ -537,6 +559,9 @@ export default function IndexPage() {
         useState<string | undefined>(undefined);
 
     const { keycloak } = useKeycloakInfo();
+
+    const [prevFormState, setPrevFormState] =
+        useState<FormState | undefined>(undefined);
 
     const {
         triggerValue: searchTriggerValue,
@@ -564,60 +589,51 @@ export default function IndexPage() {
         [triggerSearch]
     );
 
-    const updateFormState = useCallback(
-        (formState: Partial<FormState>) => {
-            // Copy out state and replace NaN values with empty strings
-            //
-            // This means that those keys with NaN values are removed from the
-            // query params when it gets passed through
-            // `stripEmptyStringQueryParams()` below
-            const state = { ...formState };
+    /** 
+     * Get a set of default facets based on the current page context.
+     *   - If viewing All Datasets set:
+     *       facetMonth, facetTimeDomain defaults
+     *.  - Otherwise ensure no defaults are set.
+     */
+    const applyFormStateConditionalDefaults = useCallback(
+        function (formState: FormState, prevFormState: FormState | undefined): FormState {
 
-            for (const key of Object.keys(state) as (keyof typeof state)[]) {
-                if (Number.isNaN(state[key])) {
-                    // Deliberately set the value as empty string
-                    state[key] = "" as any;
+            const newState = { ...formState };
+
+            // Initial page load. All Datasets.
+            if (prevFormState === undefined || 
+                    newState.filterPrincipals === undefined || 
+                        newState.filterPrincipals?.length === 0)
+            {
+                if (newState["facetMonth"]?.length === 0){
+                    newState["facetMonth"] = ALL_DATASETS_FACET_MONTH_DEFAULT;
+                }
+                if (newState["facetTimeDomain"]?.length === 0){
+                    newState["facetTimeDomain"] = ALL_DATASETS_FACET_TIME_DOMAIN_DEFAULT;
+                }
+
+                // Set a default filterPrincipals of 'all'.
+                newState.filterPrincipals = ['all'];
+
+            } else {
+ 
+                // Change of 'filterPrincipals'. My/Shared/Pinned datasets. Clear all filters.
+                if (newState.filterPrincipals?.[0] !== prevFormState.filterPrincipals?.[0]){
+                    if (newState.filterPrincipals[0] !== 'all') {
+                        newState["facetMonth"] = []
+                        newState["facetTimeDomain"] = []
+                    }
+                }
+
+                // Dataset deep linked via id. Clear all filters.
+                else if (newState.datasetId !== undefined && newState.datasetId?.length > 0){
+                    newState["facetMonth"] = []
+                    newState["facetTimeDomain"] = []
                 }
             }
-
-            // Remove the OLD_TIME_DOMAIN_VAL from the routing url to avoid conflict
-            if (state["facetTimeDomain"] !== undefined) {
-                let selectedTimeDomainItems: (string)[] = []
-                state["facetTimeDomain"].forEach(element => {
-                    if (router.query.facetTimeDomain !== undefined && element === OLD_TIME_DOMAIN_VAL && (router.query.facetTimeDomain?.includes(OLD_TIME_DOMAIN_VAL))) {
-                        //avoid adding the items to list
-                    } else {
-                        selectedTimeDomainItems.push(element)
-                    }
-                });
-                state["facetTimeDomain"] = selectedTimeDomainItems?.filter((v, i) => selectedTimeDomainItems?.indexOf(v) == i)
-            }
-
-            // Set back defaults for all datasets
-            if (formState.filterPrincipals?.length === 0 ) {
-                state["facetMonth"] = ["Non monthly data"]
-                state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL]
-                state["datasetId"] = ""
-            }
-            // Disable defaults for shared and owned datasets
-            if ((formState.filterPrincipals !== undefined && formState.filterPrincipals.length > 0 ) || (formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
-                state["facetTimeDomain"] = []
-                state["facetMonth"] = []
-                state["datasetId"] = ""
-            }
-
-            // Update query params for this page, which will update `formState`
-            // above
-            router.push({
-                query: stripEmptyStringQueryParams({
-                    ...router.query,
-                    ...state,
-                }),
-            });
+            return newState;
         },
-        [router.query]
-    );
-
+    [router.query]);
 
     /**
      * Extracts the current page parameters from the URL query parameter values.
@@ -647,7 +663,7 @@ export default function IndexPage() {
             lastUpdated: new Date(),
         });
 
-        return {
+        const newFormState = applyFormStateConditionalDefaults({
             // Pagination
             pageSize: parseInt(pageSize, 10) || 10,
             pageStart: parseInt(pageStart, 10) || 0,
@@ -678,33 +694,46 @@ export default function IndexPage() {
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
             facetMonth: normaliseAsReadonlyStringArray(facetMonth),
             facetDataCategory: normaliseAsReadonlyStringArray(facetDataCategory),
-        };
-    }, [router.query,searchTriggerValue]);
+        }, prevFormState);
 
+        setPrevFormState(newFormState);
+
+        return newFormState;
+
+    }, [router.query, searchTriggerValue]);
+
+    /** 
+     * Update the page query with conditional defaults if it's an intial page load.
+     * This is determined by the absence of 'filterPrincipals'.
+     */
     useEffect(() => {
-        const state = { ...formState };
-
-        // Set facet defaults on page load 
-        if ((state["facetMonth"].length === 0 || state["facetTimeDomain"].length === 0) && formState.filterPrincipals?.length === 0) {
-            if (formState.filterPrincipals?.length === 0) {
-                state["facetMonth"] = ["Non monthly data"]
-                state["facetTimeDomain"] = [NEW_TIME_DOMAIN_VAL, OLD_TIME_DOMAIN_VAL]
-            }
-            // Disable defaults for shared and owned datasets
-            if ((formState.datasetId !== undefined && formState.datasetId?.length > 0)) {
-                state["facetTimeDomain"] = []
-                state["facetMonth"] = []
-            }
-
-            triggerSearch()
+        if (router.query.filterPrincipals === undefined){
             router.replace({
                 query: stripEmptyStringQueryParams({
-                    ...router.query,
-                    ...state,
+                tab: 'eco-data',
+                ...router.query,
+                ...formState,
                 })
             }, undefined, { shallow: true });
         }
-    }, [router.asPath === "/?tab=eco-data"]);
+    }, [formState]);
+
+
+    /**
+     *  Update query params for this page on selection change.
+     *  This will trigger a re-fetch and render of the page.
+     */
+    const updateFormState = useCallback(
+        (formState: Partial<FormState>) => {
+            router.push({
+                query: stripEmptyStringQueryParams({
+                    ...router.query,
+                    ...formState,
+                }),
+            });
+        },
+        [router.query]
+    );
 
     const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
         facets: FACETS,
@@ -767,6 +796,7 @@ export default function IndexPage() {
         label: "Time domain",
         placeholder: "Filter by time domain...",
         itemSortFn: itemSortKeyAlpha,
+        itemLabels: { [FacetTimeDomain.CURRENT]: 'Current/Historic' }
     });
 
     const facetSpatialDomain = useEsIndividualFacetArray(esFacetRoot, {
@@ -855,7 +885,7 @@ export default function IndexPage() {
 
             // Actively select "all" option if there is nothing in the item keys
             // array
-            if (itemKeys.length === 0) {
+            if (itemKeys[0] === 'all') {
                 selectedItemKeys.push("all");
             }
  
@@ -993,7 +1023,7 @@ export default function IndexPage() {
                         enabled={allowChangeFilterPrinciples}
                     />
 
-                    <Row>
+                    <Row data-cy="facetYearRange" data-testid="facetYearRange">
                         <Col>
                             <FacetNumberRangeFacetState2
                                 facet={facetYearRange}
@@ -1014,7 +1044,7 @@ export default function IndexPage() {
                         facetCollection,
                         facetDataCategory
                         ].map((facet) => (
-                        <Row key={facet.id}>
+                        <Row key={facet.id} data-cy={facet.id} data-testid={facet.id}>
                             <Col>
                                 {renderFacetLabel(facet.id, facet.label)}
                                 <FacetMultiSelectFacetState2

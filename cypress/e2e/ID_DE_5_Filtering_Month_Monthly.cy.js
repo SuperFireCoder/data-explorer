@@ -10,74 +10,90 @@ const DATA_EXPLORER_API = Cypress.env(
 
 describe("filtering Month Filter Monthly", () => {
     beforeEach(() => {
+        cy.intercept("POST", DATA_EXPLORER_API + "/api/es/search/dataset").as(
+            "searchDataset"
+        );
+
         // Given I am on the "dataset" tab
         // And on "Explore EcoCommons Data"
-        cy.visit("/");
-    });
+        cy.visit("/")
+    })
 
     it("Filter Month Filter Monthly: January", () => {
+        cy.wait("@searchDataset")
+
         // I remove "Non Monthly Data" from Month Filter option
-        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
-            .first()
+        cy.get('[data-cy=facetMonth]')
+            .contains("Non monthly data")
+            .parent()
+            .find(".bp5-tag-remove")
             .click()
-            .get(".bp5-tag-remove")
-            .first()
-            .click();
+        cy.get('[data-cy=facetMonth]')
+            .should("not.contain", "Non monthly data")
+
         // I select "January" from Month Filter option
-        cy.contains("January")
+        cy.wait("@searchDataset")
+        cy.get('.bp5-multi-select-popover .bp5-popover-content')
+            .contains("January")
             .click()
-            .get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
-            .first()
-            .should("contain", "January")
-            // assert only 1 Time Domain and 1 Month Filter option is chosen
+            // click outside
             .get("body")
-            .click(10, 10);
-        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
-            .eq(1)
-            .should("contain", "Current/Historic")
-            .get(".bp5-tag")
+            .click(10, 10)
+
+        // assert only 1 Month option chosen
+        cy.get('[data-cy=facetMonth]')
+            .should("contain", "January")
+            .find(".bp5-tag")
             .its("length")
-            .should("eq", 2)
-            .wait(2000)
+            .should("eq", 1)
+
+        cy.wait("@searchDataset")
+
             // I should see page with datasets set in January
             // get text
-            .get('[data-cy="DatasetCard-card"]')
+        cy.get('[data-cy="DatasetCard-card"]')
             .first()
             .invoke("text")
             // assert result is January data
-            .should("contain", "January");
-    });
+            .should("contain", "January")
+    })
 
     it("Filter Month Filter Monthly: November", () => {
+        cy.wait("@searchDataset")
+
         // I remove "Non Monthly Data" from Month Filter option
-        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
-            .first()
+        cy.get('[data-cy=facetMonth]')
+            .contains("Non monthly data")
+            .parent()
+            .find(".bp5-tag-remove")
             .click()
-            .get(".bp5-tag-remove")
-            .first()
-            .click();
+        cy.get('[data-cy=facetMonth]')
+            .should("not.contain", "Non monthly data")
+
         // I select "November" from Month Filter option
-        cy.contains("November")
+        cy.wait("@searchDataset")
+        cy.get('.bp5-multi-select-popover .bp5-popover-content')
+            .contains("November")
             .click()
-            .get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
-            .first()
-            .should("contain", "November")
-            // assert only 1 Time Domain and 1 Month Filter option is chosen
+            // click outside
             .get("body")
-            .click(10, 10);
-        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
-            .eq(1)
-            .should("contain", "Current/Historic")
-            .get(".bp5-tag")
+            .click(10, 10)
+
+        // assert only 1 Month option chosen
+        cy.get('[data-cy=facetMonth]')
+            .should("contain", "November")
+            .find(".bp5-tag")
             .its("length")
-            .should("eq", 2)
-            .wait(2000)
-            // I should see page with datasets set in November
-            // get text
-            .get('[data-cy="DatasetCard-card"]')
+            .should("eq", 1)
+
+        cy.wait("@searchDataset")
+
+        // I should see page with datasets set in November
+        // get text
+        cy.get('[data-cy="DatasetCard-card"]')
             .first()
             .invoke("text")
             // assert result is November data
-            .should("contain", "November");
-    });
-});
+            .should("contain", "November")
+    })
+})

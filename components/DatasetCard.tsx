@@ -36,7 +36,7 @@ import { useTheme } from "@ecocommons-australia/ui-library";
 import styles from "./DatasetCard.module.css";
 import DatasetSharingDrawer from "./DatasetSharingDrawer";
 import { useKeycloakInfo } from "../util/keycloak";
-import { usePinnedDataStore } from "./../interfaces/PinnedDataStore";
+import { usePinnedDataStore } from "./../hooks/PinnedDataStore";
 
 export interface Props {
     /** ID of dataset to load for metadata view, etc. */
@@ -91,6 +91,7 @@ export default function DatasetCard({
     acl={},
 }: Props) {
     const { keycloak } = useKeycloakInfo();
+
     const { dataManager } = useDataManager();
     const dataStore = usePinnedDataStore.getState();
     const { mergeStyles } = useTheme();

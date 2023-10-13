@@ -117,6 +117,7 @@ export default function VisualiserDrawer({
                 (x) => x.layerName === currentLayerName
             );
 
+            
             return (
                 <>
                     <div className={styles.tileLoadProgressBar}>
@@ -130,7 +131,7 @@ export default function VisualiserDrawer({
                             <img src={props._legendImages[0]} />
                         )}
                     </div>
-                   <Button minimal className={styles.SliderButton}  onClick={()=>{setOptionsPanelOpen(!optionsPanelOpen)}}>OPTIONS</Button>
+                    <Button minimal className={styles.SliderButton}  onClick={()=>{setOptionsPanelOpen(!optionsPanelOpen)}}>OPTIONS</Button>
                     <VisualiserLayersControl<LayerInfo>
                         isOpen={optionsPanelOpen}
                         layers={layerInfo}
