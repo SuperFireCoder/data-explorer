@@ -61,29 +61,17 @@ export default function IndexPage() {
     const [isPinnedDataLoaded, setIsPinnedDataLoaded] = useState(false);
   
     /** 
-     * Set the initial tab to 'eco-data'
-     */
-    useEffect(() => {
-       if(router.asPath === "/") {
-        router.replace("/?tab=eco-data", undefined, { shallow: true })
-       }
-    }, [router.asPath])
-
-    /** 
      * Set the current tab based on 'router.query.tab'
      */
     useEffect(() => {
         const tab = router.query.tab;
-        // set the tab
-        setCurrentTab(tab as string || initialTab); 
-        //set the active sub bar link 
-        setSubBarActiveKey(tab as string || initialTab)
-        if(router.query.tab === undefined && router.asPath === `${config.publicRuntimeConfig
-            .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_DATASETS}/`){
-                router.push("/?tab=eco-data", undefined, { shallow: true })
+        if (tab !== undefined){
+            // set the tab
+            setCurrentTab(tab as string || initialTab); 
+            // set the active sub bar link 
+            setSubBarActiveKey(tab as string || initialTab)
         }
     }, [router.query]);
-
 
     const renderTab = () => {
         switch (currentTab) {

@@ -13,6 +13,7 @@ export interface Props<T> {
     tagRenderer?: (item: T) => ReactNode;
     itemEqualityFn?: (a: T | undefined, b: T | undefined) => boolean;
     itemSortFn?: (a: T | undefined, b: T | undefined) => number;
+    itemLabels?: Record<string, string>;
     /** Whether to disable rendering of the document count label for items */
     disableDocCountLabel?: boolean;
 }
@@ -31,9 +32,6 @@ const defaultItemPredicateFilter: ItemPredicate<EsAggregationBucket> = (
     exactMatch
         ? item.key === query
         : item.key.toLowerCase().indexOf(query.toLowerCase()) >= 0;
-
-const defaultTagRenderer = (item: EsAggregationBucket | undefined) =>
-    item?.key ?? "";
 
 export const itemSortKeyAlpha = (
     a: EsAggregationBucket | undefined,
@@ -135,12 +133,24 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
     placeholder,
     onItemSelect,
     onItemRemoveByTag,
-    tagRenderer = defaultTagRenderer,
+    tagRenderer,
     itemEqualityFn = defaultItemEqualityFn,
     itemSortFn,
+    itemLabels,
     disableDocCountLabel = false,
 }: Props<T>) {
- 
+
+    const defaultTagRenderer = (item: EsAggregationBucket | undefined) => {
+        if (item?.key === undefined){
+            return "";
+        }
+        // custom label
+        if (itemLabels?.[item.key] !== undefined){
+            return itemLabels[item.key]
+        }
+        return item.key;
+    }
+
     const tagInputProps = useMemo(
         () => ({
             onRemove: onItemRemoveByTag,
@@ -176,7 +186,7 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
                     icon={isItemInSelectedItems(item) ? "tick" : "blank"}
                     active={modifiers.active}
                     onClick={handleClick}
-                    text={item.key}
+                    text={defaultTagRenderer(item)}
                     // disable labels as they dont always truly reflect the correct number
                     // label={
                     //     disableDocCountLabel ? undefined : `${item.doc_count}`
@@ -197,7 +207,7 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
             itemRenderer={menuItemRenderer}
             itemPredicate={defaultItemPredicateFilter}
             onItemSelect={onItemSelect}
-            tagRenderer={tagRenderer}
+            tagRenderer={tagRenderer ?? defaultTagRenderer}
             tagInputProps={tagInputProps}
             noResults={<MenuItem disabled text="No options available" />}
             resetOnSelect={false}

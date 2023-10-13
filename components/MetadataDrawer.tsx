@@ -53,7 +53,7 @@ export default function MetadataDrawer({
             size="50%"
             usePortal
         >
-            <div className={Classes.DRAWER_BODY} data-testid="metadata-drawer">
+            <div className={Classes.DRAWER_BODY} data-cy="metadata-drawer" data-testid="metadata-drawer">
                 <div className={Classes.DIALOG_BODY}>
                     {renderMetaView()}
                 </div>

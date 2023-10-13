@@ -13,5 +13,8 @@ unit test:
 # cypress dev:
 #   parallel: 3
 
-# cypress main:
-#   parallel: 3
+#cypress main:
+  #variables:
+  #  CYPRESS_ENV_FILE: ".env.test"
+  # parallel: 3
+
