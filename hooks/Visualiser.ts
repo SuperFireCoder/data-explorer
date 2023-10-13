@@ -23,7 +23,7 @@ export const useVisualiserSupport = () => {
 
     const [currentVisibleLayers, setCurrentVisibleLayers] = useState<
         readonly {
-            datasetId: string;
+            datasetId?: string;
             layerName: string;
         }[]
     >([]);
@@ -36,7 +36,7 @@ export const useVisualiserSupport = () => {
 
     const [registeredDatasetLayers, setRegisteredDatasetLayers] = useState<
         readonly {
-            datasetId: string;
+            datasetId?: string;
             layerName: string;
             layerUrl?: string | { __tempUrl: string };
             mapLayer: MapLayer;

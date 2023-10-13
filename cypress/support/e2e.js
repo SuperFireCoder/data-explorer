@@ -26,6 +26,14 @@ beforeEach(() => {
     cy.intercept("GET", VISUALISER_API + "/api/maps/*/wms/*", {
         fixture: "map.png"
     }).as("getMap");
+
+    // cy.intercept("POST", VISUALISER_API + "/api/maps/", {
+    //     fixture: {}
+    // }).as("postMap");
+
+    // cy.intercept("GET", VISUALISER_API + "/api/maps/*/status", {
+    //     fixture: {}
+    // }).as("getMapStatus");
 });
 
 // Alternatively you can use CommonJS syntax:

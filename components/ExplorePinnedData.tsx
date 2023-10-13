@@ -18,7 +18,7 @@ import {
     useEsIndividualFacetFreeText,
 } from "../hooks/EsFacet";
 import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
-import { usePinnedDataStore } from "./../interfaces/PinnedDataStore";
+import { usePinnedDataStore } from "./../hooks/PinnedDataStore";
 import { useDataManager } from "../hooks/DataManager";
 import { PinnedDataset } from "./../interfaces/PinnedDataset";
 

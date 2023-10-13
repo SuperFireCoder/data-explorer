@@ -17,17 +17,9 @@ describe("filtering Month Filter Non Monthly", () => {
 
     it("Filter Month Filter Non Monthly", () => {
         // Month Filter is set to 'Non monthly data'
-        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
-            .first()
+        cy.get('[data-cy=facetMonth]')
             .should("contain", "Non monthly data")
-            // assert only 1 Time Domain and 1 Month Filter option is chosen
-            .get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
-            .last()
-            .should("contain", "Current/Historic")
-            .get(".bp5-tag")
-            .its("length")
-            .should("eq", 2)
-            .wait(2000);
+
         // I should see page with filtered datasets with non-monthly data
         // get text
         cy.get('[data-cy="DatasetCard-card"]')

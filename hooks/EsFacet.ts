@@ -41,6 +41,7 @@ export interface EsIndividualFacetConfig<T> {
     id: keyof T;
     label: string;
     placeholder?: string;
+    itemLabels?: Record<string, string>;
 }
 
 export interface EsIndividualFacetNumberRangeConfig<T> {
@@ -93,6 +94,7 @@ export interface EsIndividualFacetArray<T> {
         a: EsAggregationBucket | undefined,
         b: EsAggregationBucket | undefined
     ) => number;
+    itemLabels?: Record<string, string>;
     onItemSelect: (item: EsAggregationBucket) => void;
     onItemRemoveByTag: (tag: unknown, i: number) => void;
 }
@@ -472,9 +474,9 @@ export const useEsIndividualFacetArray = <T extends MinimumFormState>(
         id: config.id,
         label: config.label,
         placeholder: config.placeholder,
-
         type: "array",
         items,
+        itemLabels: config.itemLabels,
         selectedItems,
         itemSortFn: config.itemSortFn,
         onItemSelect: handleItemSelect,

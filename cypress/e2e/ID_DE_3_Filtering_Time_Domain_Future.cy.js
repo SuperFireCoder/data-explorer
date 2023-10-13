@@ -20,38 +20,59 @@ describe("filtering Time Domain Future", () => {
 
     it("Filter Time Domain Future", () => {
         // I remove "Current/Historic" from Time Domain option
-        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
-            .last()
+        cy.get('[data-cy=facetTimeDomain]')
+            .contains("Current/Historic")
+            .parent()
+            .find(".bp5-tag-remove")
             .click()
-            .get(".bp5-tag-remove")
-            .last()
-            .click();
-        cy.wait("@searchResult");
+
+        // I remove "Unclassified" from Time Domain option
+        cy.get('[data-cy=facetTimeDomain]')
+            .contains("Unclassified")
+            .parent()
+            .find(".bp5-tag-remove")
+            .click()
+
+        cy.wait("@searchResult")
+
         // I select "Future" from Time Domain option
-        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
+        cy.get('[data-cy=facetTimeDomain]')
+            .click()
+        cy.get('.bp5-multi-select-popover .bp5-popover-content')
             .contains("Future")
-            .click();
-        cy.get('*[class^="bp5-text-overflow-ellipsis bp5-fill"]')
-            .first()
-            .should("contain", "Non monthly data")
-            // assert only 1 Time Domain and 1 Month Domain option is chosen
-            .get(".bp5-tag")
+            .click()
+            // click outside
+            .get("body")
+            .click(10, 10)
+
+        // assert 1 Time Domain options chosen (Future)
+        cy.get('[data-cy=facetTimeDomain]')
+            .find(".bp5-tag")
             .its("length")
-            .should("eq", 2);
-        cy.wait("@searchResult");
+            .should("eq", 1)
+
+        // assert only 1 Month Domain option is chosen (Non monthly data)
+        cy.get('[data-cy=facetMonth]')
+            .should("contain", "Non monthly data")
+            .find(".bp5-tag")
+            .its("length")
+            .should("eq", 1)
+
+        cy.wait("@searchResult")
+
         // I should see page with filtered datasets set in future years
         // get year text
-        cy.contains("button", "Last refreshed at").click();
+        cy.contains("button", "Last refreshed at").click()
         cy.wait("@searchResult");
         cy.get('[data-cy="DatasetCard-card"]')
             .first()
             .invoke("text")
             .then(($text) => {
                 // get year
-                var regEx = /\b[0-9]{4}/;
-                const yearText = parseInt(regEx.exec($text)[0]);
+                var regEx = /\b[0-9]{4}/
+                const yearText = parseInt(regEx.exec($text)[0])
                 // assert year is in future
-                expect(yearText).to.be.above(2023);
+                expect(yearText).to.be.above(2023)
             });
     });
 });

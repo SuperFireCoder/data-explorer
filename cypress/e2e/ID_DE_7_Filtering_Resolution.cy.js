@@ -23,10 +23,10 @@ describe("filtering Resolution", () => {
             .contains("36 arcsec (~1km)")
             .click()
             .wait(2000)
-            // assert only 1 Time Domain, 1 Month Filter, 1 Resolution is selected
+            // assert only 2 Time Domain, 1 Month Filter, 1 Resolution is selected
             .get(".bp5-tag")
             .its("length")
-            .should("eq", 3)
+            .should("eq", 4)
             // I should see page with filtered datasets in 36 arcsec (~1km) resolution
             // get text
             .get('[data-cy="DatasetCard-card"]')
@@ -44,10 +44,10 @@ describe("filtering Resolution", () => {
             .contains("3 arcmin (~5km)")
             .click()
             .wait(2000)
-            // assert only 1 Time Domain, 1 Month Filter, 1 Resolution is selected
+            // assert only 2 Time Domain, 1 Month Filter, 1 Resolution is selected
             .get(".bp5-tag")
             .its("length")
-            .should("eq", 3)
+            .should("eq", 4)
             // I should see page with filtered datasets in 3 arcmin (~5km) resolution
             // get text
             .get('[data-cy="DatasetCard-card"]')

@@ -7,8 +7,6 @@ import styles from "./VisualiserLayersControl.module.css";
 type LayerInfo = { layerName: string; label: string };
 
 
-
-
 const isLayerInfo = (x: object): x is LayerInfo => {
     const o = x as any;
     return typeof o.layerName === "string" && typeof o.label === "string";
@@ -80,7 +78,6 @@ export default function VisualiserLayersControl<
         FormEventHandler<HTMLInputElement>
     >(
         (e) =>
-        
             onCurrentMapScaleChange(
                 e.currentTarget.value as typeof currentMapScale
             ),
@@ -92,15 +89,12 @@ export default function VisualiserLayersControl<
         FormEventHandler<HTMLInputElement>
     >(
         (e) =>
-        
             onCurrentMapStyleChange(
                 e.currentTarget.value
             ),
             
         [currentMapStyle, onCurrentMapStyleChange]
     );
-
-
 
     return (
         <>
@@ -137,7 +131,7 @@ export default function VisualiserLayersControl<
                             })}
                         </RadioGroup>
                     )}
-                                        <RadioGroup
+                    <RadioGroup
                         label="Style"
                         onChange={handleCurrentMapStyleChange}
                         selectedValue={currentMapStyle}

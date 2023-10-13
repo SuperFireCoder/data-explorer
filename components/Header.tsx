@@ -38,6 +38,7 @@ export default function Header(
                         .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ANALYSIS_HUB ??
                     "#",
             }}
+            subBarLinks={getThemeValue("Object::DataExplorer.HeaderSubBarLinks") ?? props.subBarLinks}
             useYellowStripedBackground={
                 config.publicRuntimeConfig.NEXT_PUBLIC_DEPLOYMENT !==
                 "production"

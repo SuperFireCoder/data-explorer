@@ -23,10 +23,10 @@ describe("filtering Spatial Domain", () => {
             .contains("Australia")
             .click()
             .wait(2000)
-            // assert only 1 Time Domain, 1 Month Filter, 1 Spatial Domain is selected
+            // assert only 2 Time Domain, 1 Month Filter, 1 Spatial Domain is selected
             .get(".bp5-tag")
             .its("length")
-            .should("eq", 3)
+            .should("eq", 4)
             // I should see page with filtered datasets with Australia data
             // get text
             .get('[data-cy="DatasetCard-card"]')
@@ -44,10 +44,10 @@ describe("filtering Spatial Domain", () => {
             .contains("Global")
             .click()
             .wait(2000)
-            // assert only 1 Time Domain, 1 Month Filter, 1 Spatial Domain is selected
+            // assert only 2 Time Domain, 1 Month Filter, 1 Spatial Domain is selected
             .get(".bp5-tag")
             .its("length")
-            .should("eq", 3);
+            .should("eq", 4);
         // I should see page with filtered datasets with Australia data
         // get text
         cy.get('[data-cy="DatasetCard-card"]')
@@ -75,7 +75,7 @@ describe("filtering Spatial Domain", () => {
             // assert only 1 Time Domain, 1 Month Filter, 1 Spatial Domain is selected
             .get(".bp5-tag")
             .its("length")
-            .should("eq", 3);
+            .should("eq", 4);
         // I should see page with filtered datasets with Australia data
         // get text
         cy.get('[data-cy="DatasetCard-card"]')
