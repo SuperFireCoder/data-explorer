@@ -16,6 +16,8 @@ export interface Props<T> {
     itemLabels?: Record<string, string>;
     /** Whether to disable rendering of the document count label for items */
     disableDocCountLabel?: boolean;
+    /** Hide the user text input */
+    hideTextInput?: boolean;
 }
 
 const defaultItemEqualityFn = (
@@ -138,6 +140,7 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
     itemSortFn,
     itemLabels,
     disableDocCountLabel = false,
+    hideTextInput = false,
 }: Props<T>) {
 
     const defaultTagRenderer = (item: EsAggregationBucket | undefined) => {
@@ -155,8 +158,9 @@ export default function FacetMultiSelect<T extends EsAggregationBucket>({
         () => ({
             onRemove: onItemRemoveByTag,
             dataTestid: "facet-multi-select-tag-input",
+            inputProps: hideTextInput ? { style: { "width": 0 } } : {}
         }),
-        [onItemRemoveByTag]
+        [onItemRemoveByTag, hideTextInput]
     );
 
     const sortedItems = useMemo(

@@ -422,6 +422,10 @@ export const useEsIndividualFacetArray = <T extends MinimumFormState>(
         [esFacetRoot.formState[config.id]]
     );
 
+    if (selectedStringItems === undefined){
+        throw Error(`No formState entry could be found for facet '${String(config.id)}'`)
+    }
+
     const items = useMemo(
         () => esFacetRoot?.aggregations?.[config.id as string] ?? [],
         [esFacetRoot?.aggregations?.[config.id as string]]

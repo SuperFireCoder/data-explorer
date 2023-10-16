@@ -44,6 +44,7 @@ interface QueryParameters {
     facetYearMin?: string;
     facetYearMax?: string;
     facetTimeDomain?: string | string[];
+    facetSpatialType?: string | string[];
     facetSpatialDomain?: string | string[];
     facetResolution?: string | string[];
     facetGcm?: string | string[];
@@ -65,6 +66,7 @@ interface FormState {
     facetYearMax: number;
     facetTimeDomain: readonly string[];
     facetSpatialDomain: readonly string[];
+    facetSpatialType: readonly string[];
     facetResolution: readonly string[];
     facetScientificType: readonly string[];
     facetDomain: readonly string[];
@@ -311,6 +313,27 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                     "time_domain",
                     { size: 1000000 },
                     "facetTimeDomain"
+                ),
+            };
+        },
+    },
+    {
+        id: "facetSpatialType",
+        facetApplicationFn: (formState, query) => {
+            return addTermAggregationFacetStateToQuery(
+                query,
+                "spatial_data_type",
+                formState.facetSpatialType
+            )
+        },
+        aggregationApplicationFn: (query) => {
+            return {
+                ...query,
+                bodyBuilder: query.bodyBuilder.aggregation(
+                    "terms",
+                    "spatial_data_type",
+                    { size: 1000000 },
+                    "facetSpatialType"
                 ),
             };
         },
@@ -650,6 +673,7 @@ export default function IndexPage() {
             facetYearMax = "",
             facetTimeDomain = [],
             facetSpatialDomain = [],
+            facetSpatialType = [],
             facetResolution = [],
             facetScientificType = [],
             facetDomain = [],
@@ -686,6 +710,7 @@ export default function IndexPage() {
             facetTimeDomain: normaliseAsReadonlyStringArray(facetTimeDomain),
             facetSpatialDomain:
                 normaliseAsReadonlyStringArray(facetSpatialDomain),
+            facetSpatialType: normaliseAsReadonlyStringArray(facetSpatialType),
             facetResolution: normaliseAsReadonlyStringArray(facetResolution),
             facetScientificType:
                 normaliseAsReadonlyStringArray(facetScientificType),
@@ -817,6 +842,13 @@ export default function IndexPage() {
         id: "facetScientificType",
         label: "Scientific type",
         placeholder: "Filter by scientific type...",
+        itemSortFn: itemSortKeyAlpha,
+    });
+
+    const facetSpatialType = useEsIndividualFacetArray(esFacetRoot, {
+        id: "facetSpatialType",
+        label: "Spatial data type",
+        placeholder: "Filter by spatial data type...",
         itemSortFn: itemSortKeyAlpha,
     });
 
@@ -959,6 +991,7 @@ export default function IndexPage() {
             "facetCollection": [],
             "facetTimeDomain": [],
             "facetSpatialDomain": [],
+            "facetSpatialType": [],
             "facetResolution": [],
             "facetScientificType": [],
             "facetDomain": [],
@@ -1037,6 +1070,20 @@ export default function IndexPage() {
                         facetMonth,
                         facetTimeDomain,
                         facetSpatialDomain,
+                        facetSpatialType,
+                        ].map((facet) => (
+                        <Row key={facet.id}>
+                            <Col>
+                                {renderFacetLabel(facet.id, facet.label)}
+                                <FacetMultiSelectFacetState2
+                                    data-cy={"facet-"+facet.id+"-select"}
+                                    facet={facet}
+                                    hideTextInput={true}
+                                />
+                            </Col>
+                        </Row>
+                    ))}
+                    {[
                         facetResolution,
                         facetScientificType,
                         facetDomain,
@@ -1053,9 +1100,9 @@ export default function IndexPage() {
                                     // When there is a free text search
                                     // query, disable showing document
                                     // counts as they are misleading
-                                    disableDocCountLabel={
-                                        searchQuery.value.length !== 0
-                                    }
+                                    // disableDocCountLabel={
+                                    //     searchQuery.value.length !== 0
+                                    // }
                                 />
                             </Col>
                         </Row>
