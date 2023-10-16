@@ -1,9 +1,5 @@
 /// <reference types="cypress" />
 
-const DATA_EXPLORER_API = Cypress.env(
-    "NEXT_PUBLIC_DATA_EXPLORER_BACKEND_SERVER_URL"
-);
-
 /**
  * Feature: ID_DE_3_Filtering_Time_Domain_Future;
  */
@@ -13,9 +9,6 @@ describe("filtering Time Domain Future", () => {
         // Given I am on the "dataset" tab
         // And on "Explore EcoCommons Data"
         cy.visit("/");
-        cy.intercept("POST", DATA_EXPLORER_API + "/api/es/search/dataset").as(
-            "searchResult"
-        );
     });
 
     it("Filter Time Domain Future", () => {
@@ -25,6 +18,11 @@ describe("filtering Time Domain Future", () => {
             .parent()
             .find(".bp5-tag-remove")
             .click()
+        // click outside
+        cy.get("body")
+            .click(10, 10)
+        cy.get('[data-cy=facetTimeDomain]')
+            .should("not.contain", "Current/Historic")
 
         // I remove "Unclassified" from Time Domain option
         cy.get('[data-cy=facetTimeDomain]')
@@ -32,8 +30,14 @@ describe("filtering Time Domain Future", () => {
             .parent()
             .find(".bp5-tag-remove")
             .click()
+        // click outside
+        cy.get("body")
+            .click(10, 10)
+        cy.get('[data-cy=facetTimeDomain]')
+            .should("not.contain", "Unclassified")
 
-        cy.wait("@searchResult")
+        cy.wait("@searchDataset")
+        cy.wait(500)
 
         // I select "Future" from Time Domain option
         cy.get('[data-cy=facetTimeDomain]')
@@ -58,12 +62,13 @@ describe("filtering Time Domain Future", () => {
             .its("length")
             .should("eq", 1)
 
-        cy.wait("@searchResult")
-
+        cy.wait("@searchDataset")
+        cy.wait(500)
+        
         // I should see page with filtered datasets set in future years
         // get year text
         cy.contains("button", "Last refreshed at").click()
-        cy.wait("@searchResult");
+        cy.wait("@searchDataset");
         cy.get('[data-cy="DatasetCard-card"]')
             .first()
             .invoke("text")

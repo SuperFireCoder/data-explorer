@@ -1072,7 +1072,7 @@ export default function IndexPage() {
                         facetSpatialDomain,
                         facetSpatialType,
                         ].map((facet) => (
-                        <Row key={facet.id}>
+                        <Row key={facet.id} data-cy={facet.id} data-testid={facet.id}>
                             <Col>
                                 {renderFacetLabel(facet.id, facet.label)}
                                 <FacetMultiSelectFacetState2
