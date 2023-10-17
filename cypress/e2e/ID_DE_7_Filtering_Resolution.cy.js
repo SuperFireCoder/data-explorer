@@ -1,9 +1,5 @@
 /// <reference types="cypress" />
 
-const DATA_EXPLORER_API = Cypress.env(
-    "NEXT_PUBLIC_DATA_EXPLORER_BACKEND_SERVER_URL"
-);
-
 /**
  * Feature: ID_DE_7_Filtering_Resolution;
  */
@@ -22,7 +18,10 @@ describe("filtering Resolution", () => {
             .get(".bp5-menu")
             .contains("36 arcsec (~1km)")
             .click()
-            .wait(2000)
+
+        cy.wait("@searchDataset")
+        cy.wait(500)
+
             // assert only 2 Time Domain, 1 Month Filter, 1 Resolution is selected
             .get(".bp5-tag")
             .its("length")
@@ -43,7 +42,10 @@ describe("filtering Resolution", () => {
             .get(".bp5-menu")
             .contains("3 arcmin (~5km)")
             .click()
-            .wait(2000)
+
+        cy.wait("@searchDataset")
+        cy.wait(500)
+        
             // assert only 2 Time Domain, 1 Month Filter, 1 Resolution is selected
             .get(".bp5-tag")
             .its("length")

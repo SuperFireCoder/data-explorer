@@ -28,16 +28,21 @@ describe("filtering Month Filter Monthly", () => {
             .parent()
             .find(".bp5-tag-remove")
             .click()
+        // click outside
+        cy.get("body")
+            .click(10, 10)
         cy.get('[data-cy=facetMonth]')
             .should("not.contain", "Non monthly data")
 
         // I select "January" from Month Filter option
         cy.wait("@searchDataset")
+        cy.get('[data-cy=facetMonth]')
+            .click()
         cy.get('.bp5-multi-select-popover .bp5-popover-content')
             .contains("January")
             .click()
-            // click outside
-            .get("body")
+        // click outside
+        cy.get("body")
             .click(10, 10)
 
         // assert only 1 Month option chosen
@@ -48,6 +53,7 @@ describe("filtering Month Filter Monthly", () => {
             .should("eq", 1)
 
         cy.wait("@searchDataset")
+        cy.wait(500)
 
             // I should see page with datasets set in January
             // get text
@@ -67,11 +73,16 @@ describe("filtering Month Filter Monthly", () => {
             .parent()
             .find(".bp5-tag-remove")
             .click()
+        // click outside
+        cy.get("body")
+            .click(10, 10)
         cy.get('[data-cy=facetMonth]')
             .should("not.contain", "Non monthly data")
 
         // I select "November" from Month Filter option
         cy.wait("@searchDataset")
+        cy.get('[data-cy=facetMonth]')
+            .click()
         cy.get('.bp5-multi-select-popover .bp5-popover-content')
             .contains("November")
             .click()
@@ -87,7 +98,8 @@ describe("filtering Month Filter Monthly", () => {
             .should("eq", 1)
 
         cy.wait("@searchDataset")
-
+        cy.wait(500)
+        
         // I should see page with datasets set in November
         // get text
         cy.get('[data-cy="DatasetCard-card"]')

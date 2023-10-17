@@ -27,7 +27,7 @@ describe("Visualise datasets on a map", () => {
         cy.intercept("POST", DATA_EXPLORER_API + "/api/es/search/dataset").as("esSearchDataset");
     });
 
-    it("ID35.1 - can Visualise occurrence datasets appropriatly", () => {
+    it("ID35.1 - can Visualise occurrence datasets appropriately", () => {
         // Given I uploaded occurrence data "325Sulfur crested cockatoo.csv"
         // And I am on the "Datasets" tab
         // When I type "325Sulfur crested cockatoo.csv"
@@ -122,7 +122,10 @@ describe("Visualise datasets on a map", () => {
             cy.get('[data-cy="search-field"]')
                 .clear({ force: true })
                 .type(`${example.data}{enter}`, { force: true });
-            cy.wait(2000);
+
+            cy.wait("@searchDataset")
+            cy.wait(500)
+
             cy.get(
                 `[data-cy="DatasetCard-card"][data-testid="${example.data}"]`
             )
