@@ -1,8 +1,5 @@
 /// <reference types="cypress" />
 
-const DATA_EXPLORER_API = Cypress.env(
-    "NEXT_PUBLIC_DATA_EXPLORER_BACKEND_SERVER_URL"
-);
 
 /**
  * Feature: ID_DE_6_Filtering_Spatial_Domain;
@@ -22,14 +19,17 @@ describe("filtering Spatial Domain", () => {
             .get(".bp5-menu")
             .contains("Australia")
             .click()
-            .wait(2000)
+
+        cy.wait("@searchDataset")
+        cy.wait(500)
+
             // assert only 2 Time Domain, 1 Month Filter, 1 Spatial Domain is selected
-            .get(".bp5-tag")
+        cy.get(".bp5-tag")
             .its("length")
             .should("eq", 4)
             // I should see page with filtered datasets with Australia data
             // get text
-            .get('[data-cy="DatasetCard-card"]')
+        cy.get('[data-cy="DatasetCard-card"]')
             .first()
             .invoke("text")
             // assert result is within spatial domain
@@ -43,9 +43,12 @@ describe("filtering Spatial Domain", () => {
             .get(".bp5-menu")
             .contains("Global")
             .click()
-            .wait(2000)
+
+        cy.wait("@searchDataset")
+        cy.wait(500)
+
             // assert only 2 Time Domain, 1 Month Filter, 1 Spatial Domain is selected
-            .get(".bp5-tag")
+        cy.get(".bp5-tag")
             .its("length")
             .should("eq", 4);
         // I should see page with filtered datasets with Australia data
@@ -71,9 +74,12 @@ describe("filtering Spatial Domain", () => {
             .get(".bp5-menu")
             .contains("Regional")
             .click()
-            .wait(2000)
+
+        cy.wait("@searchDataset")
+        cy.wait(500)
+
             // assert only 1 Time Domain, 1 Month Filter, 1 Spatial Domain is selected
-            .get(".bp5-tag")
+        cy.get(".bp5-tag")
             .its("length")
             .should("eq", 4);
         // I should see page with filtered datasets with Australia data

@@ -5,11 +5,13 @@ import FacetMultiSelect from "./FacetMultiSelect";
 export interface Props<T> {
     facet: EsIndividualFacetArray<T>;
     disableDocCountLabel?: boolean;
+    hideTextInput?: boolean;
 }
 
 export default function FacetMultiSelectFacetState2<T>({
     facet,
     disableDocCountLabel,
+    hideTextInput
 }: Props<T>) {
 
     let {
@@ -31,6 +33,7 @@ export default function FacetMultiSelectFacetState2<T>({
             onItemRemoveByTag={onItemRemoveByTag}
             disableDocCountLabel={disableDocCountLabel}
             itemSortFn={itemSortFn}
+            hideTextInput={hideTextInput}
             itemLabels={itemLabels}
         />
     );

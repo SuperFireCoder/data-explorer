@@ -23,8 +23,11 @@ export interface EsFacetRootConfig<T> {
     /** Registered aggregations and function to apply the facet to a query */
     facets: readonly {
         id: keyof T;
+        // Query builder for the actual search.
         facetApplicationFn: (formState: T, query: QueryState) => QueryState;
+        // Query builder to return available aggregations.
         aggregationApplicationFn?: (query: QueryState) => QueryState;
+        // TODO: Document my intentions..
         aggregationExtractFn?: (
             aggregation: unknown
         ) => readonly EsAggregationBucket[] | undefined;
@@ -421,6 +424,10 @@ export const useEsIndividualFacetArray = <T extends MinimumFormState>(
         () => esFacetRoot.formState[config.id] as unknown as readonly string[],
         [esFacetRoot.formState[config.id]]
     );
+
+    if (selectedStringItems === undefined){
+        throw Error(`No formState entry could be found for facet '${String(config.id)}'`)
+    }
 
     const items = useMemo(
         () => esFacetRoot?.aggregations?.[config.id as string] ?? [],
