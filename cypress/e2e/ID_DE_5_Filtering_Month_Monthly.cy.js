@@ -28,6 +28,7 @@ describe("filtering Month Filter Monthly", () => {
             .parent()
             .find(".bp5-tag-remove")
             .click()
+        cy.wait(500)
         // click outside
         cy.get("body")
             .click(10, 10)
@@ -41,6 +42,7 @@ describe("filtering Month Filter Monthly", () => {
         cy.get('.bp5-multi-select-popover .bp5-popover-content')
             .contains("January")
             .click()
+        cy.wait(500)
         // click outside
         cy.get("body")
             .click(10, 10)
@@ -74,6 +76,7 @@ describe("filtering Month Filter Monthly", () => {
             .find(".bp5-tag-remove")
             .click()
         // click outside
+        cy.wait(500)
         cy.get("body")
             .click(10, 10)
         cy.get('[data-cy=facetMonth] .bp5-input')
@@ -86,8 +89,10 @@ describe("filtering Month Filter Monthly", () => {
         cy.get('.bp5-multi-select-popover .bp5-popover-content')
             .contains("November")
             .click()
-            // click outside
-            .get("body")
+        
+        cy.wait(500)
+        // click outside
+        cy.get("body")
             .click(10, 10)
 
         // assert only 1 Month option chosen
