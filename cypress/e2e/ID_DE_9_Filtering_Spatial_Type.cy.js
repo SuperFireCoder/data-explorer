@@ -13,7 +13,7 @@ describe("filtering SpatialType", () => {
 
     it("Filter SpatialType Categorical", () => {
         // I select "Categorical" from SpatialType option
-        cy.get('[data-cy=facetSpatialType]')
+        cy.get('[data-cy=facetSpatialType] .bp5-input')
             .click()
             .get(".bp5-menu")
             .contains("Categorical")
@@ -33,7 +33,7 @@ describe("filtering SpatialType", () => {
 
     it("Filter SpatialType Point", () => {
         // I select "Point" from SpatialType option
-        cy.get('[data-cy=facetSpatialType]')
+        cy.get('[data-cy=facetSpatialType] .bp5-input')
             .click()
             .get(".bp5-menu")
             .contains("Point")

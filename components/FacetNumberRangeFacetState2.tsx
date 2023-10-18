@@ -3,7 +3,7 @@ import { Col, Row } from "@ecocommons-australia/ui-library";
 import { ComponentProps, FormEventHandler, useCallback, useMemo } from "react";
 import NumberInputGroup from "./NumberInputGroup";
 import { EsIndividualFacetNumberRange } from "../hooks/EsFacet";
-import styles from "./FacetSelectFacetState2.module.css"
+import styles from "./Facets.module.css"
 
 export interface Props<T> {
     facet: EsIndividualFacetNumberRange<T>;
@@ -46,9 +46,9 @@ export default function FacetNumberRangeFacetState2<T>({
 
     return (
         <div>
-            <Row disableDefaultMargins>
+            <Row disableDefaultMargins className={styles.facetNumberRange}>
                 <Col xs={6}>
-                    <H6>{label}&nbsp;
+                    <H6 className={styles.facetLabelInline}>{label}&nbsp;
                     <Popover  position={Position.TOP_LEFT}
                         autoFocus={false}
                         interactionKind={PopoverInteractionKind.HOVER}

@@ -17,7 +17,7 @@ describe("filtering Month Filter Non Monthly", () => {
 
     it("Filter Month Filter Non Monthly", () => {
         // Month Filter is set to 'Non monthly data'
-        cy.get('[data-cy=facetMonth]')
+        cy.get('[data-cy=facetMonth] .bp5-input')
             .should("contain", "Non monthly data")
 
         // I should see page with filtered datasets with non-monthly data
