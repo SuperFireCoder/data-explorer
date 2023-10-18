@@ -23,7 +23,7 @@ describe("filtering Month Filter Monthly", () => {
         cy.wait("@searchDataset")
 
         // I remove "Non Monthly Data" from Month Filter option
-        cy.get('[data-cy=facetMonth]')
+        cy.get('[data-cy=facetMonth] .bp5-input')
             .contains("Non monthly data")
             .parent()
             .find(".bp5-tag-remove")
@@ -31,12 +31,12 @@ describe("filtering Month Filter Monthly", () => {
         // click outside
         cy.get("body")
             .click(10, 10)
-        cy.get('[data-cy=facetMonth]')
+        cy.get('[data-cy=facetMonth] .bp5-input')
             .should("not.contain", "Non monthly data")
 
         // I select "January" from Month Filter option
         cy.wait("@searchDataset")
-        cy.get('[data-cy=facetMonth]')
+        cy.get('[data-cy=facetMonth] .bp5-input')
             .click()
         cy.get('.bp5-multi-select-popover .bp5-popover-content')
             .contains("January")
@@ -46,7 +46,7 @@ describe("filtering Month Filter Monthly", () => {
             .click(10, 10)
 
         // assert only 1 Month option chosen
-        cy.get('[data-cy=facetMonth]')
+        cy.get('[data-cy=facetMonth] .bp5-input')
             .should("contain", "January")
             .find(".bp5-tag")
             .its("length")
@@ -68,7 +68,7 @@ describe("filtering Month Filter Monthly", () => {
         cy.wait("@searchDataset")
 
         // I remove "Non Monthly Data" from Month Filter option
-        cy.get('[data-cy=facetMonth]')
+        cy.get('[data-cy=facetMonth] .bp5-input')
             .contains("Non monthly data")
             .parent()
             .find(".bp5-tag-remove")
@@ -76,12 +76,12 @@ describe("filtering Month Filter Monthly", () => {
         // click outside
         cy.get("body")
             .click(10, 10)
-        cy.get('[data-cy=facetMonth]')
+        cy.get('[data-cy=facetMonth] .bp5-input')
             .should("not.contain", "Non monthly data")
 
         // I select "November" from Month Filter option
         cy.wait("@searchDataset")
-        cy.get('[data-cy=facetMonth]')
+        cy.get('[data-cy=facetMonth] .bp5-input')
             .click()
         cy.get('.bp5-multi-select-popover .bp5-popover-content')
             .contains("November")
@@ -91,7 +91,7 @@ describe("filtering Month Filter Monthly", () => {
             .click(10, 10)
 
         // assert only 1 Month option chosen
-        cy.get('[data-cy=facetMonth]')
+        cy.get('[data-cy=facetMonth] .bp5-input')
             .should("contain", "November")
             .find(".bp5-tag")
             .its("length")

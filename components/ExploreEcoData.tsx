@@ -8,11 +8,9 @@ import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
 import { DatasetType } from "../interfaces/DatasetType";
 import { useEffectTrigger } from "../hooks/EffectTrigger";
-
 import { getDataExplorerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
 import { sendDatasetId } from "../util/messages";
-import styles from "./FacetSelectFacetState2.module.css"
 import {
     EsFacetRootConfig,
     QueryState,
@@ -27,6 +25,8 @@ import FacetFreeTextFacetState2 from "./FacetFreeTextFacetState2";
 import { itemSortKeyAlpha, monthItemSort, resolutionItemSort } from "./FacetMultiSelect";
 import FacetNumberRangeFacetState2 from "./FacetNumberRangeFacetState2";
 import FacetSelectFacetState2 from "./FacetSelectFacetState2";
+
+import styles from "./Facets.module.css"
 
 interface QueryParameters {
     /** Results per page */
@@ -846,7 +846,7 @@ export default function IndexPage() {
 
     const facetScientificType = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetScientificType",
-        label: "Scientific type",
+        label: "Data category",
         placeholder: "Filter by scientific type...",
         itemSortFn: itemSortKeyAlpha,
     });
@@ -860,7 +860,7 @@ export default function IndexPage() {
 
     const facetDomain = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetDomain",
-        label: "Domain",
+        label: "Scientific domain",
         placeholder: "Filter by domain...",
         itemSortFn: itemSortKeyAlpha,
     });
@@ -1010,7 +1010,7 @@ export default function IndexPage() {
   
     const renderFacetLabel = (facetId: string, facetLabel: string) => {
         if (facetId === "facetGcm") {
-            return <H6>{facetLabel}&nbsp;
+            return <H6 className={styles.facetLabel}>{facetLabel}&nbsp;
              <Popover  position={Position.TOP_LEFT}
                         autoFocus={false}
                         interactionKind={PopoverInteractionKind.HOVER}
@@ -1021,53 +1021,31 @@ export default function IndexPage() {
                     </Popover>
                 </H6>;
         } else {
-            return <H6>{facetLabel}</H6>;
+            return <H6 className={styles.facetLabel}>{facetLabel}</H6>;
         }
     }
 
     return (
         <Row data-cy="ExploreEcoDataTab">
             <Col xs={2}>
-                <Row disableDefaultMargins>
-                    <Col>
-                        <FacetFreeTextFacetState2
-                            facet={searchQuery}
-                            data-testid="search-field"
-                            data-cy="search-field"
-                            type="search"
-                            leftIcon="search"
-                            rightElement={
-                                searchQuery.value.length > 0 ? (
-                                    <Button
-                                        icon="small-cross"
-                                        minimal
-                                        onClick={() =>
-                                            searchQuery.onValueChange("")
-                                        }
-                                        style={{
-                                            borderRadius: "100%",
-                                        }}
-                                    />
-                                ) : undefined
-                            }
-                            id="dataset-search"
-                        />
-                    </Col>
-                </Row>
-                <form onSubmit={suppressEvent} data-testid="facet-fields">
-
+                <form 
+                    onSubmit={suppressEvent} 
+                    data-cy="facet-fields" 
+                    data-testid="facet-fields"
+                    style={{}}
+                >
                     <FacetSelectFacetState2
                         data-cy="facet-filter-principals-select"
                         facet={filterPrincipals}
                         enabled={allowChangeFilterPrinciples}
                     />
 
-                    <Row data-cy="facetYearRange" data-testid="facetYearRange">
+                    <Row data-cy="facetYearRange" data-testid="facetYearRange" disableDefaultMargins>
                         <Col>
                             <FacetNumberRangeFacetState2
                                 facet={facetYearRange}
                                 defaultMin={1990}
-                                defaultMax={2010}
+                                defaultMax={2030}
                                 numberParseMode="integer"
                             />
                         </Col>
@@ -1078,7 +1056,7 @@ export default function IndexPage() {
                         facetSpatialDomain,
                         facetSpatialDataType,
                         ].map((facet) => (
-                        <Row key={facet.id} data-cy={facet.id} data-testid={facet.id}>
+                        <Row key={facet.id} data-cy={facet.id} data-testid={facet.id} disableDefaultMargins>
                             <Col>
                                 {renderFacetLabel(facet.id, facet.label)}
                                 <FacetMultiSelectFacetState2
@@ -1090,14 +1068,14 @@ export default function IndexPage() {
                         </Row>
                     ))}
                     {[
-                        facetResolution,
                         facetScientificType,
+                        facetResolution,
                         facetDomain,
                         facetGcm,
                         facetCollection,
                         //facetDataCategory
                         ].map((facet) => (
-                        <Row key={facet.id} data-cy={facet.id} data-testid={facet.id}>
+                        <Row key={facet.id} data-cy={facet.id} data-testid={facet.id} disableDefaultMargins>
                             <Col>
                                 {renderFacetLabel(facet.id, facet.label)}
                                 <FacetMultiSelectFacetState2
@@ -1130,29 +1108,32 @@ export default function IndexPage() {
             <Col xs={10}>
                 <Row disableDefaultMargins align="center">
                     <Col
-                        xs="content"
+                        xs={2}
                         className="bp5-ui-text bp5-text-disabled"
                         data-testid="results-count"
                     >
                         {queryInProgress ? (
-                            <Spinner size={SpinnerSize.SMALL} />
+                            <>
+                            <span style={{'paddingRight': '0.3rem'}}>
+                                Loading&nbsp;&nbsp;&nbsp;
+                            </span>
+                            <Spinner 
+                                style={{'display': 'inline-block'}} 
+                                size={SpinnerSize.SMALL} 
+                                />
+                            </>
                         ) : (
                             <>
+                            <span style={{'paddingRight': '0.3rem'}}>
                                 {totalNumberOfResults} result
                                 {totalNumberOfResults !== 1 && "s"}
-                            </>
-                        )}
-                    </Col>
-                    <Col xs={6}>
-                            <div style={{ textAlign: "right" }}>
-                                <Button
-                                    icon="refresh"
-                                    minimal
-                                    small
-                                    onClick={triggerSearch}
-                                >
-                                    {datasetHistory?.lastUpdated && (
-                                    <>
+                            </span>
+                            <Popover  
+                                position={Position.TOP_LEFT}
+                                autoFocus={false}
+                                interactionKind={PopoverInteractionKind.HOVER}
+                                content={datasetHistory?.lastUpdated && (
+                                    <div className={styles.toolTip}>
                                         Last refreshed at{" "}
                                         {new Intl.DateTimeFormat(undefined, {
                                             year: "numeric",
@@ -1163,11 +1144,43 @@ export default function IndexPage() {
                                             minute: "2-digit",
                                             hour12: false,
                                         }).format(datasetHistory.lastUpdated)}
-                                    </>
-                                    )}
-                                </Button>
-                            </div>
-                        </Col>
+                                    </div>
+                                )}
+                            >
+                                <Button
+                                    icon="refresh"
+                                    minimal
+                                    small
+                                    onClick={triggerSearch}
+                                />
+                            </Popover>
+                            </>
+                        )}
+                    </Col>
+                    <Col xs={6}>
+                        <FacetFreeTextFacetState2
+                            facet={searchQuery}
+                            data-testid="search-field"
+                            data-cy="search-field"
+                            type="search"
+                            leftIcon="search"
+                            rightElement={
+                                searchQuery.value.length > 0 ? (
+                                    <Button
+                                        icon="small-cross"
+                                        minimal
+                                        onClick={() =>
+                                            searchQuery.onValueChange("")
+                                        }
+                                        style={{
+                                            borderRadius: "100%",
+                                        }}
+                                    />
+                                ) : undefined
+                            }
+                            id="dataset-search"
+                        />
+                    </Col>
                     <Col
                         style={{ textAlign: "right" }}
                         data-testid="pagination-buttons"
