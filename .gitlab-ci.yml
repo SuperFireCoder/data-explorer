@@ -6,15 +6,24 @@ include:
 
 # Jest needs some adapting to work with swc/react18
 # May be retired enterly...
-unit test:
-  allow_failure: true
+# unit test:
+#   rules:
+#     - when: never
+#   allow_failure: true
 
-# couple of issues to work out.. check config
-# cypress dev:
-#   parallel: 3
+variables:
+  CYPRESS_ARGS: "--env split=true"
 
-#cypress main:
-  #variables:
-  #  CYPRESS_ENV_FILE: ".env.test"
-  # parallel: 3
+cypress dev:
+  parallel: 3
 
+cypress main:
+  parallel: 3
+
+
+# Can be enabled to run against Test environment 
+# Currently switched off.  Some adaptation of pipelines required before this is practical
+# Ie, running Dev and Test in develop branch so issues caught early.
+# cypress test:
+#   variables:
+#     USE_CYPRESS_NEXT_ENV_TEST: 1
