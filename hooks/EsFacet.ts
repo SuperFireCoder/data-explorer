@@ -23,8 +23,11 @@ export interface EsFacetRootConfig<T> {
     /** Registered aggregations and function to apply the facet to a query */
     facets: readonly {
         id: keyof T;
+        // Query builder for the actual search.
         facetApplicationFn: (formState: T, query: QueryState) => QueryState;
+        // Query builder to return available aggregations.
         aggregationApplicationFn?: (query: QueryState) => QueryState;
+        // TODO: Document my intentions..
         aggregationExtractFn?: (
             aggregation: unknown
         ) => readonly EsAggregationBucket[] | undefined;

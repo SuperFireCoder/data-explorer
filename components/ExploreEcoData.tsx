@@ -44,7 +44,7 @@ interface QueryParameters {
     facetYearMin?: string;
     facetYearMax?: string;
     facetTimeDomain?: string | string[];
-    facetSpatialType?: string | string[];
+    facetSpatialDataType?: string | string[];
     facetSpatialDomain?: string | string[];
     facetResolution?: string | string[];
     facetGcm?: string | string[];
@@ -52,7 +52,7 @@ interface QueryParameters {
     facetCollection?: string | string[];
     facetScientificType?: string | string[];
     facetMonth?: string | string[];
-    facetDataCategory?: string | string[];
+    //facetDataCategory?: string | string[]; // Disabled as implemention is broken
 }
 
 interface FormState {
@@ -66,14 +66,14 @@ interface FormState {
     facetYearMax: number;
     facetTimeDomain: readonly string[];
     facetSpatialDomain: readonly string[];
-    facetSpatialType: readonly string[];
+    facetSpatialDataType: readonly string[];
     facetResolution: readonly string[];
     facetScientificType: readonly string[];
     facetDomain: readonly string[];
     facetCollection: readonly string[];
     facetGcm: readonly string[];
     facetMonth: readonly string[];
-    facetDataCategory: readonly string[];
+    //facetDataCategory: readonly string[]; // Disabled as implemention is broken
 }
 
 export enum FacetTimeMonth {
@@ -318,12 +318,12 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
         },
     },
     {
-        id: "facetSpatialType",
+        id: "facetSpatialDataType",
         facetApplicationFn: (formState, query) => {
             return addTermAggregationFacetStateToQuery(
                 query,
                 "spatial_data_type",
-                formState.facetSpatialType
+                formState.facetSpatialDataType
             )
         },
         aggregationApplicationFn: (query) => {
@@ -333,7 +333,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                     "terms",
                     "spatial_data_type",
                     { size: 1000000 },
-                    "facetSpatialType"
+                    "facetSpatialDataType"
                 ),
             };
         },
@@ -524,25 +524,23 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             };
         },
     },
-    {
-        id: "facetDataCategory",
-        facetApplicationFn: (formState, query) =>
-        addTermsAggregationFacetStateToQuery(
-                query,
-                ["domain, scientific_type"],
-                formState.facetDataCategory
-            ),
-        aggregationApplicationFn: (query) => {
-            return {
-                ...query,
-                bodyBuilder: query.bodyBuilder.aggregation("terms", "domain",  "facetDataCategory"
-                )
-                .aggregation
-                ("terms", "scientific_type",  "facetDataCategory"
-                ),
-            };
-        },
-    },
+    // {
+    //     id: "facetDataCategory",
+    //     facetApplicationFn: (formState, query) =>
+    //         addTermsAggregationFacetStateToQuery(
+    //                 query,
+    //                 ["domain, scientific_type"],
+    //                 formState.facetDataCategory
+    //             ),
+    //     aggregationApplicationFn: (query) => {
+    //         return {
+    //             ...query,
+    //             bodyBuilder: query.bodyBuilder
+    //                             .aggregation("terms", "domain", "facetDataCategory")
+    //                             .aggregation("terms", "scientific_type", "facetDataCategory"),
+    //         };
+    //     },
+    // },
     {
         id: "datasetId",
         facetApplicationFn: (formState, query) => {
@@ -594,23 +592,6 @@ export default function IndexPage() {
     const [datasetHistory, setDatasetHistory] = useState<
         { lastUpdated: Date; } | undefined
     >(undefined);
-
-    useEffect(
-        function setupReloadInterval() {
-            // Trigger job fetch every 30 seconds
-            setDatasetHistory({
-                lastUpdated: new Date(),
-            });
-            const intervalHandle = window.setInterval(() => {
-                triggerSearch();
-            }, 30000);
-
-            return function stopReloadJobsInterval() {
-                window.clearInterval(intervalHandle);
-            };
-        },
-        [triggerSearch]
-    );
 
     /** 
      * Get a set of default facets based on the current page context.
@@ -673,14 +654,14 @@ export default function IndexPage() {
             facetYearMax = "",
             facetTimeDomain = [],
             facetSpatialDomain = [],
-            facetSpatialType = [],
+            facetSpatialDataType = [],
             facetResolution = [],
             facetScientificType = [],
             facetDomain = [],
             facetCollection = [],
             facetGcm = [],
             facetMonth = [],  
-            facetDataCategory=[]
+            //facetDataCategory=[]
         } = router.query as QueryParameters;
 
         setDatasetHistory({
@@ -710,7 +691,7 @@ export default function IndexPage() {
             facetTimeDomain: normaliseAsReadonlyStringArray(facetTimeDomain),
             facetSpatialDomain:
                 normaliseAsReadonlyStringArray(facetSpatialDomain),
-            facetSpatialType: normaliseAsReadonlyStringArray(facetSpatialType),
+            facetSpatialDataType: normaliseAsReadonlyStringArray(facetSpatialDataType),
             facetResolution: normaliseAsReadonlyStringArray(facetResolution),
             facetScientificType:
                 normaliseAsReadonlyStringArray(facetScientificType),
@@ -718,7 +699,7 @@ export default function IndexPage() {
             facetCollection: normaliseAsReadonlyStringArray(facetCollection),
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
             facetMonth: normaliseAsReadonlyStringArray(facetMonth),
-            facetDataCategory: normaliseAsReadonlyStringArray(facetDataCategory),
+            //facetDataCategory: normaliseAsReadonlyStringArray(facetDataCategory),
         }, prevFormState);
 
         setPrevFormState(newFormState);
@@ -743,6 +724,31 @@ export default function IndexPage() {
         }
     }, [formState]);
 
+    /** 
+     * Periodic refresh
+     */
+    useEffect(
+        function setupReloadInterval() {
+            // This is mainly indended for data imports in 'My Datsets'
+            // Do not bother when viewing all.
+            if (formState.filterPrincipals?.[0] === 'all') {
+                return;           
+            }
+
+            // Trigger job fetch every 30 seconds
+            setDatasetHistory({
+                lastUpdated: new Date(),
+            });
+            const intervalHandle = window.setInterval(() => {
+                triggerSearch();
+            }, 30000);
+
+            return function stopReloadJobsInterval() {
+                window.clearInterval(intervalHandle);
+            };
+        },
+        [formState, triggerSearch]
+    );
 
     /**
      *  Update query params for this page on selection change.
@@ -845,8 +851,8 @@ export default function IndexPage() {
         itemSortFn: itemSortKeyAlpha,
     });
 
-    const facetSpatialType = useEsIndividualFacetArray(esFacetRoot, {
-        id: "facetSpatialType",
+    const facetSpatialDataType = useEsIndividualFacetArray(esFacetRoot, {
+        id: "facetSpatialDataType",
         label: "Spatial data type",
         placeholder: "Filter by spatial data type...",
         itemSortFn: itemSortKeyAlpha,
@@ -873,12 +879,12 @@ export default function IndexPage() {
         itemSortFn: monthItemSort,
     });
 
-    const facetDataCategory = useEsIndividualFacetArray(esFacetRoot, {
-        id: "facetDataCategory",
-        label: "Data Category",
-        placeholder: "Filter by data category...",
-        itemSortFn: itemSortKeyAlpha,
-    });
+    // const facetDataCategory = useEsIndividualFacetArray(esFacetRoot, {
+    //     id: "facetDataCategory",
+    //     label: "Data Category",
+    //     placeholder: "Filter by data category...",
+    //     itemSortFn: itemSortKeyAlpha,
+    // });
 
     const filterPrincipalsItems = useMemo(() => {
         // If user is signed in, provide option for viewing own data
@@ -991,14 +997,14 @@ export default function IndexPage() {
             "facetCollection": [],
             "facetTimeDomain": [],
             "facetSpatialDomain": [],
-            "facetSpatialType": [],
+            "facetSpatialDataType": [],
             "facetResolution": [],
             "facetScientificType": [],
             "facetDomain": [],
             "facetGcm": [],
             "filterPrincipals": [],
             "facetMonth": [],
-            "facetDataCategory": []
+            //"facetDataCategory": []
         })
     },[])
   
@@ -1070,7 +1076,7 @@ export default function IndexPage() {
                         facetMonth,
                         facetTimeDomain,
                         facetSpatialDomain,
-                        facetSpatialType,
+                        facetSpatialDataType,
                         ].map((facet) => (
                         <Row key={facet.id} data-cy={facet.id} data-testid={facet.id}>
                             <Col>
@@ -1089,7 +1095,7 @@ export default function IndexPage() {
                         facetDomain,
                         facetGcm,
                         facetCollection,
-                        facetDataCategory
+                        //facetDataCategory
                         ].map((facet) => (
                         <Row key={facet.id} data-cy={facet.id} data-testid={facet.id}>
                             <Col>
