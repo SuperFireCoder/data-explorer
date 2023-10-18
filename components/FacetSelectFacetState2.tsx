@@ -4,7 +4,7 @@ import { Col, Row } from "@ecocommons-australia/ui-library";
 import { useCallback } from "react";
 import { EsIndividualFacetFixedArray } from "../hooks/EsFacet";
 
-import styles from "./FacetSelectFacetState2.module.css";
+import styles from "./Facets.module.css";
 
 export interface Props<T> {
     facet: EsIndividualFacetFixedArray<T>;
@@ -33,7 +33,7 @@ export default function FacetSelectFacetState2<T>({
         <>
             {items.length > 0 && (
                 <div data-cy="show-datasets-div" >
-                    <Row>
+                    <Row disableDefaultMargins>
                         <Col>
                             <H6 data-cy="show-datasets-label">{label}</H6>
 

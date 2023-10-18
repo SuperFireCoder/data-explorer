@@ -16,7 +16,7 @@ describe("filtering Time Domain Current/Historic", () => {
 
     it("Filter Time Domain Current/Historic", () => {
         // Time Domain is set to Current/Historic, Unclassified
-        cy.get('[data-cy=facetTimeDomain]')
+        cy.get('[data-cy=facetTimeDomain] .bp5-input')
             .should("contain", "Current/Historic")
             .should("contain", "Unclassified")
             .find(".bp5-tag")
@@ -24,7 +24,7 @@ describe("filtering Time Domain Current/Historic", () => {
             .should("eq", 2)
 
         // assert only 1 Month Domain option is chosen
-        cy.get('[data-cy=facetMonth]')
+        cy.get('[data-cy=facetMonth] .bp5-input')
             .should("contain", "Non monthly data")
             .find(".bp5-tag")
             .its("length")

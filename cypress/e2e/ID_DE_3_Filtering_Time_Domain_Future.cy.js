@@ -13,7 +13,7 @@ describe("filtering Time Domain Future", () => {
 
     it("Filter Time Domain Future", () => {
         // I remove "Current/Historic" from Time Domain option
-        cy.get('[data-cy=facetTimeDomain]')
+        cy.get('[data-cy=facetTimeDomain] .bp5-input')
             .contains("Current/Historic")
             .parent()
             .find(".bp5-tag-remove")
@@ -21,26 +21,33 @@ describe("filtering Time Domain Future", () => {
         // click outside
         cy.get("body")
             .click(10, 10)
-        cy.get('[data-cy=facetTimeDomain]')
+        cy.get('[data-cy=facetTimeDomain] .bp5-input')
             .should("not.contain", "Current/Historic")
 
+        cy.wait("@searchDataset")
+        cy.wait(500)
+
         // I remove "Unclassified" from Time Domain option
-        cy.get('[data-cy=facetTimeDomain]')
+        cy.get('[data-cy=facetTimeDomain] .bp5-input')
             .contains("Unclassified")
             .parent()
             .find(".bp5-tag-remove")
             .click()
+
+        cy.wait("@searchDataset")
+        cy.wait(500)
+
         // click outside
         cy.get("body")
             .click(10, 10)
-        cy.get('[data-cy=facetTimeDomain]')
+        cy.get('[data-cy=facetTimeDomain] .bp5-input')
             .should("not.contain", "Unclassified")
 
         cy.wait("@searchDataset")
         cy.wait(500)
 
         // I select "Future" from Time Domain option
-        cy.get('[data-cy=facetTimeDomain]')
+        cy.get('[data-cy=facetTimeDomain] .bp5-input')
             .click()
         cy.get('.bp5-multi-select-popover .bp5-popover-content')
             .contains("Future")
@@ -49,14 +56,17 @@ describe("filtering Time Domain Future", () => {
             .get("body")
             .click(10, 10)
 
+        cy.wait("@searchDataset")
+        cy.wait(500)
+
         // assert 1 Time Domain options chosen (Future)
-        cy.get('[data-cy=facetTimeDomain]')
+        cy.get('[data-cy=facetTimeDomain] .bp5-input')
             .find(".bp5-tag")
             .its("length")
             .should("eq", 1)
 
         // assert only 1 Month Domain option is chosen (Non monthly data)
-        cy.get('[data-cy=facetMonth]')
+        cy.get('[data-cy=facetMonth] .bp5-input')
             .should("contain", "Non monthly data")
             .find(".bp5-tag")
             .its("length")
@@ -67,8 +77,6 @@ describe("filtering Time Domain Future", () => {
         
         // I should see page with filtered datasets set in future years
         // get year text
-        cy.contains("button", "Last refreshed at").click()
-        cy.wait("@searchDataset");
         cy.get('[data-cy="DatasetCard-card"]')
             .first()
             .invoke("text")
