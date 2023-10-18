@@ -44,7 +44,7 @@ interface QueryParameters {
     facetYearMin?: string;
     facetYearMax?: string;
     facetTimeDomain?: string | string[];
-    facetSpatialType?: string | string[];
+    facetSpatialDataType?: string | string[];
     facetSpatialDomain?: string | string[];
     facetResolution?: string | string[];
     facetGcm?: string | string[];
@@ -66,7 +66,7 @@ interface FormState {
     facetYearMax: number;
     facetTimeDomain: readonly string[];
     facetSpatialDomain: readonly string[];
-    facetSpatialType: readonly string[];
+    facetSpatialDataType: readonly string[];
     facetResolution: readonly string[];
     facetScientificType: readonly string[];
     facetDomain: readonly string[];
@@ -318,12 +318,12 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
         },
     },
     {
-        id: "facetSpatialType",
+        id: "facetSpatialDataType",
         facetApplicationFn: (formState, query) => {
             return addTermAggregationFacetStateToQuery(
                 query,
                 "spatial_data_type",
-                formState.facetSpatialType
+                formState.facetSpatialDataType
             )
         },
         aggregationApplicationFn: (query) => {
@@ -333,7 +333,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                     "terms",
                     "spatial_data_type",
                     { size: 1000000 },
-                    "facetSpatialType"
+                    "facetSpatialDataType"
                 ),
             };
         },
@@ -654,7 +654,7 @@ export default function IndexPage() {
             facetYearMax = "",
             facetTimeDomain = [],
             facetSpatialDomain = [],
-            facetSpatialType = [],
+            facetSpatialDataType = [],
             facetResolution = [],
             facetScientificType = [],
             facetDomain = [],
@@ -691,7 +691,7 @@ export default function IndexPage() {
             facetTimeDomain: normaliseAsReadonlyStringArray(facetTimeDomain),
             facetSpatialDomain:
                 normaliseAsReadonlyStringArray(facetSpatialDomain),
-            facetSpatialType: normaliseAsReadonlyStringArray(facetSpatialType),
+            facetSpatialDataType: normaliseAsReadonlyStringArray(facetSpatialDataType),
             facetResolution: normaliseAsReadonlyStringArray(facetResolution),
             facetScientificType:
                 normaliseAsReadonlyStringArray(facetScientificType),
@@ -851,8 +851,8 @@ export default function IndexPage() {
         itemSortFn: itemSortKeyAlpha,
     });
 
-    const facetSpatialType = useEsIndividualFacetArray(esFacetRoot, {
-        id: "facetSpatialType",
+    const facetSpatialDataType = useEsIndividualFacetArray(esFacetRoot, {
+        id: "facetSpatialDataType",
         label: "Spatial data type",
         placeholder: "Filter by spatial data type...",
         itemSortFn: itemSortKeyAlpha,
@@ -997,7 +997,7 @@ export default function IndexPage() {
             "facetCollection": [],
             "facetTimeDomain": [],
             "facetSpatialDomain": [],
-            "facetSpatialType": [],
+            "facetSpatialDataType": [],
             "facetResolution": [],
             "facetScientificType": [],
             "facetDomain": [],
@@ -1076,7 +1076,7 @@ export default function IndexPage() {
                         facetMonth,
                         facetTimeDomain,
                         facetSpatialDomain,
-                        facetSpatialType,
+                        facetSpatialDataType,
                         ].map((facet) => (
                         <Row key={facet.id} data-cy={facet.id} data-testid={facet.id}>
                             <Col>
