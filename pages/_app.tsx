@@ -19,7 +19,10 @@ import { useEffect } from "react";
 import router from "next/router";
 
 import { theme } from "../themes/default/theme";
+import { theme as bscTheme } from "@ecocommons-australia/bsc-theme";
+
 import "../themes/default/styles/global.css";
+import "@ecocommons-australia/bsc-theme/styles/global.css";
 
 const config = getConfig();
 
@@ -30,7 +33,9 @@ ECMapVisualiserRequest.MAP_VISUALISER_BACKEND_SERVER_URL =
     "#";
 
 // Build ThemeWrapper component once, to be used inside the root component
-const ThemeWrapper = buildThemeWrapper(theme);
+const ThemeWrapper = buildThemeWrapper(IS_BSC
+        ? bscTheme 
+        : theme);
 
 interface Props extends AppProps {
     /** Cookies in request */

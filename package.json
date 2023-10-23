@@ -17,6 +17,7 @@
     "@blueprintjs/core": "5.3.3",
     "@blueprintjs/icons": "5.1.6",
     "@blueprintjs/select": "5.0.10",
+    "@ecocommons-australia/bsc-theme": "1.0.5",
     "@ecocommons-australia/ui-library": "2.0.0",
     "@ecocommons-australia/visualiser-client-geospatial": "2.0.7",
     "@react-keycloak/ssr": "3.3.0",
