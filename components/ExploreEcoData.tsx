@@ -847,7 +847,7 @@ export default function IndexPage() {
     const facetScientificType = useEsIndividualFacetArray(esFacetRoot, {
         id: "facetScientificType",
         label: "Data category",
-        placeholder: "Filter by scientific type...",
+        placeholder: "Filter by data category...",
         itemSortFn: itemSortKeyAlpha,
     });
 
