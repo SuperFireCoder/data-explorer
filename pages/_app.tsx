@@ -5,7 +5,7 @@ import { IncomingMessage } from "http";
 import { SSRKeycloakProvider, SSRCookies } from "@react-keycloak/ssr";
 import { buildThemeWrapper } from "@ecocommons-australia/ui-library";
 import { ECMapVisualiserRequest } from "@ecocommons-australia/visualiser-client-geospatial";
-import { getKeycloakAuthParameters } from "../util/env";
+import { getKeycloakAuthParameters, IS_BSC } from "../util/env";
 import * as gtag from "../util/gtag";
 
 // Blueprint required CSS
