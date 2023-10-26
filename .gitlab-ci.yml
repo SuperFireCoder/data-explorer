@@ -4,7 +4,7 @@ include:
     ref: main
   - project: 'ecocommons-australia/operational-notes-and-scripts/ci-pipelines'
     file: '/v1/supported_ci_ui_bsc.yml'
-    ref: main
+    ref: develop
 
 
 # Jest needs some adapting to work with swc/react18
