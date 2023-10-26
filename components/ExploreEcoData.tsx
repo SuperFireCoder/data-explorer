@@ -1,3 +1,4 @@
+import { isEqual } from "lodash";
 import { Col, Row } from "@ecocommons-australia/ui-library";
 import React, { FormEvent, useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/router";
@@ -445,10 +446,6 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
                 return query;           
             }
 
-            if (formState.filterPrincipals[0] === 'all') {
-                return query;           
-            }
-
             // Shared
             if (formState.filterPrincipals[0].startsWith("shared-")) {
                 const userId = formState.filterPrincipals[0].replace('shared-','');
@@ -491,8 +488,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             const innerQuery = bodybuilder().filter(
                 "terms",
                 "allowed_principals",
-                // Strip 'all' as we just need to send empty 
-                formState.filterPrincipals.filter(p => p !== 'all')
+                formState
             ).rawOption("track_total_hits", true);
             
             return {
@@ -599,45 +595,45 @@ export default function IndexPage() {
      *       facetMonth, facetTimeDomain defaults
      *.  - Otherwise ensure no defaults are set.
      */
-    const applyFormStateConditionalDefaults = useCallback(
-        function (formState: FormState, prevFormState: FormState | undefined): FormState {
-
+    const applyFormStateConditionals = useCallback(
+        function (formState: FormState): FormState {
             const newState = { ...formState };
+            //debugger;
 
-            // Initial page load. All Datasets.
+            // 'Show Datasets' changed or initial page load
             if (prevFormState === undefined || 
-                    newState.filterPrincipals === undefined || 
-                        newState.filterPrincipals?.length === 0)
+                (Array.isArray(newState?.filterPrincipals) 
+                    && isEqual(newState?.filterPrincipals, prevFormState?.filterPrincipals) === false)
+                )
             {
-                if (newState["facetMonth"]?.length === 0){
-                    newState["facetMonth"] = ALL_DATASETS_FACET_MONTH_DEFAULT;
-                }
-                if (newState["facetTimeDomain"]?.length === 0){
-                    newState["facetTimeDomain"] = ALL_DATASETS_FACET_TIME_DOMAIN_DEFAULT;
-                }
-
-                // Set a default filterPrincipals of 'all'.
-                newState.filterPrincipals = ['all'];
-
-            } else {
- 
-                // Change of 'filterPrincipals'. My/Shared/Pinned datasets. Clear all filters.
-                if (newState.filterPrincipals?.[0] !== prevFormState.filterPrincipals?.[0]){
-                    if (newState.filterPrincipals[0] !== 'all') {
-                        newState["facetMonth"] = []
-                        newState["facetTimeDomain"] = []
+                if (newState?.filterPrincipals.length === 0){
+                    console.debug('set facetMonth,facetTimeDomain')
+                    if (newState["facetMonth"]?.length === 0){
+                        newState["facetMonth"] = ALL_DATASETS_FACET_MONTH_DEFAULT;
+                    }
+                    if (newState["facetTimeDomain"]?.length === 0){
+                        newState["facetTimeDomain"] = ALL_DATASETS_FACET_TIME_DOMAIN_DEFAULT;
                     }
                 }
 
-                // Dataset deep linked via id. Clear all filters.
-                else if (newState.datasetId !== undefined && newState.datasetId?.length > 0){
+                else {
+                    console.debug('clear facetMonth,facetTimeDomain')
+                    // My/Shared/Pinned datasets. Clear all filters.
                     newState["facetMonth"] = []
                     newState["facetTimeDomain"] = []
                 }
             }
+
+            // Dataset deep linked via id. Clear all filters.
+            if (newState.datasetId !== undefined && newState.datasetId?.length > 0){
+                console.debug('clear facetMonth,facetTimeDomain')
+                newState["facetMonth"] = [];
+                newState["facetTimeDomain"] = [];
+            }
+
             return newState;
         },
-    [router.query]);
+    [prevFormState]);
 
     /**
      * Extracts the current page parameters from the URL query parameter values.
@@ -668,7 +664,7 @@ export default function IndexPage() {
             lastUpdated: new Date(),
         });
 
-        const newFormState = applyFormStateConditionalDefaults({
+        const newFormState = applyFormStateConditionals({
             // Pagination
             pageSize: parseInt(pageSize, 10) || 10,
             pageStart: parseInt(pageStart, 10) || 0,
@@ -700,7 +696,7 @@ export default function IndexPage() {
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
             facetMonth: normaliseAsReadonlyStringArray(facetMonth),
             //facetDataCategory: normaliseAsReadonlyStringArray(facetDataCategory),
-        }, prevFormState);
+        });
 
         setPrevFormState(newFormState);
 
@@ -709,20 +705,18 @@ export default function IndexPage() {
     }, [router.query, searchTriggerValue]);
 
     /** 
-     * Update the page query with conditional defaults if it's an intial page load.
-     * This is determined by the absence of 'filterPrincipals'.
+     * Update the page query with conditional defaults on initial page load.
      */
     useEffect(() => {
-        if (router.query.filterPrincipals === undefined){
-            router.replace({
-                query: stripEmptyStringQueryParams({
-                tab: 'eco-data',
-                ...router.query,
-                ...formState,
+        router.replace({
+            query: 
+                stripEmptyStringQueryParams({
+                    tab: 'eco-data',
+                    ...router.query,
+                    ...formState,
                 })
-            }, undefined, { shallow: true });
-        }
-    }, [formState]);
+        }, undefined, { shallow: true });
+    }, []);
 
     /** 
      * Periodic refresh
@@ -731,7 +725,7 @@ export default function IndexPage() {
         function setupReloadInterval() {
             // This is mainly indended for data imports in 'My Datsets'
             // Do not bother when viewing all.
-            if (formState.filterPrincipals?.[0] === 'all') {
+            if (formState.filterPrincipals.length === 0) {
                 return;           
             }
 
@@ -759,11 +753,11 @@ export default function IndexPage() {
             router.push({
                 query: stripEmptyStringQueryParams({
                     ...router.query,
-                    ...formState,
+                    ...applyFormStateConditionals(formState),
                 }),
             });
         },
-        [router.query]
+        [router.query, applyFormStateConditionals]
     );
 
     const esFacetRoot = useEsFacetRoot(formState, updateFormState, {
@@ -923,7 +917,7 @@ export default function IndexPage() {
 
             // Actively select "all" option if there is nothing in the item keys
             // array
-            if (itemKeys[0] === 'all') {
+            if (itemKeys.length === 0) {
                 selectedItemKeys.push("all");
             }
  
