@@ -488,7 +488,7 @@ const FACETS: EsFacetRootConfig<FormState>["facets"] = [
             const innerQuery = bodybuilder().filter(
                 "terms",
                 "allowed_principals",
-                formState
+                formState.filterPrincipals
             ).rawOption("track_total_hits", true);
             
             return {
