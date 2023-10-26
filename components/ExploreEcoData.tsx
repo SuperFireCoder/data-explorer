@@ -596,7 +596,7 @@ export default function IndexPage() {
      *.  - Otherwise ensure no defaults are set.
      */
     const applyFormStateConditionals = useCallback(
-        function (formState: FormState): FormState {
+        function (formState: Partial<FormState>): Partial<FormState> {
             const newState = { ...formState };
             //debugger;
 
@@ -606,7 +606,7 @@ export default function IndexPage() {
                     && isEqual(newState?.filterPrincipals, prevFormState?.filterPrincipals) === false)
                 )
             {
-                if (newState?.filterPrincipals.length === 0){
+                if (newState?.filterPrincipals?.length === 0){
                     console.debug('set facetMonth,facetTimeDomain')
                     if (newState["facetMonth"]?.length === 0){
                         newState["facetMonth"] = ALL_DATASETS_FACET_MONTH_DEFAULT;
@@ -696,7 +696,7 @@ export default function IndexPage() {
             facetGcm: normaliseAsReadonlyStringArray(facetGcm),
             facetMonth: normaliseAsReadonlyStringArray(facetMonth),
             //facetDataCategory: normaliseAsReadonlyStringArray(facetDataCategory),
-        });
+        }) as FormState;
 
         setPrevFormState(newFormState);
 
