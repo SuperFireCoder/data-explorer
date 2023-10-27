@@ -16,7 +16,7 @@ describe("Deep linking", () => {
         // Given I am on the "dataset" tab
         // And on "Explore EcoCommons Data"
         // following a link to an existing Dataset
-        cy.visit("/?filterPrincipals=all&datasetId="+DS_UUID);
+        cy.visit("/?datasetId="+DS_UUID);
 
         // and I can see a single Dataset
         cy.get('[data-cy="DatasetCard-card"]').should('have.length', 1)
@@ -30,7 +30,7 @@ describe("Deep linking", () => {
         // Given I am on the "dataset" tab
         // And on "Explore EcoCommons Data"
         // following a link to an existing Dataset
-        cy.visit("/?filterPrincipals=all&datasetId="+DS_UUID+"&showInfo=1");
+        cy.visit("/?datasetId="+DS_UUID+"&showInfo=1");
 
         // and I can see a single Dataset info panel
         cy.get('[data-cy="metadata-drawer"]').should('have.length', 1)
