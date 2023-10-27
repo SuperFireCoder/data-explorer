@@ -607,7 +607,6 @@ export default function IndexPage() {
                 )
             {
                 if (newState?.filterPrincipals?.length === 0){
-                    console.debug('set facetMonth,facetTimeDomain')
                     if (newState["facetMonth"]?.length === 0){
                         newState["facetMonth"] = ALL_DATASETS_FACET_MONTH_DEFAULT;
                     }
@@ -617,7 +616,6 @@ export default function IndexPage() {
                 }
 
                 else {
-                    console.debug('clear facetMonth,facetTimeDomain')
                     // My/Shared/Pinned datasets. Clear all filters.
                     newState["facetMonth"] = []
                     newState["facetTimeDomain"] = []
@@ -754,6 +752,9 @@ export default function IndexPage() {
                 query: stripEmptyStringQueryParams({
                     ...router.query,
                     ...applyFormStateConditionals(formState),
+                    // Since datasetId trumps all other filtering,
+                    // always clear it when the user modifies the filter facets.
+                    datasetId: undefined
                 }),
             });
         },
