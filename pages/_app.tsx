@@ -5,7 +5,7 @@ import { IncomingMessage } from "http";
 import { SSRKeycloakProvider, SSRCookies } from "@react-keycloak/ssr";
 import { buildThemeWrapper } from "@ecocommons-australia/ui-library";
 import { ECMapVisualiserRequest } from "@ecocommons-australia/visualiser-client-geospatial";
-import { getKeycloakAuthParameters } from "../util/env";
+import { getKeycloakAuthParameters, IS_BSC } from "../util/env";
 import * as gtag from "../util/gtag";
 
 // Blueprint required CSS
@@ -19,7 +19,10 @@ import { useEffect } from "react";
 import router from "next/router";
 
 import { theme } from "../themes/default/theme";
+import { theme as bscTheme } from "@ecocommons-australia/bsc-theme";
+
 import "../themes/default/styles/global.css";
+import "@ecocommons-australia/bsc-theme/styles/global.css";
 
 const config = getConfig();
 
@@ -30,7 +33,9 @@ ECMapVisualiserRequest.MAP_VISUALISER_BACKEND_SERVER_URL =
     "#";
 
 // Build ThemeWrapper component once, to be used inside the root component
-const ThemeWrapper = buildThemeWrapper(theme);
+const ThemeWrapper = buildThemeWrapper(IS_BSC
+        ? bscTheme 
+        : theme);
 
 interface Props extends AppProps {
     /** Cookies in request */
