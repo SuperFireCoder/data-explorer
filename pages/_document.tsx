@@ -1,5 +1,7 @@
+import React from "react";
 import Document, { Html, Head, Main, NextScript } from "next/document";
 import { GA_TRACKING_ID } from "../util/gtag";
+import { IS_BSC } from "../util/env";
 
 class EcoCommonsDocument extends Document {
     render() {
@@ -23,7 +25,7 @@ class EcoCommonsDocument extends Document {
                         }}
                     />
                 </Head>
-                <body>
+                <body className={IS_BSC ? 'bsc-theme' : ''}>
                     <Main />
                     <NextScript />
                     <script

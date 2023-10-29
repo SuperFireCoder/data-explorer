@@ -3,7 +3,11 @@ import getConfig from "next/config";
 const config = getConfig();
 
 export const IS_DEVELOPMENT = config.publicRuntimeConfig.NEXT_PUBLIC_DEPLOYMENT !== "production";
-
+                
+export const IS_BSC = String(config.publicRuntimeConfig.NEXT_PUBLIC_KEYCLOAK_AUTH_URL)
+        .match(/biosecuritycommons/) !== null
+        || config.publicRuntimeConfig.NEXT_PUBLIC_THEME === 'bsc-theme';        
+                        
 export function getDataExplorerBackendServerUrl() {
     return config.publicRuntimeConfig
         .NEXT_PUBLIC_DATA_EXPLORER_BACKEND_SERVER_URL as string;
