@@ -13,6 +13,7 @@ include:
 
 variables:
   CYPRESS_ARGS: "--env split=true"
+  BUILD_BSC: 1
 
 cypress dev:
   parallel: 3
