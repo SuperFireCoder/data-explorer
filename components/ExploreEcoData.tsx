@@ -61,7 +61,6 @@ interface FormState {
     pageStart: number;
     searchQuery: string;
     datasetId: string;
-    selectedDatasetId: string;
     filterPrincipals: readonly string[];
     facetYearMin: number;
     facetYearMax: number;
@@ -572,6 +571,9 @@ export default function IndexPage() {
 
     const allowChangeFilterPrinciples = router.query.allow_change_filterPrinciples !== "0";
 
+    const [selectedDatasetId, setSelectedDatasetId] =
+        useState<string | undefined>(router.query.selectedDatasetId as string);
+
     const [datasetUUIDToDelete, setDatasetUUIDToDelete] =
         useState<string | undefined>(undefined);
 
@@ -642,7 +644,6 @@ export default function IndexPage() {
             pageStart = "0",
             searchQuery = "",
             datasetId = "",
-            selectedDatasetId = "",
             filterPrincipals = [],
             facetYearMin = "",
             facetYearMax = "",
@@ -672,9 +673,6 @@ export default function IndexPage() {
 
             // Searched Dataset
             datasetId,
-
-            // Selected Dataset
-            selectedDatasetId,
 
             // Principals
             filterPrincipals: normaliseAsReadonlyStringArray(filterPrincipals),
@@ -978,9 +976,7 @@ export default function IndexPage() {
     const onDatasetSelect = useCallback(
         (uuid: string) => {
             sendDatasetId(uuid);
-            updateFormState({
-                selectedDatasetId: uuid
-            });
+            setSelectedDatasetId(uuid)
         },
         [updateFormState]
     );
@@ -1218,7 +1214,7 @@ export default function IndexPage() {
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
                                 ownerId={_source.allowed_principals as string[]}
-                                selected={formState.selectedDatasetId === _source.uuid}
+                                selected={selectedDatasetId === _source.uuid}
                                 onSelect={isEmbed === true ? onDatasetSelect : undefined}
                                 setDatasetUUIDToDelete={setDatasetUUIDToDelete}
                                 acl={_source.acl}

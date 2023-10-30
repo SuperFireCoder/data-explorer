@@ -17,10 +17,6 @@ const exampleDataset = {
     SRTM: "3 second SRTM Derived Digital Elevation Model (DEM) Version 1.0"
 };
 
-const DATA_EXPLORER_API = Cypress.env(
-    "NEXT_PUBLIC_DATA_EXPLORER_BACKEND_SERVER_URL"
-);
-
 /**
  * Feature: ID84; I need to be able download these data files on my computer to use on my local computer
  */
@@ -43,10 +39,10 @@ describe("download data from the data explorer on to my local computer", () => {
         )
             .first()
             .within(() => {
-                cy.get('button[data-cy="more"]').click();
+                cy.get('button[data-cy="more-button"]').click();
             });
         // And I press "Download"
-        cy.get('a[data-cy="download"]');
+        cy.get('a[data-cy="download-button"]');
     });
 
     /**
