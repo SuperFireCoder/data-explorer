@@ -276,11 +276,11 @@ export default function DatasetCard({
         <>
             {isErrorAlertOpen && (
             <Alert
-            intent="danger"
-            isOpen={isErrorAlertOpen}
-            onClose={() => setIsErrorAlertOpen(false)}
-            >
-            <p>{errorMessage}</p>
+                intent="danger"
+                isOpen={isErrorAlertOpen}
+                onClose={() => setIsErrorAlertOpen(false)}
+                >
+                <p>{errorMessage}</p>
             </Alert>
             )}
             <Card
@@ -290,10 +290,12 @@ export default function DatasetCard({
                 })}
                 data-cy="DatasetCard-card"
                 data-testid={title}
+                data-selected={selected}
             >
-                {isDeleteInProgress ? <Row justify="between"><Col><Spinner size={SpinnerSize.LARGE} /></Col></Row> : <Row justify="between">
-
-
+            {isDeleteInProgress ? 
+                <Row justify="between"><Col><Spinner size={SpinnerSize.LARGE} /></Col></Row>
+            :
+                <Row justify="between">
                     <Col>
                         <H5
                             data-cy="dataset-heading-data"
@@ -371,6 +373,7 @@ export default function DatasetCard({
                             {onSelect ?
                                 <Button
                                     icon={selected ? 'tick-circle' : 'circle'}
+                                    data-cy="select-button"
                                     data-testid="select-button"
                                     intent={selected ? 'success' : 'none'}
                                     onClick={() => onSelect(datasetId)}
@@ -388,6 +391,7 @@ export default function DatasetCard({
                                 </Button> :
                                 <Button
                                     icon="eye-open"
+                                    data-cy="view-button"
                                     data-testid="view-button"
                                     intent={onSelect ? 'primary' : 'success'}
                                     onClick={openVisualiserDrawer}
@@ -399,6 +403,7 @@ export default function DatasetCard({
                             }
                             <Button
                                 icon="info-sign"
+                                data-cy="info-button"
                                 data-testid="info-button"
                                 intent="primary"
                                 onClick={openMetadataDrawer}
@@ -416,7 +421,8 @@ export default function DatasetCard({
                                                     text="Download"
                                                     onClick={downloadDataset}
                                                     disabled={isDownloadDisabled}
-                                                    data-cy="download"
+                                                    data-cy="download-button"
+                                                    data-testid="download-button"
                                                 />
                                             }
                                             {
@@ -440,7 +446,8 @@ export default function DatasetCard({
                                         icon="more"
                                         intent="none"
                                         disabled={disabledDelete()}
-                                        data-cy="more"
+                                        data-cy="more-button"
+                                        data-testid="more-button"
                                     >
                                         More
                                     </Button>
