@@ -1,7 +1,7 @@
 include:
   - project: 'ecocommons-australia/operational-notes-and-scripts/ci-pipelines'
     file: '/v1/supported_ci_ui.yml'
-    ref: develop
+    ref: main
 
 
 # Jest needs some adapting to work with swc/react18
@@ -14,7 +14,7 @@ include:
 variables:
   CYPRESS_ARGS: "--env split=true"
   BUILD_BSC: 1
-
+  
 cypress dev:
   parallel: 3
 
