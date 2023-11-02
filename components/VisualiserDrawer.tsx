@@ -16,12 +16,11 @@ import { Dataset } from "../interfaces/Dataset";
 import {
     useEcMapVisualiserRequest,
     useVisualiserSupport,
+    LayerInfo
 } from "../hooks/Visualiser";
 import VisualiserLayersControl from "./VisualiserLayersControl";
 
 import styles from "./VisualiserDrawer.module.css";
-
-type LayerInfo = { layerName: string; label: string };
 
 export interface Props {
     drawerTitle: string;
@@ -61,13 +60,13 @@ export default function VisualiserDrawer({
         | undefined
     >(undefined);
 
-    const layerInfo = useMemo(() => {
+    const layerInfo = useMemo<LayerInfo[]>(() => {
         if (metadata === undefined || metadata.type === "error") {
-            return undefined;
+            return [];
         }
 
         if (metadata.data.type === "File") {
-            return undefined;
+            return [];
         }
 
         return Object.keys(metadata.data.parameters).map((layerName) => {
@@ -85,7 +84,7 @@ export default function VisualiserDrawer({
                           ?.tempurl
                     : metadata.data.rangeAlternates?.["dmgr:csv"]?.tempurl;
 
-            const colourmapType = CoverageUtils.getLayerColourmapTypeFromCov(metadata.data as Coverage, layerName);
+            const colourmapType = CoverageUtils.getLayerColourmapTypeFromCov(metadata.data, layerName);
 
             if (tempUrl === undefined) {
                 throw new Error(`Cannot obtain temp URL for "${layerName}"`);
@@ -104,10 +103,10 @@ export default function VisualiserDrawer({
     }, [datasetId, metadata]);
 
     const handleCurrentLayersChange = (
-        mapLayers: readonly MapLayer[]
+        mapLayers: readonly LayerInfo[]
     ) => {
         // Find parent objects of each of the map layers
-        const newVisibleDatasetLayers = layerInfo.filter(
+        const newVisibleDatasetLayers = layerInfo?.filter(
             (x) => mapLayers.find(y => y.layerName === x.layerName)
         );
         setCurrentVisibleLayers(newVisibleDatasetLayers);
@@ -146,8 +145,8 @@ export default function VisualiserDrawer({
                         onCurrentBaseMapChange={setCurrentBaseMap}
                         currentMapStyle={currentMapStyle}
                         onCurrentMapStyleChange={setCurrentMapStyle}
-                        //currentMapScale={currentMapScale}
-                        //onCurrentMapScaleChange={setCurrentMapScale}
+                        currentMapScale={currentMapScale}
+                        onCurrentMapScaleChange={setCurrentMapScale}
                     />
                 </>
             );

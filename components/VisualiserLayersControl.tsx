@@ -1,11 +1,17 @@
 import { Checkbox, Icon, Radio, RadioGroup, Label, HTMLSelect } from "@blueprintjs/core";
 import { MapLayer, Colourmaps } from "@ecocommons-australia/visualiser-client-geospatial";
 import classnames from "classnames";
-import { FormEventHandler, useCallback, useEffect, useMemo, useState } from "react";
+import {
+    FormEvent, 
+    FormEventHandler,
+    useCallback, 
+    useEffect, 
+    useMemo, 
+    useState
+} from "react";
+import { LayerInfo } from "../hooks/Visualiser";
 
 import styles from "./VisualiserLayersControl.module.css";
-
-type LayerInfo = { layerName: string; label: string };
 
 const isLayerInfo = (x: object): x is LayerInfo => {
     const o = x as any;
@@ -132,7 +138,7 @@ export default function VisualiserLayersControl<
             return layers.map((layer) => {
                 const key = getLayerKey(layer);
                 const label = layer.label;
-                const handleLayerCheckboxChange = (e) => {
+                const handleLayerCheckboxChange = (e: FormEvent<HTMLInputElement>) => {
                     if (e.currentTarget.checked) {
                         onCurrentLayersChange?.([...(currentLayers ?? []), layer])
                     } else {
@@ -160,7 +166,7 @@ export default function VisualiserLayersControl<
 
         // Single selection
         } else {
-            const handleLayerRadioChange = (e: FormEventHandler<HTMLInputElement>) => {
+            const handleLayerRadioChange = (e: FormEvent<HTMLInputElement>) => {
                 onCurrentLayersChange?.(
                     layers?.filter(
                         (x) =>
