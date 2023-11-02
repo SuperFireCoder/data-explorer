@@ -1,6 +1,13 @@
 .optionsToggleButtonContainer {
     top: 0.5em;
-    right: 3em;
+    right: 0.5em;
+}
+
+.optionsToggleButtonContainer > button {
+    width: 70px;
+    background: #fff;
+    color: #000;
+    font-weight: normal;
 }
 
 .optionsToggleButtonContainerOptionsVisible {
@@ -11,33 +18,28 @@
     background: rgba(0, 0, 0, 0.5);
 }
 
-.optionsToggleButtonContainerOptionsVisible > button {
-    background: #fdfdfd89;
-    color: #000;
-}
-
 .optionsToggleButtonContainerOptionsVisible > button:hover,
 .optionsToggleButtonContainerOptionsVisible > button:focus {
-    background: #fdfdfd89;
+    background: #fff;
 }
 
 .optionsContainer {
-    background: #fdfdfdcb;
+    background: #fdfdfd;
     position: absolute;
-    top: 3vw !important;
-    right: 3vw !important;
+    top: 3em;
+    right: 0.5em;
     padding: 0.5em 0.75em;
     border-radius: 4px;
     box-shadow: 0 0.25em 1em rgba(0, 0, 0, 0.2);
-    width:50vw !important;
-    height:70vh !important;
+    max-width: 40em;
 }
 
 .radioGroup {
     font-size: 0.85em;
-    padding: 0 0.5em;
-    max-height: 20vh;
+    padding: 0 0.5em 1em;
+    max-height: 15em;
     overflow-y: auto;
+    font-weight: bold;
 }
 
 .radioGroup > :global(label.bp5-label) {
@@ -45,9 +47,9 @@
     position: sticky;
     z-index: 1;
     top: 0;
-    padding: 0.25em 0.5em;
+    padding: 0.25em 0;
     margin: 0 -0.5em;
-    background:  #fdfdfd;
+    background: #fdfdfd;
 }
 
 .radioGroup > :global(label.bp5-label),
@@ -55,27 +57,18 @@
     margin-bottom: 0.5em;
 }
 
+.radioGroup > :global(label.bp5-control) {
+    font-weight: normal;
+}
 
-@media only screen and  (max-width: 1600px) {
-    .optionsContainer {
-      right: 4vw !important;
-    }
-   }
-@media only screen and  (max-width: 1000px) {
-    .optionsContainer {
-      right: 12vw !important;
-      height: 60vh !important;
-    }
-   }
-@media only screen and  (max-width: 600px) {
-    .optionsContainer {
-      width: 100vw !important;
-      height: 80vh !important;
-    }
-   }
+.selectLabel {
+    font-weight: bold;
+    font-size: 0.85em;
+    border-top: 1px solid #ddd;
+    padding-top: 0.4em;
+}
 
-   @media only screen and  (max-height: 1000px) {
-    .optionsContainer {
-      height: 80vh !important;
-    }
-   }
+.layerSelection {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}

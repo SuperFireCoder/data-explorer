@@ -27,6 +27,7 @@ export const useVisualiserSupport = () => {
             layerName: string;
         }[]
     >([]);
+    
     const [currentBaseMap, setCurrentBaseMap] = useState<MapLayer>(
         BaseMaps.BCCVL_DEFAULT_BASE_MAPS[0]
     );

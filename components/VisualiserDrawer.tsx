@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     MapLayer,
     Projections,
+    Colourmaps,
+    CoverageUtils,
     VisualiserGeospatial,
 } from "@ecocommons-australia/visualiser-client-geospatial";
 import { OverlayContentProps } from "@ecocommons-australia/visualiser-client-geospatial/dist/VisualiserGeospatial";
@@ -52,7 +54,7 @@ export default function VisualiserDrawer({
     } = useVisualiserSupport();
 
     const { getNewEcMapVisualiserRequest } = useEcMapVisualiserRequest();
-    const [optionsPanelOpen, setOptionsPanelOpen] = useState<boolean>(false)
+
     const [metadata, setMetadata] = useState<
         | { type: "dataset"; datasetId: string; data: Dataset }
         | { type: "error"; datasetId: string; error: any }
@@ -83,6 +85,8 @@ export default function VisualiserDrawer({
                           ?.tempurl
                     : metadata.data.rangeAlternates?.["dmgr:csv"]?.tempurl;
 
+            const colourmapType = CoverageUtils.getLayerColourmapTypeFromCov(metadata.data as Coverage, layerName);
+
             if (tempUrl === undefined) {
                 throw new Error(`Cannot obtain temp URL for "${layerName}"`);
             }
@@ -94,21 +98,20 @@ export default function VisualiserDrawer({
                     .label.en,
                 layerName,
                 layerUrl: tempUrl,
+                colourmapType,
             };
         });
     }, [datasetId, metadata]);
 
-    const handleCurrentLayerChange = useCallback(
-        ({ layerName }: { layerName: string }) => {
-            setCurrentVisibleLayers([
-                {
-                    datasetId,
-                    layerName,
-                },
-            ]);
-        },
-        [datasetId]
-    );
+    const handleCurrentLayersChange = (
+        mapLayers: readonly MapLayer[]
+    ) => {
+        // Find parent objects of each of the map layers
+        const newVisibleDatasetLayers = layerInfo.filter(
+            (x) => mapLayers.find(y => y.layerName === x.layerName)
+        );
+        setCurrentVisibleLayers(newVisibleDatasetLayers);
+    };
 
     const renderVisualiserOverlayContent = useCallback(
         (props: OverlayContentProps) => {
@@ -131,19 +134,20 @@ export default function VisualiserDrawer({
                             <img src={props._legendImages[0]} />
                         )}
                     </div>
-                    <Button minimal className={styles.SliderButton}  onClick={()=>{setOptionsPanelOpen(!optionsPanelOpen)}}>OPTIONS</Button>
-                    <VisualiserLayersControl<LayerInfo>
-                        isOpen={optionsPanelOpen}
+
+                    <VisualiserLayersControl
+                        defaultOptionsVisible={! currentLayer}
                         layers={layerInfo}
-                        currentLayer={currentLayer}
-                        onCurrentLayerChange={handleCurrentLayerChange}
+                        allowMultipleLayerSelection={false}
+                        currentLayers={currentVisibleLayers}
+                        onCurrentLayersChange={handleCurrentLayersChange}
                         baseMaps={baseMaps}
                         currentBaseMap={currentBaseMap}
                         onCurrentBaseMapChange={setCurrentBaseMap}
-                        currentMapScale={currentMapScale}
-                        onCurrentMapScaleChange={setCurrentMapScale}
                         currentMapStyle={currentMapStyle}
                         onCurrentMapStyleChange={setCurrentMapStyle}
+                        //currentMapScale={currentMapScale}
+                        //onCurrentMapScaleChange={setCurrentMapScale}
                     />
                 </>
             );
@@ -154,7 +158,6 @@ export default function VisualiserDrawer({
             currentVisibleLayers,
             baseMaps,
             currentBaseMap,
-            optionsPanelOpen,
             setCurrentBaseMap,
             currentMapScale,
             setCurrentMapScale,
@@ -203,18 +206,13 @@ export default function VisualiserDrawer({
                 ) ?? []
             );
 
-            // Set current dataset preview to first layer
             if (layerInfo.length === 0) {
                 setCurrentVisibleLayers([]);
                 return;
             }
 
-            setCurrentVisibleLayers([
-                {
-                    datasetId: layerInfo[0].datasetId,
-                    layerName: layerInfo[0].layerName,
-                },
-            ]);
+            // Set current dataset preview to first layer
+            setCurrentVisibleLayers([layerInfo[0]]);
         },
         [
             currentMapScale,
@@ -268,7 +266,7 @@ export default function VisualiserDrawer({
                 cancellationToken.cancel();
             };
         },
-        [getBearerTokenFn, datasetId, optionsPanelOpen, isOpen, metadata?.datasetId]
+        [getBearerTokenFn, datasetId, isOpen, metadata?.datasetId]
     );
 
     return (
