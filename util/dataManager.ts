@@ -4,6 +4,7 @@ import { IHttpResponseError } from "../interfaces/ErrorResponse"
 const ENDPOINTS = {
     DATASET: "/api/dataset/",
     PERMISSION: "/api/permission/",
+    SHAREDATSET:"/api/shareddataset/"
 };
 import { PinnedDataset } from "./../interfaces/PinnedDataset";
 export class DataManager {
@@ -145,6 +146,11 @@ export class DataManager {
         return this.xhrGet<Record<string, string[]>>(
             `${ENDPOINTS.PERMISSION}${uuid}`
         );
+    }
+
+    public updateShareDatasetUsers(uuid: string) {
+        const url = `${ENDPOINTS.SHAREDATSET}${uuid}/reject`;
+        return this.xhrGet<unknown>(url);
     }
 
     public updateDatasetPermissions(
