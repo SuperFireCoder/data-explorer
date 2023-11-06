@@ -94,6 +94,9 @@ export default function IndexPage() {
 
     const [datasetUUIDToDelete, setDatasetUUIDToDelete] =
         useState<string | undefined>(undefined);
+    const [datasetUUIDToUnshare, setDatasetUUIDToUnshare] =
+        useState<string | undefined>(undefined);
+        
         
     const {
         triggerValue: searchTriggerValue,
@@ -165,10 +168,11 @@ export default function IndexPage() {
     }, [router.query,searchTriggerValue]);
 
     const getProcessedQueryResult = (): PinnedDataset [] => {
-        //Removes dataset from dataset list if user deleted it.
-        if (datasetUUIDToDelete && dataStore.pinnedDatasets) {
-            let indexToDelete = dataStore.pinnedDatasets.findIndex(x => x.uuid == datasetUUIDToDelete)
+        //Removes dataset from dataset list if user deleted it or unshared it.
+        if ((datasetUUIDToDelete || datasetUUIDToUnshare) && dataStore.pinnedDatasets) {
+            let indexToDelete = dataStore.pinnedDatasets.findIndex(x => x.uuid == (datasetUUIDToDelete || datasetUUIDToUnshare))
             setDatasetUUIDToDelete(undefined)
+            setDatasetUUIDToUnshare(undefined)
             if (indexToDelete !== -1) // if matching uuid is found, return spliced dataset list
             {
                 return dataStore.pinnedDatasets.splice(indexToDelete, 1)
@@ -328,6 +332,7 @@ export default function IndexPage() {
                                 }
                                 ownerId={[item.owner]}
                                 setDatasetUUIDToDelete={setDatasetUUIDToDelete}
+                                setDatasetUUIDToUnshare={setDatasetUUIDToUnshare}
                                 // acl={_source.acl}
                                 // Not yet enabled as pinned DS uses a different data model to the main view 
                                 // Users will get a 403 until this is sorted.

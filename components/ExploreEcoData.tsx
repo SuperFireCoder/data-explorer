@@ -576,6 +576,9 @@ export default function IndexPage() {
 
     const [datasetUUIDToDelete, setDatasetUUIDToDelete] =
         useState<string | undefined>(undefined);
+    const [datasetUUIDToUnshare, setDatasetUUIDToUnshare] =
+        useState<string | undefined>(undefined);
+        
 
     const { keycloak } = useKeycloakInfo();
 
@@ -942,10 +945,11 @@ export default function IndexPage() {
     );
 
     const processedQueryResult = useMemo((): Array<any> | undefined => {
-        //Removes dataset from dataset list if user deleted it.
-        if (datasetUUIDToDelete && queryResult) {
-            const indexToDelete = queryResult?.hits.hits.findIndex(x => x._source.uuid == datasetUUIDToDelete)
+        //Removes dataset from dataset list if user deleted it or unshared it.
+        if ((datasetUUIDToDelete || datasetUUIDToUnshare) && queryResult) {
+            const indexToDelete = queryResult?.hits.hits.findIndex(x => x._source.uuid == (datasetUUIDToDelete || datasetUUIDToUnshare))
             setDatasetUUIDToDelete(undefined)
+            setDatasetUUIDToUnshare(undefined)
             if (indexToDelete !== -1) // if matching uuid is found, return spliced dataset list
             {
                 return queryResult.hits.hits.splice(indexToDelete, 1)
@@ -957,7 +961,7 @@ export default function IndexPage() {
         else {
             return queryResult?.hits.hits
         }
-    }, [queryResult, datasetUUIDToDelete]);
+    }, [queryResult, datasetUUIDToDelete, datasetUUIDToUnshare]);
 
 
     /**
@@ -1217,6 +1221,7 @@ export default function IndexPage() {
                                 selected={selectedDatasetId === _source.uuid}
                                 onSelect={isEmbed === true ? onDatasetSelect : undefined}
                                 setDatasetUUIDToDelete={setDatasetUUIDToDelete}
+                                setDatasetUUIDToUnshare={setDatasetUUIDToUnshare}
                                 acl={_source.acl}
                             />
                         ))}

@@ -68,6 +68,7 @@ export interface Props {
     selected?: boolean;
     onSelect?: (uuid: string) => void;
     setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>;
+    setDatasetUUIDToUnshare: React.Dispatch<React.SetStateAction<string | undefined>>;
     acl?: { [K: string]: any };
 }
 const dataStore = usePinnedDataStore.getState();
@@ -88,6 +89,7 @@ export default function DatasetCard({
     selected,
     onSelect,
     setDatasetUUIDToDelete,
+    setDatasetUUIDToUnshare,
     acl={},
 }: Props) {
     const { keycloak } = useKeycloakInfo();
@@ -114,6 +116,7 @@ export default function DatasetCard({
                     dataStore.removeFilteredPinnedDataset(datasetId)
                     if (dataStore.isPinnedPage){
                         setDatasetUUIDToDelete(datasetId)
+                        setDatasetUUIDToUnshare(datasetId)
                     }
             })
         }
@@ -162,6 +165,12 @@ export default function DatasetCard({
         // Disable deleting and Sharing when user is not owner
         return currentUserId === undefined ||
             typeof ownerId === "string" ? ownerId !== currentUserId : !ownerId?.includes(currentUserId)
+    };
+
+    const isDatasetShared = (ownerId: string | string[] | undefined) => {
+        // Remove Shared dataset when user want to unshare
+        return currentUserId === undefined ||
+            typeof ownerId === "string" ? false : !ownerId?.includes(currentUserId) && !ownerId?.includes("role:admin")
     };
 
     const renderViewTitle = useMemo(() => {
@@ -231,6 +240,25 @@ export default function DatasetCard({
             setDownloadInProgress(false);
         }
     }, [datasetId, dataManager]);
+
+    const unShareDataset = () => {
+      // this is set to remove the dataset card from dataset list
+      setIsDeleteInProgress(true);
+      if (dataManager === undefined) {
+        throw new Error("Data Manager must be available for download");
+      }
+      dataManager
+        .updateShareDatasetUsers(datasetId)
+        .promise.then(() => {
+          setIsDeleteInProgress(false);
+          setDatasetUUIDToUnshare(datasetId);
+          dataStore.removeDataset(datasetId);
+        })
+        .catch((error) => {
+          setErrorMessage(error.code + " : " + error.title);
+          setIsErrorAlertOpen(true);
+        });
+    };
 
 
     const removeUserOwnDataset = () => {
@@ -437,6 +465,13 @@ export default function DatasetCard({
                                                       onClick={openSharingDrawer}
                                                       disabled={disabledDataset || disabledOptions(ownerId)} />
                                                 </>
+                                            }
+                                            {isDatasetShared((ownerId)) &&
+                                                   <MenuItem
+                                                      icon="cube-remove"
+                                                      text="Unshare..."
+                                                      onClick={unShareDataset}
+                                                    />
                                             }
                                         </Menu>
                                     }
