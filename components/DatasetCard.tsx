@@ -71,6 +71,7 @@ export interface Props {
     setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>;
     setDatasetUUIDToUnshare: React.Dispatch<React.SetStateAction<string | undefined>>;
     acl?: { [K: string]: any };
+    triggerSearch?: () => void;
 }
 const dataStore = usePinnedDataStore.getState();
 
@@ -92,6 +93,7 @@ export default function DatasetCard({
     setDatasetUUIDToDelete,
     setDatasetUUIDToUnshare,
     acl={},
+    triggerSearch,
 }: Props) {
     const { keycloak } = useKeycloakInfo();
 
@@ -531,6 +533,7 @@ export default function DatasetCard({
                 datasetId={datasetId}
                 isOpen={editDrawerOpen}
                 onClose={closeEditDrawer}
+                triggerSearch={triggerSearch}
             />
         </>
     );

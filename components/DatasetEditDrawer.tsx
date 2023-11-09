@@ -2,13 +2,9 @@ import {
     Drawer,
     Classes,
     Position,
-    Alert,
-    Button,
-    H4,
     OverlayToaster,
     Toast
 } from "@blueprintjs/core";
-import { Col, Row } from "@ecocommons-australia/ui-library";
 import axios, { CancelTokenSource } from "axios";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -53,13 +49,15 @@ export interface Props {
     datasetId: string;
     isOpen: boolean;
     onClose?: () => void;
+    triggerSearch?: () => void;
 }
 
 export default function DatasetEditDrawer({
     datasetName,
     datasetId,
     isOpen,
-    onClose
+    onClose,
+    triggerSearch
 }: Props) {
     const { dataManager, userSessionActive } = useDataManager();
 
@@ -325,9 +323,12 @@ export default function DatasetEditDrawer({
         window.addEventListener('message', function (event) {
             if (event.origin === "http://localhost:3003") {
                 if (event.data.event_id === 'dataset-updated') {
+                    if (triggerSearch) {
+                        triggerSearch()
+                    }
                     console.log("event2", event)
+                    onClose?.()
                     // fetchDataset(e.data.dataset_data.id);
-
                     // Todo: run refresh function and close dawer
                 }
 
@@ -339,7 +340,7 @@ export default function DatasetEditDrawer({
             //     }
             // }
         });
-    }, []);
+    }, [triggerSearch, onClose]);
 
     // const src={getDataManagerUrl()+"?embed=1"}
     const src =
