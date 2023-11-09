@@ -7,6 +7,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useKeycloakInfo } from "../util/keycloak";
 
+export interface LayerInfo { 
+    layerName: string; 
+    label: string
+    layerUrl: string | { __tempUrl: string };
+    dataType: "raster" | "point";
+    datasetId?: string;
+    colourmapType?: string;
+};
+
 export const useVisualiserSupport = () => {
     const { keycloak } = useKeycloakInfo();
     const keycloakToken = keycloak?.token;
@@ -22,11 +31,9 @@ export const useVisualiserSupport = () => {
     );
 
     const [currentVisibleLayers, setCurrentVisibleLayers] = useState<
-        readonly {
-            datasetId?: string;
-            layerName: string;
-        }[]
+        readonly LayerInfo[]
     >([]);
+    
     const [currentBaseMap, setCurrentBaseMap] = useState<MapLayer>(
         BaseMaps.BCCVL_DEFAULT_BASE_MAPS[0]
     );
@@ -36,9 +43,9 @@ export const useVisualiserSupport = () => {
 
     const [registeredDatasetLayers, setRegisteredDatasetLayers] = useState<
         readonly {
-            datasetId?: string;
             layerName: string;
             layerUrl?: string | { __tempUrl: string };
+            datasetId?: string;
             mapLayer: MapLayer;
         }[]
     >([]);
