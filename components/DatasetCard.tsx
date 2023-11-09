@@ -35,6 +35,7 @@ import { useTheme } from "@ecocommons-australia/ui-library";
 
 import styles from "./DatasetCard.module.css";
 import DatasetSharingDrawer from "./DatasetSharingDrawer";
+import DatasetEditDrawer from "./DatasetEditDrawer";
 import { useKeycloakInfo } from "../util/keycloak";
 import { usePinnedDataStore } from "./../hooks/PinnedDataStore";
 
@@ -68,7 +69,9 @@ export interface Props {
     selected?: boolean;
     onSelect?: (uuid: string) => void;
     setDatasetUUIDToDelete: React.Dispatch<React.SetStateAction<string | undefined>>;
+    setDatasetUUIDToUnshare: React.Dispatch<React.SetStateAction<string | undefined>>;
     acl?: { [K: string]: any };
+    triggerSearch?: () => void;
 }
 const dataStore = usePinnedDataStore.getState();
 
@@ -88,7 +91,9 @@ export default function DatasetCard({
     selected,
     onSelect,
     setDatasetUUIDToDelete,
+    setDatasetUUIDToUnshare,
     acl={},
+    triggerSearch,
 }: Props) {
     const { keycloak } = useKeycloakInfo();
 
@@ -114,6 +119,7 @@ export default function DatasetCard({
                     dataStore.removeFilteredPinnedDataset(datasetId)
                     if (dataStore.isPinnedPage){
                         setDatasetUUIDToDelete(datasetId)
+                        setDatasetUUIDToUnshare(datasetId)
                     }
             })
         }
@@ -164,6 +170,12 @@ export default function DatasetCard({
             typeof ownerId === "string" ? ownerId !== currentUserId : !ownerId?.includes(currentUserId)
     };
 
+    const isDatasetShared = (ownerId: string | string[] | undefined) => {
+        // Remove Shared dataset when user want to unshare
+        return currentUserId === undefined ||
+            typeof ownerId === "string" ? false : !ownerId?.includes(currentUserId) && !ownerId?.includes("role:admin")
+    };
+
     const renderViewTitle = useMemo(() => {
         return disabledView ? "This dataset cannot be currently visualised" : ""
     }, [disabledView]);
@@ -190,6 +202,12 @@ export default function DatasetCard({
         isOpen: sharingDrawerOpen,
         open: openSharingDrawer,
         close: closeSharingDrawer,
+    } = useOpenableOpen();
+
+    const {
+        isOpen: editDrawerOpen,
+        open: openEditDrawer,
+        close: closeEditDrawer,
     } = useOpenableOpen();
 
     const downloadDataset = useCallback(async () => {
@@ -231,6 +249,25 @@ export default function DatasetCard({
             setDownloadInProgress(false);
         }
     }, [datasetId, dataManager]);
+
+    const unShareDataset = () => {
+      // this is set to remove the dataset card from dataset list
+      setIsDeleteInProgress(true);
+      if (dataManager === undefined) {
+        throw new Error("Data Manager must be available for download");
+      }
+      dataManager
+        .updateShareDatasetUsers(datasetId)
+        .promise.then(() => {
+          setIsDeleteInProgress(false);
+          setDatasetUUIDToUnshare(datasetId);
+          dataStore.removeDataset(datasetId);
+        })
+        .catch((error) => {
+          setErrorMessage(error.code + " : " + error.title);
+          setIsErrorAlertOpen(true);
+        });
+    };
 
 
     const removeUserOwnDataset = () => {
@@ -415,6 +452,14 @@ export default function DatasetCard({
                                 <Popover
                                     content={
                                         <Menu>
+                                            {currentUserId !== undefined && ownerId?.includes(currentUserId) &&
+                                                <MenuItem
+                                                    icon="edit"
+                                                    text="Edit"
+                                                    onClick={openEditDrawer}
+                                                    disabled={disabledOptions(ownerId)}
+                                                />
+                                            }
                                             {currentUserId !== undefined &&
                                                 <MenuItem
                                                     icon="download"
@@ -437,6 +482,13 @@ export default function DatasetCard({
                                                       onClick={openSharingDrawer}
                                                       disabled={disabledDataset || disabledOptions(ownerId)} />
                                                 </>
+                                            }
+                                            {isDatasetShared((ownerId)) &&
+                                                   <MenuItem
+                                                      icon="cube-remove"
+                                                      text="Unshare..."
+                                                      onClick={unShareDataset}
+                                                    />
                                             }
                                         </Menu>
                                     }
@@ -475,6 +527,13 @@ export default function DatasetCard({
                 datasetId={datasetId}
                 isOpen={sharingDrawerOpen}
                 onClose={closeSharingDrawer}
+            />
+            <DatasetEditDrawer
+                datasetName={title}
+                datasetId={datasetId}
+                isOpen={editDrawerOpen}
+                onClose={closeEditDrawer}
+                triggerSearch={triggerSearch}
             />
         </>
     );
