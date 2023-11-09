@@ -20,7 +20,7 @@ export function getUserManagementBackendServerUrl() {
 
 export function getDataManagerUrl() {
     return config.publicRuntimeConfig
-        .NEXT_PUBLIC_DATA_MANAGER_URL as string | undefined;
+        .NEXT_PUBLIC_DATA_MANAGER_URL as string;
 }
 
 export function getKeycloakAuthParameters() {

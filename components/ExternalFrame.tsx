@@ -16,8 +16,7 @@ export function ExternalFrame({ src, title = "", params = {} }: Props) {
     const [isLoading, setIsLoading] = useState(true);
 
     const urlSearchParams = new URLSearchParams();
-    console.log("params", params)
-    console.log("urlSearchParams", urlSearchParams.values())
+
     for (const [name, val] of Object.entries(params)) {
         if (Array.isArray(val)) {
             val.map((v) => urlSearchParams.append(name, v || ""));
@@ -34,17 +33,6 @@ export function ExternalFrame({ src, title = "", params = {} }: Props) {
     function onload(event: SyntheticEvent<HTMLIFrameElement>): void {
         setIsLoading(false);
     }
-
-    function resizeFrame(iframe: HTMLIFrameElement) {
-        if (iframe && iframe.contentWindow) {
-            iframe.height =
-                iframe.contentWindow.document.body.scrollHeight + "px";
-        }
-    }
-    console.log(
-        "srcsrcsrc",
-        src + (urlSearchParams.values() ? "?" + urlSearchParams.toString() : "")
-    );
 
     return (
         <div className={StyleWrapperClasses()}>
