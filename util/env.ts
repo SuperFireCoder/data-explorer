@@ -18,9 +18,9 @@ export function getUserManagementBackendServerUrl() {
         .NEXT_PUBLIC_USER_MANAGEMENT_BACKEND_SERVER_URL as string;
 }
 
-export function getDataExplorerSubbarImportData() {
+export function getDataManagerUrl() {
     return config.publicRuntimeConfig
-        .NEXT_PUBLIC_DATA_EXPLORER_SUBBAR_IMPORT_DATA as string | undefined;
+        .NEXT_PUBLIC_DATA_MANAGER_URL as string | undefined;
 }
 
 export function getKeycloakAuthParameters() {

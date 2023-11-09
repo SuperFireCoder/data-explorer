@@ -35,6 +35,7 @@ import { useTheme } from "@ecocommons-australia/ui-library";
 
 import styles from "./DatasetCard.module.css";
 import DatasetSharingDrawer from "./DatasetSharingDrawer";
+import DatasetEditDrawer from "./DatasetEditDrawer";
 import { useKeycloakInfo } from "../util/keycloak";
 import { usePinnedDataStore } from "./../hooks/PinnedDataStore";
 
@@ -199,6 +200,12 @@ export default function DatasetCard({
         isOpen: sharingDrawerOpen,
         open: openSharingDrawer,
         close: closeSharingDrawer,
+    } = useOpenableOpen();
+
+    const {
+        isOpen: editDrawerOpen,
+        open: openEditDrawer,
+        close: closeEditDrawer,
     } = useOpenableOpen();
 
     const downloadDataset = useCallback(async () => {
@@ -443,6 +450,14 @@ export default function DatasetCard({
                                 <Popover
                                     content={
                                         <Menu>
+                                            {currentUserId !== undefined && ownerId?.includes(currentUserId) &&
+                                                <MenuItem
+                                                    icon="edit"
+                                                    text="Edit"
+                                                    onClick={openEditDrawer}
+                                                    disabled={disabledOptions(ownerId)}
+                                                />
+                                            }
                                             {currentUserId !== undefined &&
                                                 <MenuItem
                                                     icon="download"
@@ -510,6 +525,12 @@ export default function DatasetCard({
                 datasetId={datasetId}
                 isOpen={sharingDrawerOpen}
                 onClose={closeSharingDrawer}
+            />
+            <DatasetEditDrawer
+                datasetName={title}
+                datasetId={datasetId}
+                isOpen={editDrawerOpen}
+                onClose={closeEditDrawer}
             />
         </>
     );
