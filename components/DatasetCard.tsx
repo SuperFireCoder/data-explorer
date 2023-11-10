@@ -457,7 +457,7 @@ export default function DatasetCard({
                                                     icon="edit"
                                                     text="Edit"
                                                     onClick={openEditDrawer}
-                                                    disabled={disabledOptions(ownerId)}
+                                                    disabled={disabledDataset || disabledOptions(ownerId)}
                                                 />
                                             }
                                             {currentUserId !== undefined &&
