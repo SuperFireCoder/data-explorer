@@ -1223,6 +1223,7 @@ export default function IndexPage() {
                                 setDatasetUUIDToDelete={setDatasetUUIDToDelete}
                                 setDatasetUUIDToUnshare={setDatasetUUIDToUnshare}
                                 acl={_source.acl}
+                                triggerSearch={triggerSearch}
                             />
                         ))}
                     </Col>
