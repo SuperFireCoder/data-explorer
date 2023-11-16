@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import bodybuilder, { Bodybuilder } from "bodybuilder";
 import { InputGroup, Button, H6, Switch, FocusStyleManager, Spinner } from "@blueprintjs/core";
 import { ParsedUrlQueryInput } from "querystring";
-import { getDataExplorerSubbarImportData } from "../util/env";
+import { getDataManagerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
 import {
     FixedContainer,
@@ -39,7 +39,7 @@ const subBarLinks = [
     },
     {
         key: "import",
-        href: getDataExplorerSubbarImportData() || "#",
+        href: getDataManagerUrl() || "#",
         label: "Import data",
         align: "right"
     },
