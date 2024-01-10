@@ -20,12 +20,12 @@ module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
 
-  require('@cypress/code-coverage/task')(on, config)
+  // require('@cypress/code-coverage/task')(on, config)
 
-  // https://docs.cypress.io/api/plugins/after-run-api
-  on('after:run', (results) => {
-      return require('cypress-sonarqube-reporter/mergeReports')(results);
-  });
+  // // https://docs.cypress.io/api/plugins/after-run-api
+  // on('after:run', (results) => {
+  //     return require('cypress-sonarqube-reporter/mergeReports')(results);
+  // });
 
   return config;
 }
