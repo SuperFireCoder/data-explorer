@@ -1,3 +1,4 @@
+import React, { ReactNode } from "react";
 import cookie from "cookie";
 import { AppProps, AppContext } from "next/app";
 import getConfig from "next/config";
@@ -42,7 +43,7 @@ interface Props extends AppProps {
     cookies: unknown;
 }
 
-function SafeHydrate({ children }: any) {
+function SafeHydrate({ children }: { children: ReactNode }) {
   return (
     <div suppressHydrationWarning>
       {typeof window === 'undefined' ? null : children}
@@ -64,7 +65,7 @@ function MyApp({ Component, pageProps, cookies }: Props) {
         return () => {
           router.events.off("routeChangeComplete", handleRouteChange);
         };
-      }, [router.events]);
+    }, []);
 
     return (
         <SafeHydrate>

@@ -1,6 +1,6 @@
 import { Button, Drawer, Classes, Position, ProgressBar } from "@blueprintjs/core";
 import { Col, Row } from "@ecocommons-australia/ui-library";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     MapLayer,
     Projections,
@@ -130,7 +130,7 @@ export default function VisualiserDrawer({
                     <div className={styles.legendImageContainer}>
                         {/* FIXME: This is a temporary solution to render legends on assumption there is only one visible layer */}
                         {props._legendImages[0] !== undefined && (
-                            <img src={props._legendImages[0]} />
+                            <img src={props._legendImages[0]} alt="Map legend image"/>
                         )}
                     </div>
 

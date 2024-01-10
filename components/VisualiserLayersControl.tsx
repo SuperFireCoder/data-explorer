@@ -1,3 +1,4 @@
+import React from "react";
 import { Checkbox, Icon, Radio, RadioGroup, Label, HTMLSelect } from "@blueprintjs/core";
 import { MapLayer, Colourmaps } from "@ecocommons-australia/visualiser-client-geospatial";
 import classnames from "classnames";

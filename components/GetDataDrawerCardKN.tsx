@@ -10,7 +10,7 @@ import {
 } from "@blueprintjs/core";
 import { Col, Row } from "@ecocommons-australia/ui-library";
 import classnames from "classnames";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useOpenableOpen } from "../hooks/Openable";
 import { Distribution } from "../interfaces/EsDatasetKN";
 import GetDataCodeBlock from "./GetDataCodeBlock";
@@ -129,7 +129,7 @@ export default function GetDataDrawerCardKN({ distribution }: Props) {
                         <Col xs={12}>
                             <Callout intent="warning" icon="warning-sign">
                                 Download code might not work for this data type
-                                ("{distribution.format ?? "UNKNOWN FORMAT"}")
+                                (&ldquo;{distribution.format ?? "UNKNOWN FORMAT"}&rdquo;)
                             </Callout>
                         </Col>
                     </Row>

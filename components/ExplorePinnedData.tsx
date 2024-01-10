@@ -1,5 +1,5 @@
 import { Col, Row } from "@ecocommons-australia/ui-library";
-import { FormEvent, useCallback, useMemo, useEffect, useState } from "react";
+import React, { FormEvent, useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import bodybuilder from "bodybuilder";
 import { Button, H6, Spinner, SpinnerSize, Icon, Tooltip, Classes } from "@blueprintjs/core";
@@ -170,7 +170,7 @@ export default function IndexPage() {
     const getProcessedQueryResult = (): PinnedDataset [] => {
         //Removes dataset from dataset list if user deleted it or unshared it.
         if ((datasetUUIDToDelete || datasetUUIDToUnshare) && dataStore.pinnedDatasets) {
-            let indexToDelete = dataStore.pinnedDatasets.findIndex(x => x.uuid == (datasetUUIDToDelete || datasetUUIDToUnshare))
+            const indexToDelete = dataStore.pinnedDatasets.findIndex(x => x.uuid == (datasetUUIDToDelete || datasetUUIDToUnshare))
             setDatasetUUIDToDelete(undefined)
             setDatasetUUIDToUnshare(undefined)
             if (indexToDelete !== -1) // if matching uuid is found, return spliced dataset list
