@@ -30,7 +30,7 @@ export function ExternalFrame({ src, title = "", params = {} }: Props) {
         return defaultMode;
     };
 
-    function onload(event: SyntheticEvent<HTMLIFrameElement>): void {
+    function onload(): void {
         setIsLoading(false);
     }
 

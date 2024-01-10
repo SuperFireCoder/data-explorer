@@ -1,6 +1,6 @@
 import { Classes, H6, Icon, InputGroup, Popover, PopoverInteractionKind, Position, Switch, Tooltip } from "@blueprintjs/core";
 import { Col, Row } from "@ecocommons-australia/ui-library";
-import { ComponentProps, FormEventHandler, useCallback, useMemo } from "react";
+import React, { ComponentProps, FormEventHandler, useCallback, useMemo } from "react";
 import NumberInputGroup from "./NumberInputGroup";
 import { EsIndividualFacetNumberRange } from "../hooks/EsFacet";
 import styles from "./Facets.module.css"

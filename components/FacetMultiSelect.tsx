@@ -1,3 +1,4 @@
+import React from "react";
 import { MenuItem } from "@blueprintjs/core";
 import { ItemPredicate, ItemRenderer, MultiSelect } from "@blueprintjs/select";
 import { ReactNode, SyntheticEvent, useCallback, useMemo } from "react";

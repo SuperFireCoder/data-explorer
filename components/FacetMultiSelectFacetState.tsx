@@ -1,3 +1,4 @@
+import React from "react";
 import { useFacetState } from "../hooks/FacetState";
 import FacetMultiSelect from "./FacetMultiSelect";
 

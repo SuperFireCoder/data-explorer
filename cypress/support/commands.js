@@ -31,28 +31,30 @@ const KEYCLOAK_AUTH_URL =
     "/protocol/openid-connect/token";
 
 Cypress.Commands.add("login", (username, password) => {
-    cy.intercept("POST", KEYCLOAK_AUTH_URL).as("newToken");
-    cy.visit("/")
-        .get('[class*="Header-module_headerContainer"]')
-        .then(($elm) => {
-            if ($elm.find("button[data-cy=root-signin]").length > 0) {
-                cy.log("Attempting to login");
-                cy.get('[data-cy="root-signin"]', { timeout: 5000 }).click();
-                cy.get("#zocial-keycloak-local-account", {
-                    timeout: 5000
-                }).click();
-                cy.get("#username").type(username ?? Cypress.env("EC_USER"));
-                cy.get("#password").type(password ?? Cypress.env("EC_PASS"));
-                cy.get("#kc-form-login").submit();
-            } else {
-                cy.log("Login skipped");
-            }
-        });
-    cy.wait("@newToken")
-        .its("response")
-        .then((response) => {
-            Cypress.env("access_token", response.body.access_token);
-        });
+    cy.session([username, password], () => {
+        cy.intercept("POST", KEYCLOAK_AUTH_URL).as("newToken");
+        cy.visit("/")
+            .get('[class*="Header-module_headerContainer"]')
+            .then(($elm) => {
+                if ($elm.find("button[data-cy=root-signin]").length > 0) {
+                    cy.log("Attempting to login");
+                    cy.get('[data-cy="root-signin"]', { timeout: 5000 }).click();
+                    cy.get("#zocial-keycloak-local-account", {
+                        timeout: 5000
+                    }).click();
+                    cy.get("#username").type(username ?? Cypress.env("EC_USER"));
+                    cy.get("#password").type(password ?? Cypress.env("EC_PASS"));
+                    cy.get("#kc-form-login").submit();
+                } else {
+                    cy.log("Login skipped");
+                }
+            });
+        cy.wait("@newToken")
+            .its("response")
+            .then((response) => {
+                Cypress.env("access_token", response.body.access_token);
+            });
+    });
 });
 
 // // Overwrite 'click' so it always waits for the DOM to stabilize first
