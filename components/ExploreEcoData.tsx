@@ -1218,6 +1218,7 @@ export default function IndexPage() {
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
                                 ownerId={_source.allowed_principals as string[]}
+                                ownerLabel={_source.allowed_principals_label as string[]}
                                 selected={selectedDatasetId === _source.uuid}
                                 onSelect={isEmbed === true ? onDatasetSelect : undefined}
                                 setDatasetUUIDToDelete={setDatasetUUIDToDelete}

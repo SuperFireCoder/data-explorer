@@ -1,3 +1,4 @@
+import React from "react";
 import { EsIndividualFacetArray } from "../hooks/EsFacet";
 import { EsAggregationBucket } from "../interfaces/EsAggregationBucket";
 import FacetMultiSelect from "./FacetMultiSelect";
@@ -14,7 +15,7 @@ export default function FacetMultiSelectFacetState2<T>({
     hideTextInput
 }: Props<T>) {
 
-    let {
+    const {
         items = [],
         selectedItems = [],
         itemSortFn,

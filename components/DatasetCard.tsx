@@ -27,6 +27,7 @@ import { getDDMMMYYYY } from "../util/date";
 import { useDataManager } from "../hooks/DataManager";
 import { useOpenableOpen } from "../hooks/Openable";
 
+import DatasetOwnerIndicator from "./DatasetOwnerIndicator";
 import DatasetTypeIndicator from "./DatasetTypeIndicator";
 import MetadataDrawer from "./MetadataDrawer";
 import VisualiserDrawer from "./VisualiserDrawer";
@@ -54,6 +55,8 @@ export interface Props {
     downloadable?: boolean
     /** User ID of the owner of the dataset */
     ownerId?: string[];
+    /** User label of the owner of the dataset */
+    ownerLabel?: string[];
     /** Status of the dataset import */
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
     /** Is pinned by user */
@@ -83,6 +86,7 @@ export default function DatasetCard({
     type,
     lastUpdated,
     ownerId,
+    ownerLabel,
     status,
     isPinned,
     downloadable,
@@ -148,37 +152,41 @@ export default function DatasetCard({
 
     const [isDeleteInProgress, setIsDeleteInProgress] = useState<boolean>(false);
 
-    const disabledDataset = useMemo<boolean>(() => {
+    const isDatasetDisabled = useMemo<boolean>(() => {
         //Return True if upload status is not succes
         return status !== "SUCCESS" || isDeleteInProgress ;
     }, [status, isDeleteInProgress]);
 
-    const disabledView = useMemo<boolean>(() => {
+    const isViewDisabled = useMemo<boolean>(() => {
         // Return True if dataset can not be visualised
         return type?.type === "others"
             && (type?.subtype === 'spatialShape' || type?.subtype === 'file');
     }, [type]);
 
-    const disabledDelete = () => {
+    const isDeleteDisabled = () => {
         //Return True if upload status is not SUCCESS, FAILED, CREATED, or delete process in progress.
         return !['SUCCESS', 'FAILED', 'CREATED'].includes(status)  || isDeleteInProgress
     };
 
-    const disabledOptions = (ownerId: string | string[] | undefined) => {
-        // Disable deleting and Sharing when user is not owner
-        return currentUserId === undefined ||
-            typeof ownerId === "string" ? ownerId !== currentUserId : !ownerId?.includes(currentUserId)
+    const isOptionsDisabled = (ownerId: string | string[] | undefined) => {
+        // Disable deleting and sharing when user is not owner
+        if (currentUserId === undefined){
+            return false;
+        }
+        return typeof ownerId === "string" ? ownerId !== currentUserId : !ownerId?.includes(currentUserId)
     };
 
     const isDatasetShared = (ownerId: string | string[] | undefined) => {
-        // Remove Shared dataset when user want to unshare
-        return currentUserId === undefined ||
-            typeof ownerId === "string" ? false : !ownerId?.includes(currentUserId) && !ownerId?.includes("role:admin")
+        // is the Dataset shared by another user
+        if (currentUserId === undefined){
+            return false;
+        }
+        return typeof ownerId === "string" ? false : !ownerId?.includes(currentUserId) && !ownerId?.includes("role:admin")
     };
 
     const renderViewTitle = useMemo(() => {
-        return disabledView ? "This dataset cannot be currently visualised" : ""
-    }, [disabledView]);
+        return isViewDisabled ? "This dataset cannot be currently visualised" : ""
+    }, [isViewDisabled]);
 
     useEffect(() => {
         if (datasetIdUrl && showInfoView) {
@@ -269,20 +277,19 @@ export default function DatasetCard({
         });
     };
 
-
-    const removeUserOwnDataset = () => {
-            setIsDeleteInProgress(true)
-            dataManager.removeDataset(datasetId)
-                .promise.then(() => {
-                    setIsDeleteInProgress(false);
-                    setDatasetUUIDToDelete(datasetId)
-                    dataStore.removeDataset(datasetId)
-                })
-                .catch(error => {
-                    setErrorMessage(error.code + " : " + error.title);
-                    setIsErrorAlertOpen(true);
-                    setIsDeleteInProgress(false)
-                })
+    const removeUserOwnedDataset = () => {
+        setIsDeleteInProgress(true)
+        dataManager.removeDataset(datasetId)
+            .promise.then(() => {
+                setIsDeleteInProgress(false);
+                setDatasetUUIDToDelete(datasetId)
+                dataStore.removeDataset(datasetId)
+            })
+            .catch(error => {
+                setErrorMessage(error.code + " : " + error.title);
+                setIsErrorAlertOpen(true);
+                setIsDeleteInProgress(false)
+            })
     }
 
     const displayFilureMessage = useMemo(() => {
@@ -294,17 +301,17 @@ export default function DatasetCard({
         // owned dataset or public dataset
         if (currentUserId !== undefined) {
             if (ownerId === undefined || ownerId.includes('role:admin') || ownerId.includes(currentUserId)) {
-                if (downloadable && !disabledDataset) {
+                if (downloadable && !isDatasetDisabled) {
                     return false
                 }
             } else if (!ownerId.includes(currentUserId)) { // shared dataset
-                if (downloadable && !disabledDataset && acl[currentUserId]?.includes("download_ds")) {
+                if (downloadable && !isDatasetDisabled && acl[currentUserId]?.includes("download_ds")) {
                     return false
                 }
             }
         }
         return true
-    }, [downloadable, disabledDataset, currentUserId, acl])
+    }, [downloadable, isDatasetDisabled, currentUserId, acl])
     
     // TODO: Implement our own maximum character limit for description to clip
     // the amount of text being stuffed into DOM and potentially spilling over
@@ -382,11 +389,18 @@ export default function DatasetCard({
                                 } />
                             </p>
                         )}
-                        {type && (
-                            <p className="bp5-text-small" data-testid="type">
-                                <DatasetTypeIndicator type={type} />
-                            </p>
-                        )}
+                        <p className="bp5-text-small" data-testid="labels">
+                            {type && (
+                                <p className="bp5-text-small" data-testid="type">
+                                    <DatasetTypeIndicator type={type} />
+                                </p>
+                            )}
+                            {isDatasetShared(ownerId) && ownerLabel && (
+                                <p className="bp5-text-small" data-testid="owner-label">
+                                    <DatasetOwnerIndicator ownerLabel={ownerLabel} />
+                                </p>
+                            )}
+                        </p>
                         {lastUpdated && (
                             <div
                                 className="bp5-text-small bp5-text-disabled"
@@ -414,7 +428,7 @@ export default function DatasetCard({
                                     data-testid="select-button"
                                     intent={selected ? 'success' : 'none'}
                                     onClick={() => onSelect(datasetId)}
-                                    disabled={disabledDataset}
+                                    disabled={isDatasetDisabled}
                                 >
                                     Select
                                 </Button>
@@ -432,7 +446,7 @@ export default function DatasetCard({
                                     data-testid="view-button"
                                     intent={onSelect ? 'primary' : 'success'}
                                     onClick={openVisualiserDrawer}
-                                    disabled={disabledDataset || disabledView}
+                                    disabled={isDatasetDisabled || isViewDisabled}
                                     title={renderViewTitle}
                                 >
                                     View
@@ -444,7 +458,7 @@ export default function DatasetCard({
                                 data-testid="info-button"
                                 intent="primary"
                                 onClick={openMetadataDrawer}
-                                disabled={disabledDataset}
+                                disabled={isDatasetDisabled}
                             >
                                 Info
                             </Button>
@@ -457,7 +471,7 @@ export default function DatasetCard({
                                                     icon="edit"
                                                     text="Edit"
                                                     onClick={openEditDrawer}
-                                                    disabled={disabledDataset || disabledOptions(ownerId)}
+                                                    disabled={isDatasetDisabled || isOptionsDisabled(ownerId)}
                                                 />
                                             }
                                             {currentUserId !== undefined &&
@@ -474,13 +488,13 @@ export default function DatasetCard({
                                                 <><MenuItem
                                                     icon="delete"
                                                     text="Delete"
-                                                    onClick={removeUserOwnDataset}
-                                                    disabled={disabledOptions(ownerId)} />
+                                                    onClick={removeUserOwnedDataset}
+                                                    disabled={isOptionsDisabled(ownerId)} />
                                                    <MenuItem
                                                       icon="share"
                                                       text="Share..."
                                                       onClick={openSharingDrawer}
-                                                      disabled={disabledDataset || disabledOptions(ownerId)} />
+                                                      disabled={isDatasetDisabled || isOptionsDisabled(ownerId)} />
                                                 </>
                                             }
                                             {isDatasetShared((ownerId)) &&
@@ -497,7 +511,7 @@ export default function DatasetCard({
                                     <Button
                                         icon="more"
                                         intent="none"
-                                        disabled={disabledDelete()}
+                                        disabled={isDeleteDisabled()}
                                         data-cy="more-button"
                                         data-testid="more-button"
                                     >

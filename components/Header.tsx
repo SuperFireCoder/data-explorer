@@ -4,7 +4,7 @@ import {
     useTheme
 } from "@ecocommons-australia/ui-library";
 import getConfig from "next/config";
-import { ComponentProps } from "react";
+import React, { ComponentProps } from "react";
 import SignInOutButton from "./SignInOutButton";
 
 const config = getConfig();

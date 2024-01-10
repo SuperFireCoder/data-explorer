@@ -17,9 +17,7 @@ import ExploreKnowledgeData from "../components/ExploreKnowledgeData";
 import PinnedData from "../components/ExplorePinnedData"
 import Header from "../components/Header";
 
-
 const config = getConfig();
-
 
 const subBarLinks = [
     {
@@ -54,7 +52,7 @@ export default function IndexPage() {
     const keycloakToken = keycloak?.token;
     const isEmbed = router.query.embed === "1";
     //let initialTab = router.query.tab as string | undefined;
-    let initialTab = "eco-data";
+    const initialTab = "eco-data";
 
     const [currentTab, setCurrentTab] = useState("eco-data")
     const [subBarActiveKey, setSubBarActiveKey] = useState("eco-data");

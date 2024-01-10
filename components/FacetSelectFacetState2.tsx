@@ -1,7 +1,7 @@
 import { Button, Checkbox, H6, MenuItem } from "@blueprintjs/core";
 import { Select } from "@blueprintjs/select";
 import { Col, Row } from "@ecocommons-australia/ui-library";
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import { EsIndividualFacetFixedArray } from "../hooks/EsFacet";
 
 import styles from "./Facets.module.css";
