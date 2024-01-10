@@ -5,6 +5,7 @@
 }
 
 .externalFrame .frame {
+    border: none;
     min-height: 500px;
     height: calc(100vh - 40px);
     width: 100%;
