@@ -1,5 +1,5 @@
 # set these ARG globally across builds
-ARG BASE_IMAGE=node:19
+ARG BASE_IMAGE=node:20
 ARG NODE_ENV=development
 ARG BUILD_DIR=/srv/app
 
@@ -11,11 +11,16 @@ ARG BUILD_DIR
 
 WORKDIR $BUILD_DIR
 
+# Security updates
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt clean
+
 COPY package*.json ./
 
 RUN npm config set @ecocommons-australia:registry https://gitlab.com/api/v4/packages/npm/ && \
     npm config set '//gitlab.com/api/v4/packages/npm/:_authToken' $NPM_AUTHTOKEN && \
-    npm ci --omit=optional && npm i @next/swc-linux-x64-gnu
+    npm ci --omit=optional
 
 EXPOSE 3000
 
