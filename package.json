@@ -71,7 +71,7 @@
     "typescript": "^4.5.2"
   },
   "optionalDependencies": {
-    "@cypress/code-coverage": "3.9.12",
+    "@cypress/code-coverage": "3.12.17",
     "cypress": "13.3.3",
     "cypress-multi-reporters": "1.6.1",
     "cypress-split": "1.3.13",
