@@ -20,9 +20,9 @@ export function middleware(request: NextRequest) {
   }
 
   if (request.nextUrl.pathname === '/status') {
-    return Response.json(
-      { version: process.env.NEXT_PUBLIC_BUILD_ID ?? ''},
-      { status: 200 }
+    return new Response(
+      JSON.stringify({ version: process.env.NEXT_PUBLIC_BUILD_ID ?? ''}),
+      { status: 200, headers: { 'Access-Control-Allow-Origin': '*'} }
     )
   }
 
