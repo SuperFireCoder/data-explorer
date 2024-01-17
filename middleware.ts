@@ -19,6 +19,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(process.env.NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ANALYSIS_HUB ?? '/', request.url))
   }
 
+  if (request.nextUrl.pathname === '/status') {
+    return Response.json(
+      { version: process.env.NEXT_PUBLIC_BUILD_ID ?? ''},
+      { status: 200 }
+    )
+  }
+
 }
 
 export const config = {
@@ -31,5 +38,6 @@ export const config = {
     '/analysis-hub',
     '/datasets',
     '/workspace',
+    '/status'
     ],
 }
