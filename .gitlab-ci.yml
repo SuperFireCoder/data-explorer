@@ -3,14 +3,6 @@ include:
     file: '/v1/supported_ci_ui.yml'
     ref: main
 
-
-# Jest needs some adapting to work with swc/react18
-# May be retired enterly...
-# unit test:
-#   rules:
-#     - when: never
-#   allow_failure: true
-
 variables:
   CYPRESS_ARGS: "--env split=true"
   BUILD_BSC: 1
