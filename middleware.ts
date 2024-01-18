@@ -22,7 +22,7 @@ export function middleware(request: NextRequest) {
   if (request.nextUrl.pathname === '/status') {
     return new Response(
       JSON.stringify({ version: process.env.NEXT_PUBLIC_BUILD_ID ?? ''}),
-      { status: 200, headers: { 'Access-Control-Allow-Origin': '*'} }
+      { status: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'} }
     )
   }
 
