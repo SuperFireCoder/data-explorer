@@ -16,10 +16,10 @@ variables:
   BUILD_BSC: 1
   
 cypress dev:
-  parallel: 3
+  parallel: 1
 
 cypress main:
-  parallel: 3
+  parallel: 1
 
 
 # Can be enabled to run against Test environment 
