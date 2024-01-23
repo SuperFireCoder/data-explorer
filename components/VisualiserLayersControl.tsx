@@ -267,9 +267,6 @@ export default function VisualiserLayersControl<
                         </Label>
                     }
 
-                    {/*
-                    Log scale disabled for now. Still unresolved issues in backend implementation.
-
                     <Label className={styles.selectLabel}>Scale
                         <HTMLSelect
                             data-cy="layer-option-scale"
@@ -281,7 +278,6 @@ export default function VisualiserLayersControl<
                             <option key={2} value="log">Log</option>
                         </HTMLSelect>
                     </Label>
-                    */}
 
                 </div>
             )}
