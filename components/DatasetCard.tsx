@@ -1,10 +1,12 @@
 import {
+    Alignment,
     AnchorButton,
     Alert,
     Button,
     ButtonGroup,
     Card,
     Classes,
+    Callout,
     H5,
     Menu,
     MenuItem,
@@ -12,6 +14,7 @@ import {
     Position,
     Spinner,
     SpinnerSize,
+    Switch,
     Icon,
 } from "@blueprintjs/core";
 import {IconNames} from "@blueprintjs/icons"
@@ -108,6 +111,9 @@ export default function DatasetCard({
 
     const [errorMessage, setErrorMessage] = useState("");
     const [isErrorAlertOpen, setIsErrorAlertOpen] = useState(false);
+    const [failDetailVisible, setFailDetailVisible] = useState(false);
+
+    
 
     // Set pinned by prop if available otherwise use data store.
     const [pinned, setPinned] = useState(
@@ -155,6 +161,10 @@ export default function DatasetCard({
     const isDatasetDisabled = useMemo<boolean>(() => {
         //Return True if upload status is not succes
         return status !== "SUCCESS" || isDeleteInProgress ;
+    }, [status, isDeleteInProgress]);
+
+    const isInfoDisabled = useMemo<boolean>(() => {
+        return isDeleteInProgress;
     }, [status, isDeleteInProgress]);
 
     const isViewDisabled = useMemo<boolean>(() => {
@@ -292,10 +302,20 @@ export default function DatasetCard({
             })
     }
 
-    const displayFilureMessage = useMemo(() => {
-        // keep this function for personalised message in the future
-        return "Dataset failed to import"
-    }, [failureMessage])
+    const displayFailMessage = useMemo(() => {
+        return <>
+            <Switch 
+                alignIndicator={Alignment.RIGHT}
+                checked={failDetailVisible} 
+                onChange={() => setFailDetailVisible(!failDetailVisible)}
+                label={"Dataset failed to import"}
+                innerLabelChecked="hide details" 
+                innerLabel="show details"
+                style={{'display':'inline-block'}}
+            />
+            {failDetailVisible && <Callout style={{'overflowY':'auto'}}>{failureMessage}</Callout>}
+        </>
+    }, [failureMessage, failDetailVisible])
 
     const isDownloadDisabled: boolean = useMemo(() => {
         // owned dataset or public dataset
@@ -363,11 +383,10 @@ export default function DatasetCard({
                             <>
                                 <p
                                     className={classnames(
-                                        themedStyles.description,
-                                        Classes.TEXT_DISABLED
+                                        themedStyles.description
                                     )}
                                 >
-                                    {displayFilureMessage}
+                                    {displayFailMessage}
                                 </p>
                             </>
                         )}
@@ -458,7 +477,7 @@ export default function DatasetCard({
                                 data-testid="info-button"
                                 intent="primary"
                                 onClick={openMetadataDrawer}
-                                disabled={isDatasetDisabled}
+                                disabled={isInfoDisabled}
                             >
                                 Info
                             </Button>
