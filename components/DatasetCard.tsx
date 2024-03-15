@@ -313,7 +313,7 @@ export default function DatasetCard({
                 innerLabel="show details"
                 style={{'display':'inline-block'}}
             />
-            {failDetailVisible && <Callout>{failureMessage}</Callout>}
+            {failDetailVisible && <Callout style={{'overflowY':'auto'}}>{failureMessage}</Callout>}
         </>
     }, [failureMessage, failDetailVisible])
 
