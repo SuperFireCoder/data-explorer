@@ -19,6 +19,10 @@
     background: rgba(0, 0, 0, 0.3);
 }
 
+.indicator[data-type="example"] {
+    background: #aa8855;
+}
+
 .indicator[data-type="biological"] {
     background: #5dc2e7;
 }
@@ -31,6 +35,25 @@
     background: #B33A3A;
 }
 
-.indicator[data-type="failed"] .type{
+.indicator[data-type="failed"] .type {
     display: none;
+}
+
+.indicator > span {
+    display: inline-block;
+    padding: 0.3rem 0.5rem;
+    line-height: 1;
+}
+
+.type0 {
+    background: rgba(0, 0, 0, 0.0);
+}
+.type1 {
+    background: rgba(0, 0, 0, 0.3);
+}
+.type2 {
+    background: rgba(0, 0, 0, 0.55);
+}
+.type3 {
+    background: rgba(0, 0, 0, 0.8);
 }

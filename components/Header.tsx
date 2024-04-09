@@ -19,6 +19,7 @@ export default function Header(
 
     return (
         <EcHeader
+            {...props}
             signInOutButton={<SignInOutButton />}
             tabLinks={getThemeValue("Object::Platform.HeaderTabLinks") ?? {
                 ...UiLibraryConstants.Urls,
@@ -43,7 +44,6 @@ export default function Header(
                 config.publicRuntimeConfig.NEXT_PUBLIC_DEPLOYMENT !==
                 "production"
             }
-            {...props}
         />
     );
 }

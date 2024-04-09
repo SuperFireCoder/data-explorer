@@ -1207,12 +1207,8 @@ export default function IndexPage() {
                                 }
                                 type={
                                     _source.status === "SUCCESS"
-                                        ? // TODO: Clarify values for "scientific_type"
-                                        ({
-                                            type: _source.scientific_type[0],
-                                            subtype:
-                                                _source.scientific_type[1],
-                                        } as unknown as DatasetType)
+                                        ?
+                                        (_source.scientific_type)
                                         : undefined
                                 }
                                 // TODO: Add modification date into ES index
