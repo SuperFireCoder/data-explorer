@@ -15,6 +15,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(process.env.NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_DATASETS ?? '/', request.url))
   }
 
+  if (request.nextUrl.pathname.startsWith('/data-manager')) {
+    return NextResponse.redirect(new URL(process.env.NEXT_PUBLIC_DATA_MANAGER_URL ?? '/', request.url))
+  }
+
   if (request.nextUrl.pathname.startsWith('/analysis-hub')) {
     return NextResponse.redirect(new URL(process.env.NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ANALYSIS_HUB ?? '/', request.url))
   }
@@ -37,6 +41,7 @@ export const config = {
     '/home', 
     '/analysis-hub',
     '/datasets',
+    '/data-manager',
     '/workspace',
     '/status'
     ],
