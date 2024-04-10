@@ -1134,10 +1134,10 @@
     gonzales-pe "^4.3.0"
     node-source-walk "^6.0.1"
 
-"@ecocommons-australia/bsc-theme@1.0.20":
-  version "1.0.20"
-  resolved "https://gitlab.com/api/v4/projects/30277949/packages/npm/@ecocommons-australia/bsc-theme/-/@ecocommons-australia/bsc-theme-1.0.20.tgz"
-  integrity sha1-MSiHlIejaJvfr0BM0Dn5unscxz4=
+"@ecocommons-australia/bsc-theme@1.0.21":
+  version "1.0.21"
+  resolved "https://gitlab.com/api/v4/projects/30277949/packages/npm/@ecocommons-australia/bsc-theme/-/@ecocommons-australia/bsc-theme-1.0.21.tgz"
+  integrity sha1-F1htX5eigtFRKUd5EW0U1kPtVbw=
 
 "@ecocommons-australia/ui-library@^2.0.1", "@ecocommons-australia/ui-library@2.0.3":
   version "2.0.3"
