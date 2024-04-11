@@ -15,6 +15,13 @@ describe("filtering Time Domain Current/Historic", () => {
     });
 
     it("Filter Time Domain Current/Historic", () => {
+
+        // I search 'bioclim' which are yearly datasets
+        cy.get('[data-cy="search-field"]')
+            .clear()
+            .type(`bioclim{enter}`);
+        cy.wait("@esSearchDataset")
+
         // Time Domain is set to Current/Historic, Unclassified
         cy.get('[data-cy=facetTimeDomain] .bp5-input')
             .should("contain", "Current/Historic")
@@ -36,9 +43,12 @@ describe("filtering Time Domain Current/Historic", () => {
             .first()
             .invoke("text")
             .then(($text) => {
+                cy.log($text)
                 // get year
                 var regEx = /\b[0-9]{4}/;
-                const yearText = parseInt(regEx.exec($text)[0]);
+                var result = regEx.exec($text);
+                expect(result).to.be.not.null
+                const yearText = parseInt(result[0]);
                 // assert year is current to historic
                 expect(yearText).to.be.below(2024);
             });

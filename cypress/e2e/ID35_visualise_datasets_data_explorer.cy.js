@@ -9,22 +9,11 @@
  *
  */
 
-const VISUALISER_API = Cypress.env(
-    "NEXT_PUBLIC_VISUALISER_CLIENT_GEOSPATIAL_ECMAPVISUALISERREQUEST_BACKEND_SERVER_URL"
-);
-
-const DATA_EXPLORER_API = Cypress.env(
-    "NEXT_PUBLIC_DATA_EXPLORER_BACKEND_SERVER_URL"
-);
-
 describe("Visualise datasets on a map", () => {
     beforeEach(() => {
         cy.login()
         cy.visit("/");
-        cy.intercept("POST", VISUALISER_API + "/api/maps/").as("postMap");
-        cy.intercept("GET", VISUALISER_API + "/api/maps/*/status").as("getMapStatus");
-        cy.intercept("GET", DATA_EXPLORER_API + "/api/dataset/*").as("getDataset");
-        cy.intercept("POST", DATA_EXPLORER_API + "/api/es/search/dataset").as("esSearchDataset");
+
     });
 
     it("ID35.1 - can Visualise occurrence datasets appropriately", () => {
@@ -164,7 +153,7 @@ describe("Visualise datasets on a map", () => {
                                     firstParameter
                                 );
                             });
-                        cy.wait(5000);
+                        cy.wait(1000);
                     } else {
                         // only expect statusCode for the first @postMap
                         cy.wait("@postMap")
@@ -195,7 +184,7 @@ describe("Visualise datasets on a map", () => {
                                 // );
                             });
                     });
-                    cy.wait(5000);
+                    cy.wait(1000);
                 });
         });
     });

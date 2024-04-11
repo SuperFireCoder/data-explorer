@@ -31,9 +31,11 @@ beforeEach(() => {
         fixture: "map.png"
     }).as("getMap");
 
-    cy.intercept("POST", DATA_EXPLORER_API + "/api/es/search/dataset").as(
-        "searchDataset"
-    );
+    cy.intercept("POST", VISUALISER_API + "/api/maps/").as("postMap");
+    cy.intercept("GET", VISUALISER_API + "/api/maps/*/status").as("getMapStatus");
+    cy.intercept("GET", DATA_EXPLORER_API + "/api/dataset/*").as("getDataset");
+    cy.intercept("POST", DATA_EXPLORER_API + "/api/es/search/dataset").as("esSearchDataset");
+    cy.intercept("POST", DATA_EXPLORER_API + "/api/es/search/dataset").as("searchDataset");
 
     // cy.intercept("POST", VISUALISER_API + "/api/maps/", {
     //     fixture: {}
