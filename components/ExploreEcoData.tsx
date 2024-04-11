@@ -1,4 +1,5 @@
 import { isEqual } from "lodash";
+import { SearchResponse } from "elasticsearch";
 import { Col, Row } from "@ecocommons-australia/ui-library";
 import React, { FormEvent, useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter } from "next/router";
@@ -8,6 +9,7 @@ import { ParsedUrlQueryInput } from "querystring";
 import DatasetCard from "./DatasetCard";
 import Pagination from "./Pagination";
 import { DatasetType } from "../interfaces/DatasetType";
+import { EsDataset } from "../interfaces/EsDataset";
 import { useEffectTrigger } from "../hooks/EffectTrigger";
 import { getDataExplorerBackendServerUrl } from "../util/env";
 import { useKeycloakInfo } from "../util/keycloak";
@@ -944,7 +946,7 @@ export default function IndexPage() {
         [totalNumberOfResults, formState.pageSize]
     );
 
-    const processedQueryResult = useMemo((): Array<any> | undefined => {
+    const processedQueryResult = useMemo((): SearchResponse<EsDataset>['hits']['hits'] | undefined => {
         //Removes dataset from dataset list if user deleted it or unshared it.
         if ((datasetUUIDToDelete || datasetUUIDToUnshare) && queryResult) {
             const indexToDelete = queryResult?.hits.hits.findIndex(x => x._source.uuid == (datasetUUIDToDelete || datasetUUIDToUnshare))
@@ -1198,7 +1200,7 @@ export default function IndexPage() {
                                 title={_source.title}
                                 description={_source.description}
                                 status={_source.status}
-                                isPinned={_source.pinned?.includes(keycloak?.subject)}
+                                isPinned={_source.pinned?.includes(keycloak?.subject ?? '')}
                                 downloadable={_source.downloadable}
                                 failureMessage={
                                     _source.status === "FAILED"
@@ -1211,6 +1213,8 @@ export default function IndexPage() {
                                         (_source.scientific_type)
                                         : undefined
                                 }
+                                genre={_source.genre}
+                                spatial_data_type={_source.spatial_data_type}
                                 // TODO: Add modification date into ES index
                                 // lastUpdated={lastUpdated}
                                 ownerId={_source.allowed_principals as string[]}
