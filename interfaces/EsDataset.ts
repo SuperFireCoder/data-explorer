@@ -1,22 +1,32 @@
 /** Dataset object, as found in Elasticsearch index/search responses */
 export interface EsDataset {
-    variables: readonly string[];
+    acl: unknown[];
+    allowed_principals: unknown[];
+    allowed_principals_label: unknown[];
     citation: unknown;
-    year: unknown;
-    allowed_principals: readonly unknown[];
-    time_domain: string;
-    description: string;
-    spatial_domain: string;
-    type: string;
-    title: string;
-    message: string;
-    resolution: string;
-    gcm: unknown;
-    external_url: string;
+    data_category: string[];
     domain: string;
+    description: string;
+    downloadable: boolean;
     emsc: unknown;
-    scientific_type: readonly string[];
-    downloadable: boolean
+    external_url: string;
+    gcm: unknown;
+    genre: string;
+    license: string;
+    message: string;
+    mimetype: string;
+    month: string;
+    pinned: string[];
+    realm: string;
+    resolution: string;
+    scientific_type: string[];
+    spatial_data_type: string;
+    spatial_domain: string;
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
+    time_domain: string;
+    title: string;
+    type: string;
     uuid: string;
+    variables: string[];
+    year: unknown;
 }

@@ -562,7 +562,6 @@ export const useEsIndividualFacetNumberRange = <T extends MinimumFormState>(
         maxId: config.maxId,
         label: config.label,
         placeholder: config.placeholder,
-
         type: "number-range",
         minValue,
         maxValue,

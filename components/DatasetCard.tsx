@@ -51,7 +51,11 @@ export interface Props {
     /** Description of the dataset */
     description: ReactNode;
     /** Type of the dataset */
-    type?: DatasetType;
+    type?: DatasetType | string[];
+    /** Genre of the dataset */
+    genre?: string;
+    /** Spatial type of the dataset */
+    spatial_data_type?: string;
     /** Date the dataset was last updated */
     lastUpdated?: Date;
     /** Indicate if a dataset is downloadable or not */
@@ -79,6 +83,7 @@ export interface Props {
     acl?: { [K: string]: any };
     triggerSearch?: () => void;
 }
+
 const dataStore = usePinnedDataStore.getState();
 
 
@@ -87,6 +92,8 @@ export default function DatasetCard({
     title,
     description,
     type,
+    genre,
+    spatial_data_type,
     lastUpdated,
     ownerId,
     ownerLabel,
@@ -113,7 +120,6 @@ export default function DatasetCard({
     const [isErrorAlertOpen, setIsErrorAlertOpen] = useState(false);
     const [failDetailVisible, setFailDetailVisible] = useState(false);
 
-    
 
     // Set pinned by prop if available otherwise use data store.
     const [pinned, setPinned] = useState(
@@ -167,11 +173,12 @@ export default function DatasetCard({
         return isDeleteInProgress;
     }, [status, isDeleteInProgress]);
 
+    /**
+     * DataGenreFile is a blackbox type that cannot be visualised
+     */
     const isViewDisabled = useMemo<boolean>(() => {
-        // Return True if dataset can not be visualised
-        return type?.type === "others"
-            && (type?.subtype === 'spatialShape' || type?.subtype === 'file');
-    }, [type]);
+        return genre === 'DataGenreFile';
+    }, [genre]);
 
     const isDeleteDisabled = () => {
         //Return True if upload status is not SUCCESS, FAILED, CREATED, or delete process in progress.

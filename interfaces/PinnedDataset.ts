@@ -14,4 +14,4 @@ export interface PinnedDataset {
     status: DataStatus;
     message: string;
     created: string;
-  }
+}
