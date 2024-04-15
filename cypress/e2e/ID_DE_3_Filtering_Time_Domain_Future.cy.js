@@ -79,6 +79,7 @@ describe("filtering Time Domain Future", () => {
         // get year text
         cy.get('[data-cy="DatasetCard-card"]')
             .first()
+            .find('h5')
             .invoke("text")
             .then(($text) => {
                 // get year
