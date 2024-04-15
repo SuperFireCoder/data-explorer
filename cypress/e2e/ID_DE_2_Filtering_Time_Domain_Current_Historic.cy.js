@@ -41,6 +41,7 @@ describe("filtering Time Domain Current/Historic", () => {
         // get year text
         cy.get('[data-cy="DatasetCard-card"]')
             .first()
+            .find('h5')
             .invoke("text")
             .then(($text) => {
                 cy.log($text)

@@ -79,8 +79,10 @@ describe("filtering Time Domain Future", () => {
         // get year text
         cy.get('[data-cy="DatasetCard-card"]')
             .first()
+            .find('h5')
             .invoke("text")
             .then(($text) => {
+                cy.log($text)
                 // get year
                 var regEx = /\b[0-9]{4}/
                 const yearText = parseInt(regEx.exec($text)[0])
