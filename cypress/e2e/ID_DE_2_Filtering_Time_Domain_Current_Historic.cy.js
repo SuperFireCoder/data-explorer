@@ -44,7 +44,6 @@ describe("filtering Time Domain Current/Historic", () => {
             .find('h5')
             .invoke("text")
             .then(($text) => {
-                cy.log($text)
                 // get year
                 var regEx = /\b[0-9]{4}/;
                 var result = regEx.exec($text);
