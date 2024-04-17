@@ -50,6 +50,8 @@ export interface Props {
     title: string;
     /** Description of the dataset */
     description: ReactNode;
+    /** Year of the dataset */
+    year?: number;
     /** Type of the dataset */
     type?: DatasetType | string[];
     /** Genre of the dataset */
@@ -91,6 +93,7 @@ export default function DatasetCard({
     datasetId,
     title,
     description,
+    year,
     type,
     genre,
     spatial_data_type,
@@ -362,6 +365,7 @@ export default function DatasetCard({
                 data-cy="DatasetCard-card"
                 data-testid={title}
                 data-selected={selected}
+                data-year={year}
             >
             {isDeleteInProgress ? 
                 <Row justify="between"><Col><Spinner size={SpinnerSize.LARGE} /></Col></Row>

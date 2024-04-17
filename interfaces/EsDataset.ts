@@ -28,5 +28,5 @@ export interface EsDataset {
     type: string;
     uuid: string;
     variables: string[];
-    year: unknown;
+    year: number | undefined;
 }

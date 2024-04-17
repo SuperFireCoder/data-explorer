@@ -72,9 +72,6 @@ describe("filtering Time Domain Future", () => {
             .its("length")
             .should("eq", 1)
 
-        cy.wait("@searchDataset")
-        cy.wait(500)
-        
         // I should see page with filtered datasets set in future years
         // get year text
         cy.get('[data-cy="DatasetCard-card"]')
@@ -86,7 +83,7 @@ describe("filtering Time Domain Future", () => {
                 var regEx = /\b[0-9]{4}/
                 const yearText = parseInt(regEx.exec($text)[0])
                 // assert year is in future
-                expect(yearText).to.be.above(2023)
+                expect(yearText).to.be.above(new Date().getFullYear())
             });
     });
 });
