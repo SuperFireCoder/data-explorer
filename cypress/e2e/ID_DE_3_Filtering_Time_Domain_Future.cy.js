@@ -65,12 +65,16 @@ describe("filtering Time Domain Future", () => {
             .its("length")
             .should("eq", 1)
 
+        cy.wait(500)
+
         // assert only 1 Month Domain option is chosen (Non monthly data)
         cy.get('[data-cy=facetMonth] .bp5-input')
             .should("contain", "Non monthly data")
             .find(".bp5-tag")
             .its("length")
             .should("eq", 1)
+
+        cy.wait(500)
 
         // I should see page with filtered datasets set in future years
         // get year text
