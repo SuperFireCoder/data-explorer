@@ -38,19 +38,11 @@ describe("filtering Time Domain Current/Historic", () => {
             .should("eq", 1)
 
         // I should see page with filtered datasets set in current/historic years
-        // get year text
         cy.get('[data-cy="DatasetCard-card"]')
             .first()
-            .find('h5')
-            .invoke("text")
-            .then(($text) => {
-                // get year
-                var regEx = /\b[0-9]{4}/;
-                var result = regEx.exec($text);
-                expect(result).to.be.not.null
-                const yearText = parseInt(result[0]);
-                // assert year is current to historic
-                expect(yearText).to.be.below(2024);
-            });
+            .invoke('attr', 'data-year')
+            .then((year) => {
+                expect(parseInt(year)).to.be.below(new Date().getFullYear())
+            })
     });
 });
