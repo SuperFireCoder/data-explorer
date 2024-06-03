@@ -44,6 +44,7 @@ export default function Header(
                 config.publicRuntimeConfig.NEXT_PUBLIC_DEPLOYMENT !==
                 "production"
             }
+            motdURL='https://platform-notifications-ecocommons-australia-ecoc-c6dcc732b22f99.gitlab.io/'
         />
     );
 }
