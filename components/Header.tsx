@@ -14,37 +14,42 @@ const config = getConfig();
 export default function Header(
     props: Omit<ComponentProps<typeof EcHeader>, "tabLinks">
 ) {
-
     const { getThemeValue } = useTheme();
 
     return (
         <EcHeader
             {...props}
             signInOutButton={<SignInOutButton />}
-            tabLinks={getThemeValue("Object::Platform.HeaderTabLinks") ?? {
-                ...UiLibraryConstants.Urls,
-                ECOCOMMONS_ROOT:
-                    config.publicRuntimeConfig
-                        .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ROOT ?? "#",
-                ECOCOMMONS_WORKSPACE:
-                    config.publicRuntimeConfig
-                        .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_WORKSPACE ??
-                    "#",
-                ECOCOMMONS_DATASETS:
-                    config.publicRuntimeConfig
-                        .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_DATASETS ??
-                    "#",
-                ECOCOMMONS_ANALYSIS_HUB:
-                    config.publicRuntimeConfig
-                        .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ANALYSIS_HUB ??
-                    "#",
-            }}
-            subBarLinks={getThemeValue("Object::DataExplorer.HeaderSubBarLinks") ?? props.subBarLinks}
+            tabLinks={
+                getThemeValue("Object::Platform.HeaderTabLinks") ?? {
+                    ...UiLibraryConstants.Urls,
+                    ECOCOMMONS_ROOT:
+                        config.publicRuntimeConfig
+                            .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ROOT ??
+                        "#",
+                    ECOCOMMONS_WORKSPACE:
+                        config.publicRuntimeConfig
+                            .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_WORKSPACE ??
+                        "#",
+                    ECOCOMMONS_DATASETS:
+                        config.publicRuntimeConfig
+                            .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_DATASETS ??
+                        "#",
+                    ECOCOMMONS_ANALYSIS_HUB:
+                        config.publicRuntimeConfig
+                            .NEXT_PUBLIC_UI_LIBRARY_HEADER_ECOCOMMONS_ANALYSIS_HUB ??
+                        "#"
+                }
+            }
+            subBarLinks={
+                getThemeValue("Object::DataExplorer.HeaderSubBarLinks") ??
+                props.subBarLinks
+            }
             useYellowStripedBackground={
                 config.publicRuntimeConfig.NEXT_PUBLIC_DEPLOYMENT !==
                 "production"
             }
-            motdURL='https://platform-notifications-ecocommons-australia-ecoc-c6dcc732b22f99.gitlab.io/'
+            motdURL={config.publicRuntimeConfig.NEXT_PUBLIC_MOTD_URL ?? ""}
         />
     );
 }
