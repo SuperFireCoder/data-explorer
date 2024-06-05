@@ -1139,10 +1139,10 @@
   resolved "https://gitlab.com/api/v4/projects/30277949/packages/npm/@ecocommons-australia/bsc-theme/-/@ecocommons-australia/bsc-theme-1.0.22.tgz"
   integrity sha1-iSsR5A32ip5jB22Fpz7zEjOIFDQ=
 
-"@ecocommons-australia/ui-library@^2.0.1", "@ecocommons-australia/ui-library@2.0.4-dev-46330d4e.0":
-  version "2.0.4-dev-46330d4e.0"
-  resolved "https://gitlab.com/api/v4/projects/22528765/packages/npm/@ecocommons-australia/ui-library/-/@ecocommons-australia/ui-library-2.0.4-dev-46330d4e.0.tgz"
-  integrity sha1-tndeBV7DvW6Lth/hnJWlIRsk83c=
+"@ecocommons-australia/ui-library@^2.0.1", "@ecocommons-australia/ui-library@2.0.6":
+  version "2.0.6"
+  resolved "https://gitlab.com/api/v4/projects/22528765/packages/npm/@ecocommons-australia/ui-library/-/@ecocommons-australia/ui-library-2.0.6.tgz"
+  integrity sha1-en/Ds5hL7x0aQkEVeHL/2f4KJH8=
 
 "@ecocommons-australia/visualiser-client-geospatial@2.1.2":
   version "2.1.2"
