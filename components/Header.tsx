@@ -49,7 +49,6 @@ export default function Header(
                 config.publicRuntimeConfig.NEXT_PUBLIC_DEPLOYMENT !==
                 "production"
             }
-            motdURL={config.publicRuntimeConfig.NEXT_PUBLIC_MOTD_URL ?? ""}
         />
     );
 }
