@@ -75,10 +75,19 @@ export default function VisualiserDrawer({
             // FIXME: Have backend pass actual data type of the layer
             
             const { dataType, tempUrl } = metadata.data.rangeAlternates["dmgr:tiff"]
-                ? { dataType: "raster" as const, tempUrl: metadata.data.rangeAlternates?.["dmgr:tiff"]?.[layerName]?.tempurl }
+                ? {
+                      dataType: "raster" as const,
+                      tempUrl: metadata.data.rangeAlternates?.["dmgr:tiff"]?.[layerName]?.tempurl
+                  }
                 : metadata.data.rangeAlternates["dmgr:csv"]
-                ? { dataType: "point" as const, tempUrl: metadata.data.rangeAlternates?.["dmgr:csv"]?.tempurl }
-                : { dataType: "polygon" as const, tempUrl: metadata.data.rangeAlternates?.["dmgr:shp"]?.[layerName]?.tempurl };
+                ? {
+                      dataType: "point" as const,
+                      tempUrl: metadata.data.rangeAlternates?.["dmgr:csv"]?.tempurl
+                  }
+                : {
+                      dataType: "polygon" as const,
+                      tempUrl: metadata.data.rangeAlternates?.["dmgr:shp"]?.[layerName]?.tempurl
+                  };
 
             const colourmapType = CoverageUtils.getLayerColourmapTypeFromCov(metadata.data, layerName);
 
