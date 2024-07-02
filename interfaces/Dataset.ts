@@ -147,6 +147,17 @@ export interface DmgrCsv {
 export interface RangeAlternates {
     "dmgr:csv"?: DmgrCsv;
     "dmgr:tiff"?: DmgrTiff;
+    "dmgr:shp"?: DmgrShp;
+}
+
+export interface DmgrShp {
+    [layer: string]: DmgrShpLayerData;
+}
+
+export interface DmgrShpLayerData {
+    type: string;
+    url: string;
+    tempurl: string;
 }
 
 export interface DmgrTiff {

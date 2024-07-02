@@ -11,7 +11,7 @@ export interface LayerInfo {
     layerName: string; 
     label: string
     layerUrl: string | { __tempUrl: string };
-    dataType: "raster" | "point";
+    dataType: "raster" | "point" | "polygon";
     datasetId?: string;
     colourmapType?: string;
 };
