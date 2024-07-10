@@ -90,7 +90,6 @@ export default function VisualiserDrawer({
                   };
 
             const colourmapType = CoverageUtils.getLayerColourmapTypeFromCov(metadata.data, layerName);
-
             if (tempUrl === undefined) {
                 throw new Error(`Cannot obtain temp URL for "${layerName}"`);
             }
