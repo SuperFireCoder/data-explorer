@@ -16,7 +16,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@blueprintjs/core": "5.3.3",
+    "@blueprintjs/core": "5.10.1",
     "@blueprintjs/icons": "5.1.6",
     "@blueprintjs/select": "5.0.10",
     "@ecocommons-australia/bsc-theme": "1.0.22",
