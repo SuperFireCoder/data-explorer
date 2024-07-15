@@ -72,7 +72,7 @@ function MyApp({ Component, pageProps, cookies }: Props) {
             <SSRKeycloakProvider
                 keycloakConfig={keycloakConfig}
                 persistor={SSRCookies(cookies)}
-                initOptions={{ checkLoginIframe: false }}
+                initOptions={{ checkLoginIframe: true }}
             >
             <ThemeWrapper>
                 <Component {...pageProps} />
