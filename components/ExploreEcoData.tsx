@@ -1048,6 +1048,7 @@ export default function IndexPage() {
                         </Col>
                     </Row>
                     {[
+                        facetCollection,
                         facetMonth,
                         facetTimeDomain,
                         facetSpatialDomain,
@@ -1069,7 +1070,6 @@ export default function IndexPage() {
                         facetResolution,
                         facetDomain,
                         facetGcm,
-                        facetCollection,
                         //facetDataCategory
                         ].map((facet) => (
                         <Row key={facet.id} data-cy={facet.id} data-testid={facet.id} disableDefaultMargins>
