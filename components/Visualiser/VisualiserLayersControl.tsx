@@ -1,5 +1,5 @@
 import React from "react";
-import { Checkbox, Icon, Radio, RadioGroup, Label, HTMLSelect } from "@blueprintjs/core";
+import { Callout, Checkbox, Icon, IconName, Intent, Radio, RadioGroup, Label, HTMLSelect } from "@blueprintjs/core";
 import { MapLayer, Colourmaps } from "@ecocommons-australia/visualiser-client-geospatial";
 import classnames from "classnames";
 import {
@@ -10,7 +10,7 @@ import {
     useMemo, 
     useState
 } from "react";
-import { LayerInfo } from "../hooks/Visualiser";
+import { LayerInfo, MapScaleId } from "../../hooks/Visualiser";
 
 import styles from "./VisualiserLayersControl.module.css";
 
@@ -20,7 +20,7 @@ const isLayerInfo = (x: object): x is LayerInfo => {
     if (o === undefined){
         throw new Error("isLayerInfo: Could not determine as layer is undefined");
     }
-    return typeof o.layerName === "string"; // && typeof o.label === "string";
+    return typeof o.dataLayer === "string"; // && typeof o.label === "string";
 };
 
 /**
@@ -29,7 +29,7 @@ const isLayerInfo = (x: object): x is LayerInfo => {
  * @param layer Layer object
  */
 const getLayerKey = (layer: LayerInfo | MapLayer) => {
-    return isLayerInfo(layer) ? layer.layerName : layer.handle;
+    return isLayerInfo(layer) ? layer.dataLayer : layer.handle;
 };
 
 export interface Props<L extends LayerInfo | MapLayer> {
@@ -44,11 +44,16 @@ export interface Props<L extends LayerInfo | MapLayer> {
     currentBaseMap: MapLayer;
     onCurrentBaseMapChange: (baseMap: MapLayer) => void;
 
-    currentMapScale: "log" | "linear";
-    onCurrentMapScaleChange:(scale: "log" | "linear") => void;
+    currentMapScale?: MapScaleId;
+    onCurrentMapScaleChange?:(scale: MapScaleId) => void;
 
-    currentMapStyle: string;
-    onCurrentMapStyleChange:(style: string) => void;
+    currentMapStyle?: string;
+    onCurrentMapStyleChange?:(style: string) => void;
+
+    controlLabel?: string;
+    controlIcon?: IconName;
+
+    showNoLayerCallout?: boolean;
 }
 
 export default function VisualiserLayersControl<
@@ -69,8 +74,12 @@ export default function VisualiserLayersControl<
     onCurrentMapScaleChange,
 
     currentMapStyle,
-    onCurrentMapStyleChange
+    onCurrentMapStyleChange,
 
+    controlLabel = 'layers',
+    controlIcon = 'layers',
+
+    showNoLayerCallout = false
 }: Props<L>) {
 
     const [optionsVisible, setOptionsVisible] = useState<boolean>(
@@ -97,10 +106,11 @@ export default function VisualiserLayersControl<
     const handleCurrentMapScaleChange = useCallback<
         FormEventHandler<HTMLSelectElement>
     >(
-        (e) =>
-            onCurrentMapScaleChange(
-                e.currentTarget.value as typeof currentMapScale
-            ),
+        (e) => {
+            onCurrentMapScaleChange?.(
+                e.currentTarget.value as MapScaleId
+            );
+        },
             
         [currentMapScale, onCurrentMapScaleChange]
     );
@@ -108,11 +118,11 @@ export default function VisualiserLayersControl<
     const handleCurrentMapStyleChange = useCallback<
         FormEventHandler<HTMLSelectElement>
     >(
-        (e) =>
-            onCurrentMapStyleChange(
+        (e) => {
+            onCurrentMapStyleChange?.(
                 e.currentTarget.value
-            ),
-            
+            );
+        },
         [currentMapStyle, onCurrentMapStyleChange]
     );
 
@@ -124,11 +134,13 @@ export default function VisualiserLayersControl<
         return Colourmaps.getNames(colourmapType);
     }, [currentLayers])
 
-    useEffect(() => {
-        if (layers !== undefined && layers.length > 0) {
-            onCurrentLayersChange?.([...(layers ?? [])])
+    const allowScale = useMemo(() => {
+        const colourmapType = (currentLayers?.[0] as MapLayer)?.colourmapType;
+        if (colourmapType === undefined){
+            return undefined;
         }
-    }, [layers])
+        return Colourmaps.getNames(colourmapType);
+    }, [currentLayers])
 
     const layerSelector = useMemo(() => {
         if (layers === undefined){
@@ -172,7 +184,7 @@ export default function VisualiserLayersControl<
                 onCurrentLayersChange?.(
                     layers?.filter(
                         (x) =>
-                            (isLayerInfo(x) ? x.layerName : x.handle.toString()) ===
+                            (isLayerInfo(x) ? x.dataLayer : x.handle.toString()) ===
                             e.currentTarget.value
                     )
                 )
@@ -205,6 +217,20 @@ export default function VisualiserLayersControl<
         }
     }, [allowMultipleLayerSelection, layers, currentLayers])
 
+    const noLayerCallout = useMemo(() => {
+        if (showNoLayerCallout && Array.isArray(currentLayers) === false || currentLayers?.length === 0){
+            return (
+                <Callout
+                    intent={Intent.WARNING}
+                    icon="issue"
+                >
+                   Select a layer
+                </Callout>
+            )
+        }
+        return undefined;
+    }, [currentLayers, showNoLayerCallout]);
+
     return (
         <>
             <div
@@ -221,22 +247,23 @@ export default function VisualiserLayersControl<
                     onClick={() => setOptionsVisible((x) => !x)}
                 >
                     <Icon
-                        icon="layers"
+                        icon={controlIcon}
                         iconSize={14}
                         color={"#000"}
                     />
-                    &nbsp;layers
+                    &nbsp;{controlLabel}
                 </button>
             </div>
 
             {optionsVisible && (
                 <div className={styles.optionsContainer} data-cy="layer-options-panel">
+                    {noLayerCallout}
                     {layers && (
                         <div className={styles.layerSelection} data-cy="layer-option-layers">
                             {layerSelector}
                         </div>
                     )}
-                    <Label className={styles.selectLabel}>Base maps
+                    <Label key="layer-option-basemap" className={styles.selectLabel}>Base maps
                         <HTMLSelect
                             data-cy="layer-option-basemap"
                             minimal
@@ -252,8 +279,8 @@ export default function VisualiserLayersControl<
                         </HTMLSelect>
                     </Label>
 
-                    {availableStyles &&
-                        <Label className={styles.selectLabel}>Style
+                    {currentMapStyle !== undefined && availableStyles &&
+                        <Label key="layer-option-style" className={styles.selectLabel}>Color &amp; legend
                             <HTMLSelect
                                 data-cy="layer-option-style"
                                 minimal
@@ -268,21 +295,19 @@ export default function VisualiserLayersControl<
                         </Label>
                     }
 
-                    {/*
-                    Log scale disabled for now. Still unresolved issues in backend implementation.
-
-                    <Label className={styles.selectLabel}>Scale
-                        <HTMLSelect
-                            data-cy="layer-option-scale"
-                            minimal
-                            onChange={handleCurrentMapScaleChange}
-                            value={currentMapScale}
-                        >
-                            <option key={1} value="linear">Linear</option>
-                            <option key={2} value="log">Log</option>
-                        </HTMLSelect>
-                    </Label>
-                    */}
+                    {currentMapScale !== undefined &&
+                        <Label key="layer-option-scale" className={styles.selectLabel}>Scale
+                            <HTMLSelect
+                                data-cy="layer-option-scale"
+                                minimal
+                                onChange={handleCurrentMapScaleChange}
+                                value={currentMapScale}
+                            >
+                                <option key={1} value="linear">Linear</option>
+                                <option key={2} value="log">Log</option>
+                            </HTMLSelect>
+                        </Label>
+                    }
 
                 </div>
             )}

@@ -1,0 +1,53 @@
+.visualiserContainer {
+    flex: 1;
+}
+
+.mapContainer {
+    width: 100%;
+    height: 100%;
+}
+
+.tileLoadProgressBar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.legendImageContainer {
+    position: absolute;
+    bottom: 40px;
+    right: 0.4em;
+    max-height: 14rem;
+    overflow-y: auto;
+    min-width: 3.6rem;
+    max-width: 10.5rem;
+    background: #fdfdfd;
+}
+
+.legendImageContainer > p {
+    padding:0px;
+    margin: 0px;
+    font-size: 0.7rem !important;
+    max-width: 10.5rem;
+    font-weight: bold;
+    padding-left: 0.75em;
+    padding-top: 0.3em;
+    display: block;
+    overflow:hidden;
+}
+
+.legendImageContainer > img {
+    scale: 0.95;
+    transform-origin: top left;
+}
+
+.spatialMetadataBar {
+    background: rgba(255,255,255,0.75); 
+    padding: 2px 2rem;
+    position: absolute;
+    text-align: center;
+    top: 0;
+    left: 10rem;
+    right: 10rem;
+}
