@@ -153,7 +153,7 @@ export default function VisualiserDrawer({
                 label: metadata.data.parameters[dataLayer].observedProperty
                     .label.en,
                 dataLayer,
-                layerUrl: tempUrl,
+                dataUrl: tempUrl,
                 colourmapType,
             };
         });
