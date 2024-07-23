@@ -32,7 +32,7 @@ const KEYCLOAK_AUTH_URL =
 
 Cypress.Commands.add("login", (username, password) => {
     cy.session([username, password], () => {
-        cy.intercept("POST", KEYCLOAK_AUTH_URL).as("newToken");
+        //cy.intercept("POST", KEYCLOAK_AUTH_URL).as("newToken");
         cy.visit("/")
             .get('[class*="Header-module_headerContainer"]')
             .then(($elm) => {
@@ -49,11 +49,11 @@ Cypress.Commands.add("login", (username, password) => {
                     cy.log("Login skipped");
                 }
             });
-        cy.wait("@newToken")
-            .its("response")
-            .then((response) => {
-                Cypress.env("access_token", response.body.access_token);
-            });
+        // cy.wait("@newToken")
+        //     .its("response")
+        //     .then((response) => {
+        //         Cypress.env("access_token", response.body.access_token);
+        //     });
     });
 });
 
