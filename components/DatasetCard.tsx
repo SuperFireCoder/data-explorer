@@ -33,7 +33,7 @@ import { useOpenableOpen } from "../hooks/Openable";
 import DatasetOwnerIndicator from "./DatasetOwnerIndicator";
 import DatasetTypeIndicator from "./DatasetTypeIndicator";
 import MetadataDrawer from "./MetadataDrawer";
-import VisualiserDrawer from "./VisualiserDrawer";
+import VisualiserDrawer from "./Visualiser/VisualiserDrawer";
 
 import { useTheme } from "@ecocommons-australia/ui-library";
 

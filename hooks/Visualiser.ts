@@ -2,21 +2,45 @@ import {
     ECMapVisualiserRequest,
     MapLayer,
     BaseMaps,
+    Colourmaps,
 } from "@ecocommons-australia/visualiser-client-geospatial";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useKeycloakInfo } from "../util/keycloak";
 
-export interface LayerInfo { 
-    layerName: string; 
-    label: string
-    layerUrl: string | { __tempUrl: string };
-    dataType: "raster" | "point";
+/** 
+ * All required and optional attributes of an available layer.
+ */
+export interface LayerInfo {
+    label: string;
+    dataType: 'raster' | 'point' | 'polygon';
+    dataLayer: string;
+    dataUrl?: string;
+    mapScale?: MapScaleId;
+    mapStyle?: string;
+    mapStyleReqRemap?: boolean;
+    mapStyleType?: Colourmaps.Type;
     datasetId?: string;
-    colourmapType?: string;
-};
+}
 
-export const useVisualiserSupport = () => {
+export interface VisualiserDefaults {
+    mapScale?: MapScaleId;
+    mapStyle?: string;
+    mapStyleType?: Colourmaps.Type;
+    mapStyleReqRemap?: boolean;
+}
+
+/** 
+ * As above but includes MapLayer which implements the map view specifically.
+ */
+export interface RegisteredLayer extends LayerInfo {
+    mapLayer: MapLayer;
+}
+
+export type MapScaleId = 'linear' | 'log';
+
+
+export const useVisualiserSupport = (defaults: VisualiserDefaults = {}) => {
     const { keycloak } = useKeycloakInfo();
     const keycloakToken = keycloak?.token;
 
@@ -38,16 +62,11 @@ export const useVisualiserSupport = () => {
         BaseMaps.BCCVL_DEFAULT_BASE_MAPS[0]
     );
 
-    const [currentMapScale, setCurrentMapScale] = useState<"linear" | "log">("linear");
-    const [currentMapStyle, setCurrentMapStyle] = useState<string>("Default");
+    const [currentMapScale, setCurrentMapScale] = useState<MapScaleId | undefined>(defaults.mapScale);
+    const [currentMapStyle, setCurrentMapStyle] = useState<string | undefined>(defaults.mapStyle);
 
     const [registeredDatasetLayers, setRegisteredDatasetLayers] = useState<
-        readonly {
-            layerName: string;
-            layerUrl?: string | { __tempUrl: string };
-            datasetId?: string;
-            mapLayer: MapLayer;
-        }[]
+        readonly RegisteredLayer[]
     >([]);
 
     const registeredLayers = useMemo(
@@ -63,9 +82,9 @@ export const useVisualiserSupport = () => {
 
         const visibleMapLayers: MapLayer[] = [];
 
-        currentVisibleLayers.forEach(({ datasetId, layerName }) => {
+        currentVisibleLayers.forEach(({ datasetId, dataLayer }) => {
             const visibleMapLayer = registeredDatasetLayers.find(
-                (x) => x.datasetId === datasetId && x.layerName === layerName
+                (x) => x.datasetId === datasetId && x.dataLayer === dataLayer
             )?.mapLayer;
 
             // If layer could not be found, skip
@@ -78,7 +97,7 @@ export const useVisualiserSupport = () => {
         });
 
         return visibleMapLayers;
-    }, [currentVisibleLayers, registeredDatasetLayers, currentMapScale]);
+    }, [currentVisibleLayers, registeredDatasetLayers, currentMapScale, currentMapStyle]);
 
     const registeredBaseLayers = BaseMaps.BCCVL_DEFAULT_BASE_MAPS;
 
