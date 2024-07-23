@@ -54,7 +54,6 @@ function SafeHydrate({ children }: { children: ReactNode }) {
 function MyApp({ Component, pageProps, cookies }: Props) {
     /** react-keycloak configuration */
     const keycloakConfig = getKeycloakAuthParameters();
-    
 
     // Google analytices for the tracking page view.
     useEffect(() => {
