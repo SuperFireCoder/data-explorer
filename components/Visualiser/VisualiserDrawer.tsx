@@ -121,25 +121,25 @@ export default function VisualiserDrawer({
         }
 
         return Object.keys(metadata.data.parameters).map((dataLayer) => {
-            // NOTE: Currently assuming data type from `rangeAlternates`
-            // property
-            // FIXME: Have backend pass actual data type of the layer
-            const dataType =
-                metadata.data.rangeAlternates["dmgr:tiff"] !== undefined
-                    ? ("raster" as const)
-                    : ("point" as const);
+            let dataType, dataUrl;
 
-            const tempUrl =
-                dataType === "raster"
-                    ? metadata.data.rangeAlternates?.["dmgr:tiff"]?.[dataLayer]
-                          ?.tempurl
-                    : metadata.data.rangeAlternates?.["dmgr:csv"]?.tempurl;
-
-            const colourmapType = CoverageUtils.getColourmapTypeForCovParam(metadata.data, dataLayer);
-
-            if (tempUrl === undefined) {
-                throw new Error(`Cannot obtain temp URL for "${dataLayer}"`);
+            if (dataset.rangeAlternates["dmgr:tiff"]) {
+                dataType = "raster";
+                dataUrl = dataset.rangeAlternates?.["dmgr:tiff"]?.[dataLayer]?.tempurl;
             }
+            if (dataset.rangeAlternates["dmgr:csv"]) {
+                dataType = "point";
+                dataUrl = dataset.rangeAlternates?.["dmgr:csv"]?.[dataLayer]?.tempurl;
+            }
+            if (dataset.rangeAlternates["dmgr:shp"]) {
+                dataType = "polygon";
+                dataUrl = dataset.rangeAlternates?.["dmgr:shp"]?.[dataLayer]?.tempurl;
+            }
+            if (dataType === undefined || dataUrl === undefined){
+                throw Error("Cannot render map layer. Unknown type or data url.")
+            }
+
+            const colourmapType = CoverageUtils.getLayerColourmapTypeFromCov(metadata.data, layerName);
 
             return {
                 datasetId,
