@@ -26,6 +26,17 @@ const VISUALISER_API = Cypress.env(
     "NEXT_PUBLIC_VISUALISER_CLIENT_GEOSPATIAL_ECMAPVISUALISERREQUEST_BACKEND_SERVER_URL"
 );
 
+// Potential workaround for 
+// https://github.com/cypress-io/cypress/issues/28728
+Cypress.on('uncaught:exception', (error) => {
+  // returning false here prevents Cypress from failing the test
+  console.error('Caught error', error);
+  if (error.stack?.includes('PrimaryOriginCommunicator.toSource')) {
+    return false;
+  }
+  return true;
+});
+
 beforeEach(() => {
     cy.intercept("GET", VISUALISER_API + "/api/maps/*/wms/*", {
         fixture: "map.png"

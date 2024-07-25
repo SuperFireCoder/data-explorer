@@ -1029,7 +1029,7 @@ export default function IndexPage() {
                     onSubmit={suppressEvent} 
                     data-cy="facet-fields" 
                     data-testid="facet-fields"
-                    style={{}}
+                    style={{ position: 'relative' , top: -10 }}
                 >
                     <FacetSelectFacetState2
                         data-cy="facet-filter-principals-select"
