@@ -121,33 +121,33 @@ export default function VisualiserDrawer({
         }
 
         return Object.keys(metadata.data.parameters).map((dataLayer) => {
-            let dataType, dataUrl;
+            let dataType = undefined;
+            let dataUrl = undefined;
 
-            if (dataset.rangeAlternates["dmgr:tiff"]) {
+            if (metadata.data.rangeAlternates["dmgr:tiff"]) {
                 dataType = "raster";
-                dataUrl = dataset.rangeAlternates?.["dmgr:tiff"]?.[dataLayer]?.tempurl;
+                dataUrl = metadata.data.rangeAlternates["dmgr:tiff"]?.[dataLayer]?.tempurl;
             }
-            if (dataset.rangeAlternates["dmgr:csv"]) {
+            if (metadata.data.rangeAlternates["dmgr:csv"]) {
                 dataType = "point";
-                dataUrl = dataset.rangeAlternates?.["dmgr:csv"]?.[dataLayer]?.tempurl;
+                dataUrl = metadata.data.rangeAlternates["dmgr:csv"]?.tempurl;
             }
-            if (dataset.rangeAlternates["dmgr:shp"]) {
+            if (metadata.data.rangeAlternates["dmgr:shp"]) {
                 dataType = "polygon";
-                dataUrl = dataset.rangeAlternates?.["dmgr:shp"]?.[dataLayer]?.tempurl;
+                dataUrl = metadata.data.rangeAlternates["dmgr:shp"]?.[dataLayer]?.tempurl;
             }
             if (dataType === undefined || dataUrl === undefined){
                 throw Error("Cannot render map layer. Unknown type or data url.")
             }
 
-            const colourmapType = CoverageUtils.getLayerColourmapTypeFromCov(metadata.data, layerName);
+            const colourmapType = CoverageUtils.getColourmapTypeForCovParam(metadata.data, dataLayer);
 
             return {
                 datasetId,
-                dataType,
-                label: metadata.data.parameters[dataLayer].observedProperty
-                    .label.en,
+                dataType: dataType as LayerInfo['dataType'],
+                dataUrl: dataUrl as LayerInfo['dataUrl'],
+                label: metadata.data.parameters[dataLayer].observedProperty.label.en,
                 dataLayer,
-                dataUrl: tempUrl,
                 colourmapType,
             };
         });
