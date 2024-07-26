@@ -147,10 +147,15 @@ export interface DmgrCsv {
 export interface RangeAlternates {
     "dmgr:csv"?: DmgrCsv;
     "dmgr:tiff"?: DmgrTiff;
+    "dmgr:shp"?: DmgrShp;
 }
 
 export interface DmgrTiff {
     [layer: string]: DmgrTiffLayerData;
+}
+
+export interface DmgrShp {
+    [layer: string]: DmgrShpLayerData;
 }
 
 export interface DmgrTiffLayerData {
@@ -158,6 +163,14 @@ export interface DmgrTiffLayerData {
     datatype: string;
     axisNames: string[] | Coordinate[];
     shape: number[];
+    "dmgr:datatype": string;
+    url: string;
+    tempurl: string;
+}
+
+export interface DmgrShpLayerData {
+    type: string;
+    datatype: string;
     "dmgr:datatype": string;
     url: string;
     tempurl: string;
