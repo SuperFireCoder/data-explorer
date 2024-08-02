@@ -1141,15 +1141,15 @@
   resolved "https://gitlab.com/api/v4/projects/30277949/packages/npm/@ecocommons-australia/bsc-theme/-/@ecocommons-australia/bsc-theme-1.0.22.tgz"
   integrity sha1-iSsR5A32ip5jB22Fpz7zEjOIFDQ=
 
-"@ecocommons-australia/ui-library@^2.0.1", "@ecocommons-australia/ui-library@2.0.6":
-  version "2.0.6"
-  resolved "https://gitlab.com/api/v4/projects/22528765/packages/npm/@ecocommons-australia/ui-library/-/@ecocommons-australia/ui-library-2.0.6.tgz"
-  integrity sha1-en/Ds5hL7x0aQkEVeHL/2f4KJH8=
+"@ecocommons-australia/ui-library@^2.0.1", "@ecocommons-australia/ui-library@2.0.8":
+  version "2.0.8"
+  resolved "https://gitlab.com/api/v4/projects/22528765/packages/npm/@ecocommons-australia/ui-library/-/@ecocommons-australia/ui-library-2.0.8.tgz"
+  integrity sha1-JP6XUMLoSy+R3PLOiVq9EkbS1vk=
 
-"@ecocommons-australia/visualiser-client-geospatial@2.5.1":
-  version "2.5.1"
-  resolved "https://gitlab.com/api/v4/projects/28568126/packages/npm/@ecocommons-australia/visualiser-client-geospatial/-/@ecocommons-australia/visualiser-client-geospatial-2.5.1.tgz"
-  integrity sha1-KugwRDmK4hNKcNjlj7sJqXwqg9E=
+"@ecocommons-australia/visualiser-client-geospatial@2.5.3":
+  version "2.5.3"
+  resolved "https://gitlab.com/api/v4/projects/28568126/packages/npm/@ecocommons-australia/visualiser-client-geospatial/-/@ecocommons-australia/visualiser-client-geospatial-2.5.3.tgz"
+  integrity sha1-ro7ZUiruiIB+fd/6HyeYjZi09hw=
 
 "@eslint-community/eslint-utils@^4.2.0", "@eslint-community/eslint-utils@^4.4.0":
   version "4.4.0"

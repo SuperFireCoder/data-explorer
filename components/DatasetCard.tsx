@@ -419,7 +419,7 @@ export default function DatasetCard({
                                 } />
                             </p>
                         )}
-                        <p className="bp5-text-small" data-testid="labels">
+                        <div data-testid="labels">
                             {type && (
                                 <p className="bp5-text-small" data-testid="type">
                                     <DatasetTypeIndicator type={type} />
@@ -430,7 +430,7 @@ export default function DatasetCard({
                                     <DatasetOwnerIndicator ownerLabel={ownerLabel} />
                                 </p>
                             )}
-                        </p>
+                        </div>
                         {lastUpdated && (
                             <div
                                 className="bp5-text-small bp5-text-disabled"
