@@ -147,6 +147,11 @@ export default function VisualiserDrawer({
 
             const dataDefaults = dataDefaultResolver(metadata.data, dataLayer);
 
+            // Remove this when Vis lib updated
+            if (dataDefaults.mapStyle === undefined && dataDefaults.mapStyleType === 'categorical'){
+                dataDefaults.mapStyle = 'Default';
+            }
+
             console.debug('dataDefaults', dataDefaults);
 
             return {
