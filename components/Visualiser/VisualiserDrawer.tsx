@@ -3,6 +3,7 @@ import { Button, Drawer, Classes, Position, ProgressBar } from "@blueprintjs/cor
 import { Col, Row } from "@ecocommons-australia/ui-library";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+    useDataDefaults,
     ECMapVisualiserRequest,
     MapLayer,
     Projections,
@@ -10,7 +11,8 @@ import {
     CoverageUtils,
     VisualiserGeospatial,
     SpatialMetadataBar,
-    ViewZoom
+    ViewZoom,
+    VisualiserLegend
 } from "@ecocommons-australia/visualiser-client-geospatial";
 import { OverlayContentProps } from "@ecocommons-australia/visualiser-client-geospatial/dist/VisualiserGeospatial";
 import {
@@ -23,6 +25,7 @@ import {
     useEcMapVisualiserRequest,
     useVisualiserSupport,
     LayerInfo,
+    MapScaleId,
     RegisteredLayer
 } from "../../hooks/Visualiser";
 import VisualiserLayersControl from "./VisualiserLayersControl";
@@ -58,6 +61,8 @@ export default function VisualiserDrawer({
         },
         visualiserProps,
     } = useVisualiserSupport();
+
+    const dataDefaultResolver = useDataDefaults();
 
     const { getNewEcMapVisualiserRequest } = useEcMapVisualiserRequest();
 
@@ -140,15 +145,16 @@ export default function VisualiserDrawer({
                 throw Error("Cannot render map layer. Unknown type or data url.")
             }
 
-            const colourmapType = CoverageUtils.getColourmapTypeForCovParam(metadata.data, dataLayer);
+            const dataDefaults = dataDefaultResolver(metadata.data, dataLayer);
+            console.debug('dataDefaults', dataDefaults);
 
             return {
+                ...dataDefaults,
                 datasetId,
                 dataType: dataType as LayerInfo['dataType'],
                 dataUrl: dataUrl as LayerInfo['dataUrl'],
                 label: metadata.data.parameters[dataLayer].observedProperty.label.en,
-                dataLayer,
-                colourmapType,
+                dataLayer
             };
         });
     }, [datasetId, metadata]);
@@ -184,12 +190,14 @@ export default function VisualiserDrawer({
                         )}
                     </div>
 
-                    <div className={styles.legendImageContainer}>
-                        {/* FIXME: This is a temporary solution to render legends on assumption there is only one visible layer */}
-                        {props._legendImages[0] !== undefined && (
-                            <img src={props._legendImages[0]} alt="Map legend image"/>
-                        )}
-                    </div>
+                    <VisualiserLegend
+                        legendImages={props._legendImages}
+                        currentLayers={props.visibleLayers}
+                        currentMapScale={currentMapScale as MapScaleId}
+                        onCurrentMapScaleChange={setCurrentMapScale}
+                        currentMapStyle={currentMapStyle as string}
+                        onCurrentMapStyleChange={setCurrentMapStyle}
+                    />
 
                     <VisualiserLayersControl
                         defaultOptionsVisible={! currentLayer}
@@ -200,10 +208,10 @@ export default function VisualiserDrawer({
                         baseMaps={baseMaps}
                         currentBaseMap={currentBaseMap}
                         onCurrentBaseMapChange={setCurrentBaseMap}
-                        currentMapStyle={currentMapStyle}
-                        onCurrentMapStyleChange={setCurrentMapStyle}
-                        currentMapScale={currentMapScale}
-                        onCurrentMapScaleChange={setCurrentMapScale}
+                        // currentMapStyle={currentMapStyle}
+                        // onCurrentMapStyleChange={setCurrentMapStyle}
+                        // currentMapScale={currentMapScale}
+                        // onCurrentMapScaleChange={setCurrentMapScale}
                     />
                 </>
             );
@@ -234,7 +242,7 @@ export default function VisualiserDrawer({
 
             setRegisteredDatasetLayers(
                 availableLayers.map(
-                    ({ datasetId, dataType, label, dataLayer, dataUrl}) => {
+                    ({ label, datasetId, dataUrl, dataLayer, dataType, mapScale, mapStyle, mapStyleType }) => {
                         const mapRequest = getNewEcMapVisualiserRequest({
                             dataUrl: dataUrl as string,
                             dataLayer,
@@ -242,7 +250,6 @@ export default function VisualiserDrawer({
                             dataParameters: coverage?.parameters[dataLayer],
                             mapStyle: currentMapStyle,
                             mapScale: currentMapScale,
-                            datasetId: datasetId,
                             domain: coverage?.domain
                     });
                         mapRequest.getBearerToken = getBearerTokenFn;
@@ -257,6 +264,7 @@ export default function VisualiserDrawer({
                                 mapRequest,
                                 mapProjection:
                                     Projections.DEFAULT_MAP_PROJECTION,
+                                colourmapType: mapStyleType
                             }),
                         } as RegisteredLayer;
                     }

@@ -65,6 +65,20 @@ export const useVisualiserSupport = (defaults: VisualiserDefaults = {}) => {
     const [currentMapScale, setCurrentMapScale] = useState<MapScaleId | undefined>(defaults.mapScale);
     const [currentMapStyle, setCurrentMapStyle] = useState<string | undefined>(defaults.mapStyle);
 
+    useEffect(
+        function updateCurrentMapScaleStyle() {
+            if (Array.isArray(currentVisibleLayers) && currentVisibleLayers.length > 0){
+                if (currentMapScale === undefined && currentVisibleLayers[0].mapScale){
+                    setCurrentMapScale(currentVisibleLayers[0].mapScale);
+                }
+                if (currentMapStyle === undefined && currentVisibleLayers[0].mapStyle){
+                    setCurrentMapStyle(currentVisibleLayers[0].mapStyle);
+                }
+            }
+        },
+        [currentVisibleLayers, currentMapScale, currentMapStyle]
+    );
+
     const [registeredDatasetLayers, setRegisteredDatasetLayers] = useState<
         readonly RegisteredLayer[]
     >([]);
