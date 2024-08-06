@@ -21,7 +21,7 @@
     "@blueprintjs/select": "5.0.10",
     "@ecocommons-australia/bsc-theme": "1.0.22",
     "@ecocommons-australia/ui-library": "2.0.8",
-    "@ecocommons-australia/visualiser-client-geospatial": "2.5.3",
+    "@ecocommons-australia/visualiser-client-geospatial": "2.6.2",
     "@react-keycloak/ssr": "3.3.0",
     "axios": "0.21.4",
     "bodybuilder": "2.3.0",
