@@ -146,12 +146,6 @@ export default function VisualiserDrawer({
             }
 
             const dataDefaults = dataDefaultResolver(metadata.data, dataLayer);
-
-            // Remove this when Vis lib updated
-            if (dataDefaults.mapStyle === undefined && dataDefaults.mapStyleType === 'categorical'){
-                dataDefaults.mapStyle = 'Default';
-            }
-
             console.debug('dataDefaults', dataDefaults);
 
             return {
@@ -214,10 +208,10 @@ export default function VisualiserDrawer({
                         baseMaps={baseMaps}
                         currentBaseMap={currentBaseMap}
                         onCurrentBaseMapChange={setCurrentBaseMap}
-                        currentMapStyle={currentMapStyle}
-                        onCurrentMapStyleChange={setCurrentMapStyle}
-                        currentMapScale={currentMapScale}
-                        onCurrentMapScaleChange={setCurrentMapScale}
+                        // currentMapStyle={currentMapStyle}
+                        // onCurrentMapStyleChange={setCurrentMapStyle}
+                        // currentMapScale={currentMapScale}
+                        // onCurrentMapScaleChange={setCurrentMapScale}
                     />
                 </>
             );
