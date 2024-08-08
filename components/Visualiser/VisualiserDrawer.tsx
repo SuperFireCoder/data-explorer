@@ -175,7 +175,6 @@ export default function VisualiserDrawer({
             const currentLayer = availableLayers?.find(
                 (x) => x.dataLayer === currentLayerName
             );
-
             return (
                 <>
                     {coverage &&
@@ -292,7 +291,7 @@ export default function VisualiserDrawer({
     );
 
     useEffect(
-        function loadMetadata() {
+        function loadDatasetMetadata() {
             // No need to load metadata when not open, or if it was already
             // fetched before
             if (!isOpen || metadata?.datasetId === datasetId) {
