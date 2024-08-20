@@ -770,9 +770,9 @@ export default function IndexPage() {
         sort: [
 
             /**
-             * Primary sort on relevance score so queried searches show the right order.
+             *  Primary sort on relevance score so queried searches show the right order.
              */
-            { "_score": "desc" },
+            (formState.searchQuery.length > 0 ? { "_score": "desc" } : {}),
 
             /** 
              * Secondary sort on 'pinned' facet based on current user presence in list.
