@@ -768,16 +768,10 @@ export default function IndexPage() {
         facets: FACETS,
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
         sort: [
-
-            /**
-             * Primary sort on relevance score so queried searches show the right order.
-             */
-            { "_score": "desc" },
-
             /** 
-             * Secondary sort on 'pinned' facet based on current user presence in list.
+             * Primary sort on 'pinned' facet based on current user presence in list.
              * Pinned uses a scripted sort as the facet contains all users who pin a Dataset.
-             * (what gets returned is redacted to only the current user).
+             * (what actually gets returned is redacted to only the current user).
              * 
              * https://www.elastic.co/guide/en/elasticsearch/painless/7.17/painless-sort-context.html
              */
@@ -792,6 +786,11 @@ export default function IndexPage() {
                 "type" : "number",
                 "order" : "desc",
             }},
+
+            /**
+             *  Secondary sort on relevance score so queried searches show the right order.
+             */
+            { "_score": "desc" },
 
             /** Tertiary sort on created date.
              */

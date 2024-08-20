@@ -146,7 +146,7 @@ export default function VisualiserDrawer({
             }
 
             const dataDefaults = dataDefaultResolver(metadata.data, dataLayer);
-            console.debug('dataDefaults', dataDefaults);
+            // console.debug('dataDefaults', dataDefaults);
 
             return {
                 ...dataDefaults,
@@ -192,9 +192,9 @@ export default function VisualiserDrawer({
                     <VisualiserLegend
                         legendImages={props._legendImages}
                         currentLayers={props.visibleLayers}
-                        currentMapScale={currentMapScale as MapScaleId}
+                        currentMapScale={(currentMapScale ?? currentLayer?.mapScale) as MapScaleId}
                         onCurrentMapScaleChange={setCurrentMapScale}
-                        currentMapStyle={currentMapStyle as string}
+                        currentMapStyle={(currentMapStyle ?? currentLayer?.mapStyle) as string}
                         onCurrentMapStyleChange={setCurrentMapStyle}
                     />
 
@@ -233,12 +233,12 @@ export default function VisualiserDrawer({
     useEffect(
         function syncRegisteredLayersWithDataset() {
             // No dataset = nothing to render
-            if (availableLayers === undefined) {
+            if (availableLayers === undefined || availableLayers?.length === 0) {
                 setRegisteredDatasetLayers([]);
                 setCurrentVisibleLayers([]);
                 return;
             }
-
+            console.log('setRegisteredDatasetLayers', availableLayers)
             setRegisteredDatasetLayers(
                 availableLayers.map(
                     ({ label, datasetId, dataUrl, dataLayer, dataType, mapScale, mapStyle, mapStyleType }) => {
@@ -269,11 +269,6 @@ export default function VisualiserDrawer({
                     }
                 ) ?? []
             );
-
-            if (availableLayers.length === 0) {
-                setCurrentVisibleLayers([]);
-                return;
-            }
 
             // Set current dataset preview to first layer
             setCurrentVisibleLayers([availableLayers[0]]);
