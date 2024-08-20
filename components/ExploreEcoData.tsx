@@ -768,6 +768,12 @@ export default function IndexPage() {
         facets: FACETS,
         url: `${getDataExplorerBackendServerUrl()}/api/es/search/dataset`,
         sort: [
+
+            /**
+             *  Primary sort on relevance score so queried searches show the right order.
+             */
+            (formState.searchQuery.length > 0 ? { "_score": "desc" } : {}),
+
             /** 
              * Primary sort on 'pinned' facet based on current user presence in list.
              * Pinned uses a scripted sort as the facet contains all users who pin a Dataset.
