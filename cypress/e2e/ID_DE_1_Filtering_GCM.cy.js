@@ -8,12 +8,10 @@ describe("filtering GCM", () => {
     beforeEach(() => {
         // Given I am on the "dataset" tab
         cy.visit("/");
-        // And on "Explore EcoCommons Data"
+        // And see "Explore EcoCommons Data"
         cy.get('[data-cy="ExploreEcoDataTab"]');
-        cy.get('[data-cy="header-sub-bar"]').should(
-            "contain",
-            "Explore EcoCommons Data"
-        );
+        cy.get('[data-cy="header-sub-bar"]')
+          .find('a[href="/?tab=eco-data"]');
     });
 
     it("Filter GCM", () => {
