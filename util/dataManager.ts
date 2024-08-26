@@ -1,12 +1,14 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosRequestHeaders } from "axios";
 import { KeycloakInstance } from "../interfaces/Keycloak";
 import { IHttpResponseError } from "../interfaces/ErrorResponse"
+import { PinnedDataset } from "./../interfaces/PinnedDataset";
+
 const ENDPOINTS = {
     DATASET: "/api/dataset/",
     PERMISSION: "/api/permission/",
     SHAREDATSET:"/api/shareddataset/"
 };
-import { PinnedDataset } from "./../interfaces/PinnedDataset";
+
 export class DataManager {
     private readonly axios: AxiosInstance;
 
@@ -41,21 +43,21 @@ export class DataManager {
                 title: '',
                 code: "",
                 description: ""
-              };
-        if (error.response){
-            {
-                errorResponse.title = error.response.data.title;
-                errorResponse.code = error.response.data.code;
-                errorResponse.description = error.response.data.description? error.response.data.error.description : undefined;
-            } 
-            } else {
-            // Handle other errors
-            errorResponse.title = "Something went wrong with that request.";
-            errorResponse.code = "GE-DE-001"
-            errorResponse.description = "";
-        }
+            };
+            if (error.response){
+                {
+                    errorResponse.title = error.response.data.title;
+                    errorResponse.code = error.response.data.code;
+                    errorResponse.description = error.response.data.description? error.response.data.error.description : undefined;
+                } 
+                } else {
+                // Handle other errors
+                errorResponse.title = "Something went wrong with that request.";
+                errorResponse.code = "GE-DE-001"
+                errorResponse.description = "";
+            }
 
-        return Promise.reject(errorResponse);
+            return Promise.reject(errorResponse);
         });
 
         const injectAuthHeaderInterceptor =
@@ -73,7 +75,7 @@ export class DataManager {
                     headers: {
                         ...requestConfig.headers,
                         Authorization: authHeader,
-                    },
+                    } as AxiosRequestHeaders,
                 };
             });
 
