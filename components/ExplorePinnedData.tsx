@@ -316,8 +316,8 @@ export default function IndexPage() {
                                 description={item.description}
                                 status={item.status}
                                 downloadable={true}
-                                failureMessage={
-                                    item.status === "FAILED"
+                                message={
+                                    item.status === "FAILED" || item.status === "CREATED"
                                         ? item.message
                                         : undefined
                                 }
