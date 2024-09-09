@@ -325,7 +325,7 @@ export default function DatasetCard({
             />
             {failDetailVisible && <Callout style={{'overflowY':'auto'}}>{message}</Callout>}*/}
 
-            <Callout style={{'overflowY':'auto'}}>{message}</Callout>}
+            <Callout style={{'overflowY':'auto'}}>{message}</Callout>
         </>
     }, [message, failDetailVisible])
 
