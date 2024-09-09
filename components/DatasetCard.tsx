@@ -70,8 +70,8 @@ export interface Props {
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
     /** Is pinned by user */
     isPinned?: boolean;
-    /** Import failure message */
-    failureMessage?: string;
+    /** Status message */
+    message?: string;
     /**
      * URL to resource landing page; should only be used with Knowledge Network
      * data
@@ -103,7 +103,7 @@ export default function DatasetCard({
     status,
     isPinned,
     downloadable,
-    failureMessage,
+    message,
     landingPageUrl,
     selected,
     onSelect,
@@ -314,7 +314,7 @@ export default function DatasetCard({
 
     const displayFailMessage = useMemo(() => {
         return <>
-            <Switch 
+{/*            <Switch 
                 alignIndicator={Alignment.RIGHT}
                 checked={failDetailVisible} 
                 onChange={() => setFailDetailVisible(!failDetailVisible)}
@@ -323,9 +323,11 @@ export default function DatasetCard({
                 innerLabel="show details"
                 style={{'display':'inline-block'}}
             />
-            {failDetailVisible && <Callout style={{'overflowY':'auto'}}>{failureMessage}</Callout>}
+            {failDetailVisible && <Callout style={{'overflowY':'auto'}}>{message}</Callout>}*/}
+
+            <Callout style={{'overflowY':'auto'}}>{message}</Callout>}
         </>
-    }, [failureMessage, failDetailVisible])
+    }, [message, failDetailVisible])
 
     const isDownloadDisabled: boolean = useMemo(() => {
         // owned dataset or public dataset
