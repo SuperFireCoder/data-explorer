@@ -388,7 +388,7 @@ export default function DatasetCard({
                                     themedStyles.description
                                 )}
                             >
-                                {displayMessage}
+                                {displayMessage ?? 'Importing...'}
                             </p>
                         )}
                         {status === "FAILED" && (
