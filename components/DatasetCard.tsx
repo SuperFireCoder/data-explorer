@@ -312,7 +312,7 @@ export default function DatasetCard({
             })
     }
 
-    const displayFailMessage = useMemo(() => {
+    const displayMessage = useMemo(() => {
         return <>
 {/*            <Switch 
                 alignIndicator={Alignment.RIGHT}
@@ -382,14 +382,13 @@ export default function DatasetCard({
                         >
                             {title}
                         </H5>
-                        {status === "IMPORTING" && (
+                        {(status === "CREATED" || status === "IMPORTING") && (
                             <p
                                 className={classnames(
-                                    themedStyles.description,
-                                    Classes.TEXT_DISABLED
+                                    themedStyles.description
                                 )}
                             >
-                                Importing...
+                                {displayMessage}
                             </p>
                         )}
                         {status === "FAILED" && (
@@ -399,7 +398,7 @@ export default function DatasetCard({
                                         themedStyles.description
                                     )}
                                 >
-                                    {displayFailMessage}
+                                    {displayMessage}
                                 </p>
                             </>
                         )}
@@ -469,6 +468,7 @@ export default function DatasetCard({
                                 <Button
                                     icon="eye-open"
                                     intent={onSelect ? 'primary' : 'success'}
+                                    style={{'pointerEvents': 'none'}}
                                 >
                                     In Progress
                                 </Button> :
