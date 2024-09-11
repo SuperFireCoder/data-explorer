@@ -314,7 +314,9 @@ export default function DatasetCard({
 
     const displayMessage = useMemo(() => {
         return <>
-{/*            <Switch 
+            {/*
+            Not really needed, but here in case we want to handle very long messages.. 
+            <Switch 
                 alignIndicator={Alignment.RIGHT}
                 checked={failDetailVisible} 
                 onChange={() => setFailDetailVisible(!failDetailVisible)}
@@ -464,7 +466,7 @@ export default function DatasetCard({
                                     Select
                                 </Button>
                                 : ''}
-                            {status === "CREATED" ?
+                            {(status === "CREATED" || status === 'IMPORTING') ?
                                 <Button
                                     icon="eye-open"
                                     intent={onSelect ? 'primary' : 'success'}
