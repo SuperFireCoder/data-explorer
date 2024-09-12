@@ -316,18 +316,11 @@ export default function IndexPage() {
                                 description={item.description}
                                 status={item.status}
                                 downloadable={true}
-                                failureMessage={
-                                    item.status === "FAILED"
-                                        ? item.message
-                                        : undefined
-                                }
+                                message={item.message}
                                 type={
                                     item.status === "SUCCESS"
-                                        ? // TODO: Clarify values for "scientific_type"
-                                        ({
-                                            type:  item.scientific_type[0],
-                                            subtype:item.scientific_type[1],
-                                        } as unknown as DatasetType)
+                                        ?
+                                        (item.scientific_type)
                                         : undefined
                                 }
                                 ownerId={[item.owner]}

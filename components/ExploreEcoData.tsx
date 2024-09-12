@@ -1207,11 +1207,7 @@ export default function IndexPage() {
                                 status={_source.status}
                                 isPinned={_source.pinned?.includes(keycloak?.subject ?? '')}
                                 downloadable={_source.downloadable}
-                                failureMessage={
-                                    _source.status === "FAILED"
-                                        ? _source.message
-                                        : undefined
-                                }
+                                message={_source.message}
                                 year={_source.year}
                                 type={
                                     _source.status === "SUCCESS"
