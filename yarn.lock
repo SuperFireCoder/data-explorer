@@ -1130,10 +1130,10 @@
   resolved "https://gitlab.com/api/v4/projects/22528765/packages/npm/@ecocommons-australia/ui-library/-/@ecocommons-australia/ui-library-2.1.0.tgz"
   integrity sha1-PTzQIc93ckh78HDNcB9RSuc4Ph8=
 
-"@ecocommons-australia/visualiser-client-geospatial@2.6.4":
-  version "2.6.4"
-  resolved "https://gitlab.com/api/v4/projects/28568126/packages/npm/@ecocommons-australia/visualiser-client-geospatial/-/@ecocommons-australia/visualiser-client-geospatial-2.6.4.tgz"
-  integrity sha1-6ZDGGWXD2+qlCLjq7qaFViDX3o8=
+"@ecocommons-australia/visualiser-client-geospatial@2.6.8":
+  version "2.6.8"
+  resolved "https://gitlab.com/api/v4/projects/28568126/packages/npm/@ecocommons-australia/visualiser-client-geospatial/-/@ecocommons-australia/visualiser-client-geospatial-2.6.8.tgz"
+  integrity sha1-9fNlsCull1oPLByscCvFtIwTq4A=
 
 "@esbuild/darwin-arm64@0.23.1":
   version "0.23.1"
@@ -2428,7 +2428,7 @@ aws4@^1.8.0:
   resolved "https://registry.npmjs.org/aws4/-/aws4-1.12.0.tgz"
   integrity sha512-NmWvPnx0F1SfrQbYwOi7OeaNGokp9XhzNioJ/CSBs8Qa4vxug81mhJEAVZwxXuBmYB5KDRfMq/F3RR0BIU7sWg==
 
-axios@>=0.21.0, "axios@0.21.4 || ^1.7", axios@1.7.4:
+"axios@0.21.4 || ^1.7", axios@1.7.4:
   version "1.7.4"
   resolved "https://registry.npmjs.org/axios/-/axios-1.7.4.tgz"
   integrity sha512-DukmaFRnY6AzAALSH4J2M3k6PkaC+MfaAGdEERRWcC9q3/TWQwLpHR8ZRLKTdQ3aBDL64EdluRDjJqKw+BPZEw==
