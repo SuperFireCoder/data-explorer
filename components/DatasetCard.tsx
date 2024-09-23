@@ -70,8 +70,8 @@ export interface Props {
     status: "SUCCESS" | "IMPORTING" | "FAILED" | "CREATED";
     /** Is pinned by user */
     isPinned?: boolean;
-    /** Import failure message */
-    failureMessage?: string;
+    /** Status message */
+    message?: string;
     /**
      * URL to resource landing page; should only be used with Knowledge Network
      * data
@@ -103,7 +103,7 @@ export default function DatasetCard({
     status,
     isPinned,
     downloadable,
-    failureMessage,
+    message,
     landingPageUrl,
     selected,
     onSelect,
@@ -312,8 +312,10 @@ export default function DatasetCard({
             })
     }
 
-    const displayFailMessage = useMemo(() => {
+    const displayMessage = useMemo(() => {
         return <>
+            {/*
+            Not really needed, but here in case we want to handle very long messages.. 
             <Switch 
                 alignIndicator={Alignment.RIGHT}
                 checked={failDetailVisible} 
@@ -323,9 +325,11 @@ export default function DatasetCard({
                 innerLabel="show details"
                 style={{'display':'inline-block'}}
             />
-            {failDetailVisible && <Callout style={{'overflowY':'auto'}}>{failureMessage}</Callout>}
+            {failDetailVisible && <Callout style={{'overflowY':'auto'}}>{message}</Callout>}*/}
+
+            <Callout style={{'overflowY':'auto'}}>{message}</Callout>
         </>
-    }, [failureMessage, failDetailVisible])
+    }, [message, failDetailVisible])
 
     const isDownloadDisabled: boolean = useMemo(() => {
         // owned dataset or public dataset
@@ -380,14 +384,13 @@ export default function DatasetCard({
                         >
                             {title}
                         </H5>
-                        {status === "IMPORTING" && (
+                        {(status === "CREATED" || status === "IMPORTING") && (
                             <p
                                 className={classnames(
-                                    themedStyles.description,
-                                    Classes.TEXT_DISABLED
+                                    themedStyles.description
                                 )}
                             >
-                                Importing...
+                                {displayMessage ?? 'Importing...'}
                             </p>
                         )}
                         {status === "FAILED" && (
@@ -397,7 +400,7 @@ export default function DatasetCard({
                                         themedStyles.description
                                     )}
                                 >
-                                    {displayFailMessage}
+                                    {displayMessage}
                                 </p>
                             </>
                         )}
@@ -463,10 +466,11 @@ export default function DatasetCard({
                                     Select
                                 </Button>
                                 : ''}
-                            {status === "CREATED" ?
+                            {(status === "CREATED" || status === 'IMPORTING') ?
                                 <Button
                                     icon="eye-open"
                                     intent={onSelect ? 'primary' : 'success'}
+                                    style={{'pointerEvents': 'none'}}
                                 >
                                     In Progress
                                 </Button> :
