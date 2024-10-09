@@ -20,16 +20,16 @@
     "@blueprintjs/icons": "5.1.6",
     "@blueprintjs/select": "5.0.10",
     "@ecocommons-australia/bsc-theme": "1.3.3",
-    "@ecocommons-australia/ui-library": "2.2.4",
+    "@ecocommons-australia/ui-library": "2.2.9",
     "@ecocommons-australia/visualiser-client-geospatial": "2.6.8",
     "@react-keycloak/ssr": "3.3.0",
     "axios": "1.7.4",
     "bodybuilder": "2.3.0",
     "caniuse-lite": "1.0.30001527",
     "classnames": "2.2.6",
-    "cookie": "1.0.0",
+    "cookie": "0.4.1",
     "keycloak-js": "11.0.3",
-    "next": "14.2.15",
+    "next": "14.2.6",
     "next-transpile-modules": "10.0.1",
     "ol": "7.4.0",
     "papaparse": "5.3.0",
@@ -70,8 +70,5 @@
     "cypress-multi-reporters": "1.6.1",
     "cypress-split": "1.3.13",
     "istanbul-lib-coverage": "3.2.0"
-  },
-  "overrides": {
-    "@blueprintjs/core": "5.10.1"
   }
 }
