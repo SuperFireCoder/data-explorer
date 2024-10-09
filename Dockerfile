@@ -20,7 +20,7 @@ COPY package*.json ./
 
 RUN npm config set @ecocommons-australia:registry https://gitlab.com/api/v4/packages/npm/ && \
     npm config set '//gitlab.com/api/v4/packages/npm/:_authToken' $NPM_AUTHTOKEN && \
-    npm ci --omit=optional
+    npm ci --omit=optional --legacy-peer-deps
 
 EXPOSE 3000
 
@@ -53,7 +53,7 @@ ENV NEXT_PUBLIC_BUILD_ID=$BUILD_ID
 ENV NODE_ENV=$NODE_ENV
 
 # only use dependencies required by NODE_ENV
-RUN npm ci --omit=dev --omit=optional
+RUN npm ci --omit=dev --omit=optional --legacy-peer-deps
 
 RUN chown -R node:node ./ 
 USER node
